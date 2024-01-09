@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+    <xs:element name="PenData">
+        <xs:complexType>
+        <xs:sequence>
+            <xs:element maxOccurs="unbounded" name="drawing">
+            <xs:complexType>
+                <xs:sequence>
+                <xs:element name="symbol">
+                    <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="stroke">
+                        <xs:complexType>
+                            <xs:sequence>
+                            <xs:element name="point">
+                                <xs:complexType>
+                                <xs:attribute name="y" type="xs:decimal" use="required" />
+                                <xs:attribute name="x" type="xs:decimal" use="required" />
+                                <xs:attribute name="pressure" type="xs:unsignedByte" use="required" />
+                                <xs:attribute name="timestamp" type="xs:unsignedLong" use="required" />
+                                </xs:complexType>
+                            </xs:element>
+                            </xs:sequence>
+                            <xs:attribute name="label" type="xs:unsignedByte" use="required" />
+                            <xs:attribute name="index" type="xs:nonNegativeInteger" use="required" />
+                        </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="label" type="xs:string" use="required" />
+                    <xs:attribute name="type" type="xs:string" use="required" />
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="strokes">
+                    <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="stroke">
+                        <xs:complexType>
+                            <xs:sequence>
+                            <xs:element maxOccurs="unbounded" name="point">
+                                <xs:complexType>
+                                <xs:attribute name="y" type="xs:decimal" use="required" />
+                                <xs:attribute name="x" type="xs:decimal" use="required" />
+                                <xs:attribute name="pressure" type="xs:unsignedByte" use="required" />
+                                <xs:attribute name="timestamp" type="xs:unsignedLong" use="required" />
+                                </xs:complexType>
+                            </xs:element>
+                            </xs:sequence>
+                            <xs:attribute name="label" type="xs:unsignedByte" use="required" />
+                            <xs:attribute name="index" type="xs:unsignedByte" use="required" />
+                        </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element minOccurs="0" name="RawData">
+                    <xs:complexType>
+                    <xs:simpleContent>
+                        <xs:extension base="xs:string">
+                        <xs:attribute name="checksum" type="xs:string" use="required" />
+                        <xs:attribute name="encrypted_checksum" type="xs:string" use="required" />
+                        </xs:extension>
+                    </xs:simpleContent>
+                    </xs:complexType>
+                </xs:element>
+                </xs:sequence>
+                <xs:attribute name="type" type="xs:string" use="required" />
+                <xs:attribute name="setID" type="xs:string" use="required" />
+                <xs:attribute name="structureID" use="required">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="symbol-digit"/>
+                            <xs:enumeration value="digit-digit"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+                <xs:attribute name="structureVersion" type="xs:decimal" use="required" />
+                <xs:attribute name="classified" type="xs:boolean" use="required" />
+            </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

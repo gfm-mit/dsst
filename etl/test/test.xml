@@ -52,7 +52,7 @@
       <symbol label="" type="UNCLASSIFIED">
         <stroke label="1" index="1">
           <!-- this data is redundant to the strokes, but this ontology is worse -->
-          <point y="-1" x="-1" pressure="-1" timestamp="-1" />
+          <point y="-1" x="-1" pressure="1" timestamp="1" />
         </stroke>
       </symbol>
       <strokes>
@@ -168,42 +168,42 @@ Now is the time for all good men to come to the aid of their country.
       <symbol label="" type="UNCLASSIFIED">
         <stroke label="2" index="2">
           <!-- this data is redundant to the strokes, but this ontology is worse -->
-          <point y="-1" x="-1" pressure="-1" timestamp="-1" />
+          <point y="-1" x="-1" pressure="1" timestamp="1" />
         </stroke>
       </symbol>
       <strokes>
         <stroke label="2" index="2">
           <!-- obviously not real patient data -->
-          <point y="11.9000" x="6.7000" pressure="126" timestamp="683179200000" />
-          <point y="49.1206" x="44.0571" pressure="126" timestamp="683179200070" />
-          <point y="78.9850" x="84.5231" pressure="126" timestamp="683179200140" />
-          <point y="116.2547" x="49.5060" pressure="126" timestamp="683179200210" />
-          <point y="153.7973" x="17.4783" pressure="126" timestamp="683179200280" />
-          <point y="190.9544" x="53.4571" pressure="126" timestamp="683179200350" />
-          <point y="221.1377" x="93.8995" pressure="126" timestamp="683179200420" />
-          <point y="259.8830" x="60.1650" pressure="126" timestamp="683179200490" />
-          <point y="260.5739" x="14.9502" pressure="126" timestamp="683179200560" />
-          <point y="219.1112" x="20.6733" pressure="126" timestamp="683179200630" />
-          <point y="179.8036" x="55.6083" pressure="126" timestamp="683179200700" />
-          <point y="147.3757" x="79.6800" pressure="126" timestamp="683179200770" />
-          <point y="114.6029" x="39.1649" pressure="126" timestamp="683179200840" />
-          <point y="66.3641" x="23.0851" pressure="126" timestamp="683179200910" />
-          <point y="28.4872" x="59.0394" pressure="126" timestamp="683179200980" />
-          <point y="5.4924" x="80.7255" pressure="126" timestamp="683179201050" />
-          <point y="40.3905" x="41.1419" pressure="126" timestamp="683179201120" />
-          <point y="85.5506" x="21.9989" pressure="126" timestamp="683179201190" />
-          <point y="130.4319" x="48.5560" pressure="126" timestamp="683179201260" />
-          <point y="162.2084" x="79.1891" pressure="126" timestamp="683179201330" />
-          <point y="193.5778" x="37.2120" pressure="126" timestamp="683179201400" />
-          <point y="236.1433" x="6.1237" pressure="126" timestamp="683179201470" />
-          <point y="271.0467" x="28.7278" pressure="126" timestamp="683179201540" />
-          <point y="253.2155" x="70.8294" pressure="126" timestamp="683179201610" />
-          <point y="215.0417" x="88.6923" pressure="126" timestamp="683179201680" />
-          <point y="182.3407" x="47.2854" pressure="126" timestamp="683179201750" />
-          <point y="143.5078" x="29.0859" pressure="126" timestamp="683179201820" />
-          <point y="104.4836" x="64.6094" pressure="126" timestamp="683179201890" />
-          <point y="74.1562" x="80.4463" pressure="126" timestamp="683179201960" />
-          <point y="41.1963" x="39.2818" pressure="126" timestamp="683179202030" />
+          <point x="11.9000" y="6.7000" pressure="126" timestamp="683179200000" />
+          <point x="49.1206" y="44.0571" pressure="126" timestamp="683179200070" />
+          <point x="78.9850" y="84.5231" pressure="126" timestamp="683179200140" />
+          <point x="116.2547" y="49.5060" pressure="126" timestamp="683179200210" />
+          <point x="153.7973" y="17.4783" pressure="126" timestamp="683179200280" />
+          <point x="190.9544" y="53.4571" pressure="126" timestamp="683179200350" />
+          <point x="221.1377" y="93.8995" pressure="126" timestamp="683179200420" />
+          <point x="259.8830" y="60.1650" pressure="126" timestamp="683179200490" />
+          <point x="260.5739" y="14.9502" pressure="126" timestamp="683179200560" />
+          <point x="219.1112" y="20.6733" pressure="126" timestamp="683179200630" />
+          <point x="179.8036" y="55.6083" pressure="126" timestamp="683179200700" />
+          <point x="147.3757" y="79.6800" pressure="126" timestamp="683179200770" />
+          <point x="114.6029" y="39.1649" pressure="126" timestamp="683179200840" />
+          <point x="66.3641" y="23.0851" pressure="126" timestamp="683179200910" />
+          <point x="28.4872" y="59.0394" pressure="126" timestamp="683179200980" />
+          <point x="5.4924" y="80.7255" pressure="126" timestamp="683179201050" />
+          <point x="40.3905" y="41.1419" pressure="126" timestamp="683179201120" />
+          <point x="85.5506" y="21.9989" pressure="126" timestamp="683179201190" />
+          <point x="130.4319" y="48.5560" pressure="126" timestamp="683179201260" />
+          <point x="162.2084" y="79.1891" pressure="126" timestamp="683179201330" />
+          <point x="193.5778" y="37.2120" pressure="126" timestamp="683179201400" />
+          <point x="236.1433" y="6.1237" pressure="126" timestamp="683179201470" />
+          <point x="271.0467" y="28.7278" pressure="126" timestamp="683179201540" />
+          <point x="253.2155" y="70.8294" pressure="126" timestamp="683179201610" />
+          <point x="215.0417" y="88.6923" pressure="126" timestamp="683179201680" />
+          <point x="182.3407" y="47.2854" pressure="126" timestamp="683179201750" />
+          <point x="143.5078" y="29.0859" pressure="126" timestamp="683179201820" />
+          <point x="104.4836" y="64.6094" pressure="126" timestamp="683179201890" />
+          <point x="74.1562" y="80.4463" pressure="126" timestamp="683179201960" />
+          <point x="41.1963" y="39.2818" pressure="126" timestamp="683179202030" />
         </stroke>
       </strokes>
     </drawing>

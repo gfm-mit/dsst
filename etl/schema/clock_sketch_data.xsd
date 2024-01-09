@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:element name="ClockSketchData">
+        <xs:complexType>
+        <xs:sequence>
+            <xs:element name="AnonymizedID">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Clinic">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Comments">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="DateOfBirth">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="DateOfBirthInfoType">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:unsignedByte" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Diag1Cert">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Diag1SurgMo">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Diag1SurgYr">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:unsignedShort" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Diag2Cert">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Diag2SurgMo">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Diag2SurgYr">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Diag3Cert">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Diag3SurgMo">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Diag3SurgYr">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Diagnosis">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Diagnosis2">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Diagnosis3">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Doctor">
+            <xs:complexType>
+                <xs:attribute name="firstlast" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Ethnicity">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Facility">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Handed">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="MMSE7Score">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="MMSEWScore">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="MOCAScore">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:unsignedByte" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="NumberOfCommandDigitSplitStrokes">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:unsignedByte" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="NumberOfCommandHandSplitStrokes">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:unsignedByte" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="NumberOfCopyDigitSplitStrokes">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:unsignedByte" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="NumberOfCopyHandSplitStrokes">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:unsignedByte" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="OriginalOrigin">
+            <xs:complexType>
+                <xs:attribute name="x" type="xs:decimal" use="required" />
+                <xs:attribute name="y" type="xs:decimal" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Patient">
+            <xs:complexType>
+                <xs:attribute name="last" type="xs:string" use="required" />
+                <xs:attribute name="first" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="PatientEncodedID">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="PatientGender">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="PenSerialNumber">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="PenType">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="Race">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="ScoredBy">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="ScoredDateTime">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="SubjObsCom">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="SubjObsCop">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="SubjQuestionsCom">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="SubjQuestionsCop">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="TestTimeZone">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="UsedProgramVersion">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:string" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="YearsEd">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:unsignedByte" use="required" />
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="PatientDataBaseNumber">
+            <xs:complexType>
+                <xs:attribute name="value" type="xs:unsignedShort" use="required" />
+            </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>
