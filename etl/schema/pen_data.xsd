@@ -10,19 +10,22 @@
                 <xs:element name="symbol">
                     <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="stroke">
+                        <!-- not a technical limit, but a sign something is probably wrong -->
+                        <xs:element name="stroke" maxOccurs="199">
                         <xs:complexType>
                             <xs:sequence>
-                            <xs:element name="point">
+                            <!-- not a technical limit, but a sign something is probably wrong.  TODO: should probably be lower -->
+                            <xs:element name="point" maxOccurs="2999">
                                 <xs:complexType>
                                 <xs:attribute name="y" type="xs:decimal" use="required" />
                                 <xs:attribute name="x" type="xs:decimal" use="required" />
                                 <xs:attribute name="pressure" type="xs:unsignedByte" use="required" />
                                 <xs:attribute name="timestamp" type="xs:unsignedLong" use="required" />
+                                <xs:attribute name="extrapolated" type="xs:boolean" use="optional" />
                                 </xs:complexType>
                             </xs:element>
                             </xs:sequence>
-                            <xs:attribute name="label" type="xs:unsignedByte" use="required" />
+                            <xs:attribute name="label" type="xs:nonNegativeInteger" use="required" />
                             <xs:attribute name="index" type="xs:nonNegativeInteger" use="required" />
                         </xs:complexType>
                         </xs:element>
@@ -34,20 +37,23 @@
                 <xs:element name="strokes">
                     <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="stroke">
+                        <!-- not a technical limit, but a sign something is probably wrong -->
+                        <xs:element name="stroke" maxOccurs="199">
                         <xs:complexType>
                             <xs:sequence>
-                            <xs:element maxOccurs="unbounded" name="point">
+                            <!-- not a technical limit, but a sign something is probably wrong.  TODO: should probably be lower -->
+                            <xs:element maxOccurs="2999" name="point">
                                 <xs:complexType>
                                 <xs:attribute name="y" type="xs:decimal" use="required" />
                                 <xs:attribute name="x" type="xs:decimal" use="required" />
                                 <xs:attribute name="pressure" type="xs:unsignedByte" use="required" />
                                 <xs:attribute name="timestamp" type="xs:unsignedLong" use="required" />
+                                <xs:attribute name="extrapolated" type="xs:boolean" use="optional" />
                                 </xs:complexType>
                             </xs:element>
                             </xs:sequence>
-                            <xs:attribute name="label" type="xs:unsignedByte" use="required" />
-                            <xs:attribute name="index" type="xs:unsignedByte" use="required" />
+                            <xs:attribute name="label" type="xs:nonNegativeInteger" use="required" />
+                            <xs:attribute name="index" type="xs:nonNegativeInteger" use="required" />
                         </xs:complexType>
                         </xs:element>
                     </xs:sequence>

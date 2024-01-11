@@ -1,8 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:simpleType name="NullOrInteger">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="\d*|\s{0}" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="NullOrUnkOrInteger">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="\d*|\s{0}|Unk" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="NullOrUnkOrIntegerOrTwentyPlus">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="\d*|\s{0}|Unk|20\+" />
+        </xs:restriction>
+    </xs:simpleType>
     <xs:element name="ClockSketchData">
         <xs:complexType>
-        <xs:sequence>
+        <xs:all>
             <xs:element name="AnonymizedID">
             <xs:complexType>
                 <xs:attribute name="value" type="xs:string" use="required" />
@@ -40,7 +55,7 @@
             </xs:element>
             <xs:element name="Diag1SurgYr">
             <xs:complexType>
-                <xs:attribute name="value" type="xs:unsignedShort" use="required" />
+                <xs:attribute name="value" type="NullOrInteger" use="required"/>
             </xs:complexType>
             </xs:element>
             <xs:element name="Diag2Cert">
@@ -55,7 +70,7 @@
             </xs:element>
             <xs:element name="Diag2SurgYr">
             <xs:complexType>
-                <xs:attribute name="value" type="xs:string" use="required" />
+                <xs:attribute name="value" type="NullOrInteger" use="required" />
             </xs:complexType>
             </xs:element>
             <xs:element name="Diag3Cert">
@@ -120,7 +135,7 @@
             </xs:element>
             <xs:element name="MOCAScore">
             <xs:complexType>
-                <xs:attribute name="value" type="xs:unsignedByte" use="required" />
+                <xs:attribute name="value" type="NullOrUnkOrInteger" use="required" />
             </xs:complexType>
             </xs:element>
             <xs:element name="NumberOfCommandDigitSplitStrokes">
@@ -222,7 +237,7 @@
             </xs:element>
             <xs:element name="YearsEd">
             <xs:complexType>
-                <xs:attribute name="value" type="xs:unsignedByte" use="required" />
+                <xs:attribute name="value" type="NullOrUnkOrIntegerOrTwentyPlus" use="required" />
             </xs:complexType>
             </xs:element>
             <xs:element name="PatientDataBaseNumber">
@@ -230,8 +245,7 @@
                 <xs:attribute name="value" type="xs:unsignedShort" use="required" />
             </xs:complexType>
             </xs:element>
-        </xs:sequence>
+        </xs:all>
         </xs:complexType>
     </xs:element>
-
 </xs:schema>

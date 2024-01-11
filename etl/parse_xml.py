@@ -1,4 +1,3 @@
-#@title def ssk_file_to_pd, def fix_ssk_columns
 from lxml import etree
 import pandas as pd
 import pathlib
@@ -48,7 +47,6 @@ def get_clock_sketch_data(clock_sketch_data: etree):
       else:
         vals[tag.tag + '_' + k] = v
   return vals
-        
 
 def parse_xml(xml_path: pathlib.Path):
   xml_doc = etree.parse(xml_path)
@@ -67,13 +65,25 @@ def parse_xml(xml_path: pathlib.Path):
   metadata = get_clock_sketch_data(xml_doc.find('.//ClockSketchData'))
   return coords, metadata
 
+def parse_into_path(in_xml: pathlib.Path, out_dir: pathlib.Path, meta_path: pathlib.Path, overwrite_meta):
+  success, msg = validate_xml(in_xml, pathlib.Path('etl/schema/top.xsd'))
+  assert success, msg
+  data, meta_dict = parse_xml(in_xml)
 
-if __name__ == "__main__":
-  x = validate_xml(pathlib.Path('etl/test/test.xml'), pathlib.Path('etl/schema/top.xsd'))
-  print(x)
-  c, m = parse_xml(pathlib.Path('etl/test/test.xml'))
-  print(m)
-  for idx, cc in c.groupby("stroke_id"):
-    cc = cc.sort_values(by="t")
-    plt.scatter(cc.y, cc.x)
-  plt.show()
+  meta_path = pathlib.Path("/Users/abe/Desktop/meta.csv")
+  meta_path.touch()
+  meta_row = pd.DataFrame([meta_dict]).set_index("AnonymizedID")
+  try:
+    all_meta_rows = pd.read_csv(meta_path).set_index("AnonymizedID")
+    if overwrite_meta and meta_dict["AnonymizedID"] in all_meta_rows.index:
+       all_meta_rows = all_meta_rows.drop(meta_dict["AnonymizedID"])
+    all_meta_rows = pd.concat([all_meta_rows, meta_row], verify_integrity=not overwrite_meta)
+  except pd.errors.EmptyDataError:
+    all_meta_rows = meta_row
+  except ValueError:
+    print("Duplicate AnonymizedID found in meta.csv")
+    exit(1)
+  all_meta_rows.to_csv(meta_path)
+
+  data_path = out_dir / "{}.csv".format(meta_dict["AnonymizedID"])
+  data.to_csv(data_path)
