@@ -7,7 +7,7 @@ def rescale_and_cut(df):
   # these are magic numbers, deduced by trial and error
   # it absolutely can be done with scipy.optimize.fmin, but getting the objective right is hard
   df.x = df.x / 12.6 - 1.6
-  df.y = df.y / 12.6 - 2.9 - (1-df.symbol_digit) * 10.8
+  df.y = df.y / 12.6 - 2.9 - (1-df.symbol_digit) * 10.6
   minmax = df.groupby("stroke_id").y.agg(['min', 'max'])
   bad_strokes = minmax[minmax["min"] < 0]
   df = df[~df.stroke_id.isin(bad_strokes.index)].copy()
@@ -43,9 +43,9 @@ def aggregate_point_assignments(df):
   center = (relative_box == 0).mean()
   left = (relative_box == -1).mean()
   right = (relative_box == 1).mean()
-  median_y = np.floor(df.y.median() / 2).astype(int)
+  y_assigned = np.floor(df.y.median() / 2).astype(int)
   return pd.Series(dict(
-    median_y=median_y,
+    y_assigned=y_assigned,
     first_touch_box=first_touch_box, # for dumb historical reasons
     fraction_normal=literally_in_the_box,
     fraction_center=center,
@@ -117,14 +117,14 @@ def assign_stroke(j):
     Z = pd.Series(dict(x=j.first_touch_box, color="blue"))
   else:
     Z = pd.Series(dict(x=j.first_touch_box, color="black"))
-  for k in """median_y prev_gap prev_gap_right next_gap next_gap_left close_left close_right far_left far_right first_touch_box fraction_normal fraction_one fraction_left fraction_right fraction_center""".split():
+  for k in """y_assigned prev_gap prev_gap_right next_gap next_gap_left close_left close_right far_left far_right first_touch_box fraction_normal fraction_one fraction_left fraction_right fraction_center""".split():
     Z[k] = j[k]
   return Z
 
 def debug_plot(points, assignments, title):
   DX = 15
   print(title)
-  #print(assignments[assignments.color != "lightgray"])
+  print(assignments[assignments.color != "lightgray"])
   plt.figure(figsize=(12, 6))
   z = (1-points.symbol_digit)
   plt.plot(points.x + DX * z, points.y, color="lightgray", zorder=-20)
@@ -133,8 +133,7 @@ def debug_plot(points, assignments, title):
     color = assignment.color
     z = (1-stroke_points.symbol_digit)
     plt.scatter(stroke_points.x + DX * z, stroke_points.y, color=color, zorder=-10, alpha=0.2)
-    print("assignemnt", assignment, "assignment")
-    plt.scatter(assignment.x + 0.5 + DX * z.max(), 2 * assignment.median_y + 0.5, color=color, zorder=-20, alpha=0.1, s=1000)
+    plt.scatter(assignment.x + 0.5 + DX * z.max(), 2 * assignment.y_assigned + 0.5, color=color, zorder=-20, alpha=0.1, s=1000)
   plt.yticks(np.arange(-8, 2, step=2))
   plt.xticks(np.arange(0, 30))
   plt.gca().grid()
@@ -146,8 +145,8 @@ def get_boxes(df, title):
 
   strokes = get_stroke_properties(df)
   assignments = strokes.apply(assign_stroke, axis=1)
-  print(df.head().transpose())
-  exit(0)
-  #if (assignments.color == "lightgray").all():
-  #  return
-  #debug_plot(df, assignments, title)
+  #if (assignments.color != "lightgray").all():
+  #  debug_plot(df, assignments, title)
+  assignments = assignments["x y_assigned".split()]
+  df = df.join(assignments, on="stroke_id", rsuffix="_assigned")
+  return df
