@@ -29,9 +29,11 @@ def assign_semantics(df, semantics):
     fill_value=-1).values
   df["box_assigned"] = (3 - df.y_assigned) * 14 + df.x_assigned
   df.loc[df.symbol_assigned.isna(), "box_assigned"] = np.nan
-  df.loc[df.symbol_assigned.isna(), "box_assigned"] = np.nan
-  df.loc[df.symbol_assigned.isna(), "box_assigned"] -= 2
-  df = df.dropna(subset=['box_assigned'])
+  df.loc[df.box_assigned.isin([48, 49]), "box_assigned"] = np.nan
+  df.loc[df.box_assigned >= 50, "box_assigned"] -= 2
+  df.loc[df.box_assigned >= 54, "box_assigned"] = np.nan
+  df.loc[df.box_assigned < 0, "box_assigned"] = np.nan
+  df = df.dropna(subset=['box_assigned']).copy()
   df.box_assigned = df.box_assigned.astype(int)
 
   df["debug_t"] = df.t
@@ -40,5 +42,6 @@ def assign_semantics(df, semantics):
   previous_row.iloc[-1] = 0
   df.t = df.t - previous_row.loc[df.stroke_id].values
   df["task_assigned"] = (df.box_assigned >= 6) * 1 + (1-df.symbol_digit) * 2 + (df.box_assigned >= 48) * (1-df.symbol_digit)
+  df.loc[:, "box_assigned"] += (1-df.symbol_digit) * 54
   df = df["x y t task_assigned box_assigned symbol_assigned".split()]
   return df
