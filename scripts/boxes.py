@@ -4,7 +4,6 @@ import pandas as pd
 import pathlib
 import matplotlib.pyplot as plt
 
-from etl.parse_xml import *
 from etl.parse_boxes import *
 
 PATH = "CIN1678324519.csv"
