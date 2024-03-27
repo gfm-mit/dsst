@@ -43,7 +43,9 @@ def aggregate_point_assignments(df):
   center = (relative_box == 0).mean()
   left = (relative_box == -1).mean()
   right = (relative_box == 1).mean()
+  median_y = np.floor(df.y.median() / 2).astype(int)
   return pd.Series(dict(
+    median_y=median_y,
     first_touch_box=first_touch_box, # for dumb historical reasons
     fraction_normal=literally_in_the_box,
     fraction_center=center,
@@ -94,60 +96,58 @@ def get_stroke_properties(df):
   jumps = jumps.join(df.groupby("stroke_id").apply(aggregate_point_assignments))
   return jumps
 
-def ratio_factory(jumps):
-  def get_ratio(df):
-    j = jumps.loc[df.name]
+# this should just return an assignment x, but the slow way is nice for debugging
+def assign_stroke(j):
+  # if the stroke is almost entirely in one literal box
+  if j.fraction_normal > .75 and j.width < 1.5:
+    Z = pd.Series(dict(x=j.first_touch_box, color="lightgray"))
+  # if the stroke is almost entirely in one box, ignoring points near the edge
+  elif j.fraction_center > .75 and j.width < 1.5:
+    Z = pd.Series(dict(x=j.first_touch_box, color="lightgray"))
+  elif j.fraction_left > .75 and j.width < 1.5:
+    Z = pd.Series(dict(x=j.first_touch_box-1, color="lightgray"))
+  elif j.fraction_right > .75 and j.width < 1.5:
+    Z = pd.Series(dict(x=j.first_touch_box+1, color="lightgray"))
+  elif j.close_left and not j.close_right:
+    Z = pd.Series(dict(x=np.floor(j.this_min), color="lightgray" if j.far_right else "red"))
+  elif j.close_right and not j.close_left:
+    Z = pd.Series(dict(x=np.floor(j.this_max), color="lightgray" if j.far_left else "green"))
+  # if the stroke is almost entirely along one edge
+  elif j.fraction_one > .75 and j.width < 1.5:
+    Z = pd.Series(dict(x=j.first_touch_box, color="blue"))
+  else:
+    Z = pd.Series(dict(x=j.first_touch_box, color="black"))
+  for k in """median_y prev_gap prev_gap_right next_gap next_gap_left close_left close_right far_left far_right first_touch_box fraction_normal fraction_one fraction_left fraction_right fraction_center""".split():
+    Z[k] = j[k]
+  return Z
 
-    # if the stroke is almost entirely in one literal box
-    if j.fraction_normal > .75 and j.width < 1.5:
-      Z = pd.Series(dict(x=j.first_touch_box, color="lightgray"))
-    # if the stroke is almost entirely in one box, ignoring points near the edge
-    elif j.fraction_center > .75 and j.width < 1.5:
-      Z = pd.Series(dict(x=j.first_touch_box, color="lightgray"))
-    elif j.fraction_left > .75 and j.width < 1.5:
-      Z = pd.Series(dict(x=j.first_touch_box-1, color="lightgray"))
-    elif j.fraction_right > .75 and j.width < 1.5:
-      Z = pd.Series(dict(x=j.first_touch_box+1, color="lightgray"))
-    elif j.close_left and not j.close_right:
-      Z = pd.Series(dict(x=np.floor(j.this_min), color="lightgray" if j.far_right else "red"))
-    elif j.close_right and not j.close_left:
-      Z = pd.Series(dict(x=np.floor(j.this_max), color="lightgray" if j.far_left else "green"))
-    # if the stroke is almost entirely along one edge
-    elif j.fraction_one > .75 and j.width < 1.5:
-      Z = pd.Series(dict(x=j.first_touch_box, color="blue"))
-    else:
-      Z = pd.Series(dict(x=j.first_touch_box, color="black"))
-    for k in """prev_gap prev_gap_right next_gap next_gap_left close_left close_right far_left far_right first_touch_box fraction_normal fraction_one fraction_left fraction_right fraction_center""".split():
-      Z[k] = j[k]
-    return Z.rename(df.name).to_frame().T
-  return get_ratio
-
-def get_boxes(df, title):
+def debug_plot(points, assignments, title):
   DX = 15
-  df = rescale_and_cut(df)
-  jumps = get_stroke_properties(df)
-
-  q = df.groupby("stroke_id").apply(ratio_factory(jumps))
-  #if not (q.color == "black").any():
-  if (q.color == "lightgray").all():
-    return
   print(title)
-  print(q[q.color != "lightgray"])
-  jumps["x_small"] = jumps["this_min"] - jumps["this_max"] < 1
-  jumps["y_med"] = df.groupby("stroke_id").y.median()
-  jumps = jumps[np.floor(jumps["this_min"]) != np.floor(jumps["this_max"])]
-  # so maybe only plot these?
-  v2 = (1-df.symbol_digit)
+  #print(assignments[assignments.color != "lightgray"])
   plt.figure(figsize=(12, 6))
-  plt.plot(df.x + DX * v2, df.y, color="lightgray", zorder=-20)
-  for idx, g in df.groupby("stroke_id"):
-    qq = q.loc[idx]
-    color = qq.color.values[0]
-    v2 = (1-g.symbol_digit)
-    plt.scatter(g.x + DX * v2, g.y, color=color, zorder=-10, alpha=0.2)
-    plt.scatter(qq.x + 0.5 + DX * v2.max(), g.y.median(), color=color, zorder=-20, alpha=0.1, s=1000)
+  z = (1-points.symbol_digit)
+  plt.plot(points.x + DX * z, points.y, color="lightgray", zorder=-20)
+  for stroke_idx, stroke_points in points.groupby("stroke_id"):
+    assignment = assignments.loc[stroke_idx]
+    color = assignment.color
+    z = (1-stroke_points.symbol_digit)
+    plt.scatter(stroke_points.x + DX * z, stroke_points.y, color=color, zorder=-10, alpha=0.2)
+    print("assignemnt", assignment, "assignment")
+    plt.scatter(assignment.x + 0.5 + DX * z.max(), 2 * assignment.median_y + 0.5, color=color, zorder=-20, alpha=0.1, s=1000)
   plt.yticks(np.arange(-8, 2, step=2))
   plt.xticks(np.arange(0, 30))
   plt.gca().grid()
   plt.title(title)
   plt.show()
+
+def get_boxes(df, title):
+  df = rescale_and_cut(df)
+
+  strokes = get_stroke_properties(df)
+  assignments = strokes.apply(assign_stroke, axis=1)
+  print(df.head().transpose())
+  exit(0)
+  #if (assignments.color == "lightgray").all():
+  #  return
+  #debug_plot(df, assignments, title)
