@@ -33,7 +33,25 @@ def guess_width(x, y, m):
   return m, bx, by, dy
 
 # some functions to quantify the visual and temporal gap to previous and next strokes
-def get_jumps(df):
+def aggregate_point_assignments(df):
+  first_touch_box = np.floor(df.x.iloc[0]).astype(int)
+  relative_box = np.floor(df.x) - first_touch_box
+  literally_in_the_box = (relative_box == 0).mean()
+  one_stroke = (np.abs(df.x - first_touch_box) < .07).mean()
+  liminal = np.abs(df.x - np.round(df.x)) < 0.07
+  relative_box = relative_box[~liminal]
+  center = (relative_box == 0).mean()
+  left = (relative_box == -1).mean()
+  right = (relative_box == 1).mean()
+  return pd.Series(dict(
+    first_touch_box=first_touch_box, # for dumb historical reasons
+    fraction_normal=literally_in_the_box,
+    fraction_center=center,
+    fraction_left=left,
+    fraction_right=right,
+    fraction_one=one_stroke))
+
+def get_stroke_properties(df):
   jumps = df.groupby("stroke_id").x.agg(
       this_min="min",
       this_max="max",
@@ -47,6 +65,11 @@ def get_jumps(df):
   jumps["next_min"].iloc[-1] = np.nan
   jumps["next_max"].iloc[-1] = np.nan
 
+  jumps["prev_gap"] = jumps.this_min - jumps.prev_max
+  jumps["prev_gap_right"] = jumps.this_max - jumps.prev_min
+  jumps["next_gap"] = jumps.next_min - jumps.this_max
+  jumps["next_gap_left"] = jumps.next_max - jumps.this_min
+
   time = df.groupby("stroke_id").t.agg(['min', 'max'])
   jumps["t_prev"] = time["min"].values - time["max"].shift(1).values
   jumps["t_next"] = time["min"].shift(-1).values - time["max"].values
@@ -58,64 +81,51 @@ def get_jumps(df):
   jumps["y_next"] = vertical.shift(-1).values - vertical.values
   jumps["y_prev"].iloc[0] = np.nan
   jumps["y_next"].iloc[-1] = np.nan
+
+  jumps["width"] = jumps["this_max"] - jumps["this_min"]
+
+  # if the stroke is closer to one side than .25, and further from the other
+  # the number .25 is read off a histogram of gaps for unambiguous strokes
+  jumps["close_left"] = (jumps.prev_gap < .30) & (np.ceil(jumps.prev_min) == np.ceil(jumps.this_min))
+  jumps["close_right"] = (jumps.next_gap < .30) & (np.ceil(jumps.next_max) == np.ceil(jumps.this_max))
+  jumps["far_right"] = (jumps.next_gap > .30) | (np.abs(jumps.y_next) > 1.5) | (jumps.next_gap_left < -1)
+  jumps["far_left"] = (jumps.prev_gap > .30) | (np.abs(jumps.y_prev) > 1.5) | (jumps.prev_gap_right < -1)
+
+  jumps = jumps.join(df.groupby("stroke_id").apply(aggregate_point_assignments))
   return jumps
 
 def ratio_factory(jumps):
   def get_ratio(df):
     j = jumps.loc[df.name]
-    mid_x = np.ceil(df.x.iloc[0]).astype(int)
-    box_middle_x = 0.5 * (np.max(df.x) + np.min(df.x)) - mid_x 
-    z = np.floor(df.x) - mid_x
-    w = np.abs(df.x - np.round(df.x)) < 0.07
-    z = z[~w]
 
-    width = df.x.max() - df.x.min()
-    prev_gap = j.this_min - j.prev_max
-    prev_gap_right = j.this_max - j.prev_min
-    next_gap = j.next_min - j.this_max
-    next_gap_left = j.next_max - j.this_min
-    close_left = prev_gap < .30 and np.ceil(j.prev_min) == np.ceil(j.this_min)
-    close_right = next_gap < .30 and np.ceil(j.next_max) == np.ceil(j.this_max)
-    far_right = next_gap > .30 or np.abs(j.y_next) > 1.5 or next_gap_left < -1
-    far_left = prev_gap > .30 or np.abs(j.y_prev) > 1.5 or prev_gap_right < -1
-    # if the stroke is almost entirely in one box
-    if (z == -1).all():
-      Z = pd.Series(dict(x=mid_x-1, color="lightgray"))
-    elif (z == -1).mean() > .75 and width < 1.5:
-      Z = pd.Series(dict(x=mid_x-1, color="lightgray"))
-    elif (z == -2).mean() > .75 and width < 1.5:
-      Z = pd.Series(dict(x=mid_x-2, color="lightgray"))
-    elif (z == 0).mean() > .75 and width < 1.5:
-      Z = pd.Series(dict(x=mid_x, color="lightgray"))
-    # if the stroke is closer to one side than .25, and further from the other
-    # the number .25 is read off a histogram of gaps for unambiguous strokes
-    elif close_left and not close_right:
-      Z = pd.Series(dict(x=np.floor(j.this_min), color="red" if far_right else "orange"))
-    elif close_right and not close_left:
-      Z = pd.Series(dict(x=np.floor(j.this_max), color="green" if far_left else "blue"))
+    # if the stroke is almost entirely in one literal box
+    if j.fraction_normal > .75 and j.width < 1.5:
+      Z = pd.Series(dict(x=j.first_touch_box, color="lightgray"))
+    # if the stroke is almost entirely in one box, ignoring points near the edge
+    elif j.fraction_center > .75 and j.width < 1.5:
+      Z = pd.Series(dict(x=j.first_touch_box, color="lightgray"))
+    elif j.fraction_left > .75 and j.width < 1.5:
+      Z = pd.Series(dict(x=j.first_touch_box-1, color="lightgray"))
+    elif j.fraction_right > .75 and j.width < 1.5:
+      Z = pd.Series(dict(x=j.first_touch_box+1, color="lightgray"))
+    elif j.close_left and not j.close_right:
+      Z = pd.Series(dict(x=np.floor(j.this_min), color="lightgray" if j.far_right else "red"))
+    elif j.close_right and not j.close_left:
+      Z = pd.Series(dict(x=np.floor(j.this_max), color="lightgray" if j.far_left else "green"))
+    # if the stroke is almost entirely along one edge
+    elif j.fraction_one > .75 and j.width < 1.5:
+      Z = pd.Series(dict(x=j.first_touch_box, color="blue"))
     else:
-      Z = pd.Series(dict(color="black"))
-      Z = z.value_counts(normalize=True)
-      Z["color"] = "black"
-      Z["x"] = mid_x - 1
-    #for k, v in j.items():
-    #  Z[k] = v
-    Z["width"] = width
-    Z["prev_gap"] = prev_gap
-    Z["prev_gap_right"] = prev_gap_right
-    Z["next_gap"] = next_gap
-    Z["next_gap_left"] = next_gap_left
-    Z["close_left"] = close_left
-    Z["close_right"] = close_right
-    Z["far_left"] = far_left
-    Z["far_right"] = far_right
+      Z = pd.Series(dict(x=j.first_touch_box, color="black"))
+    for k in """prev_gap prev_gap_right next_gap next_gap_left close_left close_right far_left far_right first_touch_box fraction_normal fraction_one fraction_left fraction_right fraction_center""".split():
+      Z[k] = j[k]
     return Z.rename(df.name).to_frame().T
   return get_ratio
 
 def get_boxes(df, title):
   DX = 15
   df = rescale_and_cut(df)
-  jumps = get_jumps(df)
+  jumps = get_stroke_properties(df)
 
   q = df.groupby("stroke_id").apply(ratio_factory(jumps))
   #if not (q.color == "black").any():
