@@ -24,24 +24,24 @@ def assign_semantics(df, semantics):
   df.x_assigned = df.x_assigned.astype(int)
   is_last_six = (1 * df.symbol_digit) * (df.y_assigned == 0) * (df.x_assigned >= 6)
   df.x_assigned += is_last_six * 2
-  df["symbol_assigned"] = semantics.reindex(
+  df["symbol"] = semantics.reindex(
     pd.MultiIndex.from_frame(df["y_assigned x_assigned".split()]),
     fill_value=-1).values
-  df["box_assigned"] = (3 - df.y_assigned) * 14 + df.x_assigned
-  df.loc[df.symbol_assigned.isna(), "box_assigned"] = np.nan
-  df.loc[df.box_assigned.isin([48, 49]), "box_assigned"] = np.nan
-  df.loc[df.box_assigned >= 50, "box_assigned"] -= 2
-  df.loc[df.box_assigned >= 54, "box_assigned"] = np.nan
-  df.loc[df.box_assigned < 0, "box_assigned"] = np.nan
-  df = df.dropna(subset=['box_assigned']).copy()
-  df.box_assigned = df.box_assigned.astype(int)
+  df["box"] = (3 - df.y_assigned) * 14 + df.x_assigned
+  df.loc[df.symbol.isna(), "box"] = np.nan
+  df.loc[df.box.isin([48, 49]), "box"] = np.nan
+  df.loc[df.box >= 50, "box"] -= 2
+  df.loc[df.box >= 54, "box"] = np.nan
+  df.loc[df.box < 0, "box"] = np.nan
+  df = df.dropna(subset=['box']).copy()
+  df.box = df.box.astype(int)
 
   df["debug_t"] = df.t
   previous_row = pd.Series(df.t.values, index=np.roll(df.stroke_id, -1))
   previous_row = previous_row[previous_row.index != df.stroke_id.values]
   previous_row.iloc[-1] = 0
   df.t = df.t - previous_row.loc[df.stroke_id].values
-  df["task_assigned"] = (df.box_assigned >= 6) * 1 + (1-df.symbol_digit) * 2 + (df.box_assigned >= 48) * (1-df.symbol_digit)
-  df.loc[:, "box_assigned"] += (1-df.symbol_digit) * 54
-  df = df["x y t task_assigned box_assigned symbol_assigned".split()]
+  df["task"] = (df.box >= 6) * 1 + (1-df.symbol_digit) * 2 + (df.box >= 48) * (1-df.symbol_digit)
+  df.loc[:, "box"] += (1-df.symbol_digit) * 54
+  df = df["x y t task box symbol".split()]
   return df
