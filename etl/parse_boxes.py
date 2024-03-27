@@ -145,6 +145,7 @@ def get_boxes(df, title):
 
   strokes = get_stroke_properties(df)
   assignments = strokes.apply(assign_stroke, axis=1)
+  print(title, (assignments.color != "lightgray").sum())
   #if (assignments.color != "lightgray").all():
   #  debug_plot(df, assignments, title)
   assignments = assignments["x y_assigned".split()]
