@@ -14,27 +14,10 @@ if __name__ == "__main__":
   coords = []
   files = list(data_path.glob("*.csv"))
   random.shuffle(files)
-  files = """
-/Users/abe/Desktop/OUT/CIN1846253767.csv
-/Users/abe/Desktop/OUT/CIN0646790786.csv
-/Users/abe/Desktop/OUT/CIN0743785657.csv
-/Users/abe/Desktop/OUT/CIN0428172784.csv
-/Users/abe/Desktop/OUT/CIN1045085968.csv
-
-/Users/abe/Desktop/OUT/CIN1678324519.csv
-/Users/abe/Desktop/OUT/CIN1349417759.csv
-/Users/abe/Desktop/OUT/CIN0211074041.csv
-/Users/abe/Desktop/OUT/CIN0628101242.csv
-/Users/abe/Desktop/OUT/CIN1622623454.csv
-/Users/abe/Desktop/OUT/CIN1704088530.csv
-/Users/abe/Desktop/OUT/CIN0783760789.csv
-/Users/abe/Desktop/OUT/CIN1380842865.csv
-/Users/abe/Desktop/OUT/CIN1708459300.csv
-/Users/abe/Desktop/OUT/CIN0452502449.csv
-/Users/abe/Desktop/OUT/CIN0916103729.csv
-/Users/abe/Desktop/OUT/CIN0449422271.csv
-  """.split()
-  files = [f for f in files if f]
+#  files = """
+#/Users/abe/Desktop/OUT/CIN1607515729.csv
+#  """.split()
+#  files = [f for f in files if f]
   for csv in files:
     df = pd.read_csv(csv)
     df = get_boxes(df, csv)
