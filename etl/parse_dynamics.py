@@ -1,6 +1,8 @@
 import numpy as np
 import scipy.signal
 import shutil
+import pandas as pd
+import matplotlib.pyplot as plt
 
 def convolve_and_pool_norm2(x, k, w, k2=[.5, .5]):
   nda_k = np.array(k)[:, np.newaxis]
@@ -27,13 +29,13 @@ def curvature(dynamics):
 
 def dynamics(stroke):
   retval = dict(
-      v_bar=nanpad_convolve(stroke, [1, 0, -1], 2),
-      v_mag2=convolve_and_pool_norm2(stroke, [1, -1], 1),
-      a_bar=nanpad_convolve(stroke, [1, -2, 1], 2),
+      v_bar=nanpad_convolve(stroke["x y".split()], [1, 0, -1], 2),
+      v_mag2=convolve_and_pool_norm2(stroke["x y".split()], [1, -1], 1),
+      a_bar=nanpad_convolve(stroke["x y".split()], [1, -2, 1], 2),
       # a has an odd kernel, no need to average magnitudes
-      dv_mag2=convolve_and_pool_norm2(stroke, [1, -1], 1, [.5, -.5]),
-      j_bar=nanpad_convolve(stroke, [1, -2, 0, 2, -1], 12),
-      j_mag2=convolve_and_pool_norm2(stroke, [1, -3, 3, -1], 72),
+      dv_mag2=convolve_and_pool_norm2(stroke["x y".split()], [1, -1], 1, [.5, -.5]),
+      j_bar=nanpad_convolve(stroke["x y".split()], [1, -2, 0, 2, -1], 12),
+      j_mag2=convolve_and_pool_norm2(stroke["x y".split()], [1, -3, 3, -1], 72),
   )
   retval['cw'] = curvature(retval)
   retval['a_mag2'] = np.sum(retval['a_bar']**2, axis=-1)
@@ -42,47 +44,23 @@ def dynamics(stroke):
       shape = retval[k].shape
       shape = [stroke.shape[0]] if len(shape) == 1 else [stroke.shape[0], shape[1]]
       retval[k] = np.full(shape, np.nan)
-  return retval
+  munged = pd.DataFrame({
+     k: retval[k]
+      for k in "v_mag2 a_mag2 dv_mag2 cw j_mag2".split()
+      if k in retval
+  }, index=stroke.index.rename("row_number"))
+  return munged
 
-def get_pause(raw):
-  strokes = raw.groupby("t_min").t.max().sort_index()
-  pause = strokes.index.values[1:] - strokes.values[:-1]
-  pause = pd.Series(pause, index=strokes.index.values[1:])
-  pause.loc[0] = 0
-  pause = pause.sort_index()
-  return pause
-
-def convert():
-  try:
-    shutil.rmtree('TS')
-  except FileNotFoundError:
-    pass
-  for f in tqdm(list(Path('DIGITS').glob('*.csv'))):
-    raw = pd.read_csv(f)
-    pause = get_pause(raw)
-    pkey = f.name.replace('.csv', '')
-    for (symbol, task, iteration), g in raw.groupby('symbol task iteration'.split()):
-      accum = []
-      if True:
-        for t_min, g2 in g.groupby('t_min'):
-          d = dynamics(g2["x y".split()])
-          try:
-            munged = pd.DataFrame({
-                k: d[k]
-                for k in "v_mag2 a_mag2 dv_mag2 cw j_mag2".split()
-                if k in d
-            })
-          except ValueError:
-            assert False, (g2, d)
-          munged["pause"] = pause.loc[t_min]
-          munged.v_mag2 *= 1.5e4
-          munged.a_mag2 *= 3e5
-          munged.dv_mag2 *= 4e4
-          munged.j_mag2 *= 5e6
-          munged.pause = np.log10(1+munged.pause) - 4.1
-      accum += [munged]
-      munged = pd.concat(accum)
-      f_out = Path('TS') / pkey / str(symbol) / task / "{}.npy".format(iteration)
-      f_out.parent.mkdir(exist_ok=True, parents=True)
-      np.save(f_out, munged.values)
-convert()
+def convert(raw):
+  dyn = raw.groupby("box").apply(dynamics).reset_index().set_index("row_number")
+  for k in "symbol task x y t".split():
+    dyn[k] = raw[k]
+  # magic numbers from old undocumented code, look roughly right
+  for k, v in dict(
+    v_mag2=1.5e4,
+    a_mag2=3e5,
+    j_mag2=5e6,
+    dv_mag2=4e4,
+  ).items():
+    dyn[k] = np.log(1e-4 + dyn[k] * v)
+  return dyn
