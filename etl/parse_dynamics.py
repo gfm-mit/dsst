@@ -60,7 +60,12 @@ def convert(raw):
     v_mag2=1.5e4,
     a_mag2=3e5,
     j_mag2=5e6,
-    dv_mag2=4e4,
+    #dv_mag2=4e4,
   ).items():
     dyn[k] = np.log(1e-4 + dyn[k] * v)
+  # eyeballed from the data
+  dyn.dv_mag2 = np.select(
+    [dyn.dv_mag2 > 1e-9, dyn.dv_mag2 < -1e-9],
+    [9 + np.log10(dyn.dv_mag2), -9 - np.log10(-dyn.dv_mag2)],
+    default=0) / 2
   return dyn
