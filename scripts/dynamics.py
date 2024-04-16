@@ -27,7 +27,6 @@ if __name__ == "__main__":
     for idx, g in df.groupby("box"):
       if idx <= 1:
         continue
-      print(idx)
       fig, axs = plt.subplots(2, 2)
       axs = axs.flatten()
       plt.sca(axs[0])

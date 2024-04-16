@@ -43,5 +43,5 @@ def assign_semantics(df, semantics):
   df.t = df.t - previous_row.loc[df.stroke_id].values
   df["task"] = (df.box >= 6) * 1 + (1-df.symbol_digit) * 2 + (df.box >= 48) * (1-df.symbol_digit)
   df.loc[:, "box"] += (1-df.symbol_digit) * 54
-  df = df["x y t task box symbol".split()]
+  df = df["x y t task box symbol stroke_id".split()]
   return df

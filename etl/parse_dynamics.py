@@ -52,7 +52,8 @@ def dynamics(stroke):
   return munged
 
 def convert(raw):
-  dyn = raw.groupby("box").apply(dynamics).reset_index().set_index("row_number")
+  dyn = raw.groupby("box stroke_id".split()).apply(dynamics).reset_index().set_index("row_number")
+  dyn = dyn.drop(columns="stroke_id".split())
   for k in "symbol task x y t".split():
     dyn[k] = raw[k]
   # magic numbers from old undocumented code, look roughly right
