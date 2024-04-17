@@ -24,11 +24,12 @@ if __name__ == "__main__":
   features = pd.read_csv(pathlib.Path("/Users/abe/Desktop/features.csv")).set_index("Unnamed: 0").drop(columns="row_number box symbol task x y t".split())
   labels = pd.read_csv(pathlib.Path("/Users/abe/Desktop/meta.csv")).set_index("AnonymizedID")
   labels = labels.Diagnosis[labels.Diagnosis.isin(["Healthy Control", "Dementia-AD senile onset"])] == "Dementia-AD senile onset"
-  labels = labels[labels.index.astype(str).map(hash).astype(np.uint64) % 5 > 0]
+  train = labels[labels.index.astype(str).map(hash).astype(np.uint64) % 5 > 1]
+  validation = labels[labels.index.astype(str).map(hash).astype(np.uint64) % 5 == 1]
   print(features.head().T)
   model = LogisticRegression()
   # Fit the model using features as the independent variable and labels as the dependent variable
-  model.fit(features.reindex(labels.index).values, labels)
+  model.fit(features.reindex(train.index).values, train)
   print(pd.Series(model.coef_[0], index=features.columns))
-  y_hat = model.predict(features.reindex(labels.index).values)
-  print(roc_auc_score(labels, y_hat))
+  y_hat = model.predict(features.reindex(validation.index).values)
+  print(roc_auc_score(validation, y_hat))
