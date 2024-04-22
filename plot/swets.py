@@ -16,7 +16,7 @@ def plot_roc(roc, convex, interpolated_smooth, axs):
   plt.gca().xaxis.set_label_position('top') 
   plt.gca().xaxis.tick_top()
 
-  plt.sca(axs[1])
+  plt.sca(axs[3])
   plt.title("Operating Characteristics\n(Q-Q plot)")
   plt.scatter(roc.fpr_literal, roc.tpr_literal, s=1, alpha=0.7, color=color)
   plt.scatter(convex.fpr[1:-1], convex.tpr[1:-1], s=100, alpha=0.2, color=color)
@@ -45,21 +45,53 @@ def plot_roc(roc, convex, interpolated_smooth, axs):
   plt.title('affine transformed\nROC curve')
   plus = convex.tpr + convex.fpr
   minus = convex.tpr - convex.fpr
-  plt.plot(-plus, 1+minus, linewidth=3, alpha=0.4, color=color)
-  plt.scatter(-plus[1:-1], 1+minus[1:-1], linewidth=3, s=100, alpha=0.2, color=color)
+  plt.plot(-plus, minus, linewidth=3, alpha=0.4, color=color)
+  plt.scatter(-plus[1:-1], minus[1:-1], linewidth=3, s=100, alpha=0.2, color=color)
   plus = roc.tpr_literal + roc.fpr_literal
   minus = roc.tpr_literal - roc.fpr_literal
-  plt.scatter(-plus, 1+minus, s=1)
+  plt.scatter(-plus, minus, s=1)
 
-  plt.plot([-0, -1, -2], [1, 2, 1], linestyle='--', color="lightgray", zorder=-10)
-  plt.plot([-0, -2], [1, 1], linestyle=':', color="lightgray", zorder=-10)
-  plt.ylabel('TPR + TNR (1-FPR)')
+  plt.plot([-0, -1, -2], [0, 1, 0], linestyle='--', color="lightgray", zorder=-10)
+  plt.plot([-0, -2], [0, 0], linestyle=':', color="lightgray", zorder=-10)
+  plt.ylabel('TPR + TNR\n(TPR + 1 - FPR)')
   plt.xlabel('-TPR - FPR')
-  axs[2].set_aspect('equal')
+  plt.gca().set_aspect('equal')
+
+  plt.sca(axs[6])
+  plt.title('rotated\nROC curve')
+  plus = convex.tpr + convex.fpr
+  minus = convex.tpr - convex.fpr
+  plt.plot(plus, 1+minus, linewidth=3, alpha=0.4, color=color)
+  plt.scatter(plus[1:-1], 1+minus[1:-1], linewidth=3, s=100, alpha=0.2, color=color)
+  plus = roc.tpr_literal + roc.fpr_literal
+  minus = roc.tpr_literal - roc.fpr_literal
+  plt.scatter(plus, 1+minus, s=1)
+
+  plt.plot([0, 1, 2], [1, 2, 1], linestyle='--', color="lightgray", zorder=-10)
+  plt.plot([0, 2], [1, 1], linestyle=':', color="lightgray", zorder=-10)
+  plt.ylabel('TPR - FPR')
+  plt.xlabel('TPR + FPR')
+  plt.gca().set_aspect('equal')
+
+  plt.sca(axs[1])
+  plt.title('rotated\nROC curve')
+  plus = convex.tpr + convex.fpr
+  minus = convex.tpr - convex.fpr
+  plt.plot(plus, 1+minus, linewidth=3, alpha=0.4, color=color)
+  plt.scatter(plus[1:-1], 1+minus[1:-1], linewidth=3, s=100, alpha=0.2, color=color)
+  plus = roc.tpr_literal + roc.fpr_literal
+  minus = roc.tpr_literal - roc.fpr_literal
+  plt.scatter(plus, 1+minus, s=1)
+
+  plt.plot([0, 1, 2], [1, 2, 1], linestyle='--', color="lightgray", zorder=-10)
+  plt.plot([0, 2], [1, 1], linestyle=':', color="lightgray", zorder=-10)
+  plt.ylabel('TPR - FPR')
+  plt.xlabel('TPR + FPR')
+  plt.gca().set_aspect('equal')
   return color
 
 def plot_eta_dollar(eta, idx, roc, convex, interpolated_smooth, axs, color):
-  plt.sca(axs[3])
+  plt.sca(axs[5])
   plt.title('TPR + TNR vs Likelihood Ratio')
   minus = convex.tpr[idx] - convex.fpr[idx]
   #plt.plot(eta, minus, linewidth=10, alpha=0.2, color=color)
@@ -74,8 +106,8 @@ def plot_eta_dollar(eta, idx, roc, convex, interpolated_smooth, axs, color):
   plt.xscale('log')
   plt.ylabel('TPR + TNR')
   
-  plt.sca(axs[4])
-  plt.title('Balanced Accuracy (equivalent)')
+  plt.sca(axs[8])
+  plt.title('Balanced Accuracy\n(equivalent)')
   tpr_equiv = convex.tpr[idx] - eta * convex.fpr[idx]
   tnr_equiv = 1 - convex.fpr[idx] - (1-convex.tpr[idx]) / eta
   balanced = 1 - (1-tpr_equiv) / (1+eta)
@@ -84,9 +116,9 @@ def plot_eta_dollar(eta, idx, roc, convex, interpolated_smooth, axs, color):
   plt.xscale('log')
   plt.ylabel('balanced accuracy\n(equivalent)')
   plt.ylim([0, 1-1e-3])
-  plt.yscale('log1minusx')
+  #plt.yscale('log1minusx')
 
-  plt.sca(axs[5])
+  plt.sca(axs[11])
   plt.title('pure TPR or TNR (equivalent)')
   flat_idx = tpr_equiv == np.roll(tpr_equiv, 1)
   plt.plot(eta[flat_idx], tpr_equiv[flat_idx], linestyle='--', color=color)
@@ -103,7 +135,7 @@ def plot_eta_dollar(eta, idx, roc, convex, interpolated_smooth, axs, color):
   ax2.tick_params(axis='y', color="lightgray", labelcolor="lightgray")
 
 def plot_precision(eta, idx, roc, convex, interpolated_smooth, axs, color):
-  plt.sca(axs[6])
+  plt.sca(axs[4])
   plt.plot(interpolated_smooth.tpr, interpolated_smooth.tpr / (interpolated_smooth.tpr + interpolated_smooth.fpr), linewidth=3, alpha=0.2, color=color)
   plt.scatter(roc.tpr_literal, roc.tpr_literal / (roc.tpr_literal + roc.fpr_literal), s=1)
   plt.gca().xaxis.set_label_position('top') 
