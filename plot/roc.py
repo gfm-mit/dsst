@@ -43,3 +43,11 @@ def get_roc_interpolated_convex_hull(fpr, tpr):
   ]).T
   fpr, tpr = points
   return pd.DataFrame(dict(fpr=fpr, tpr=tpr))
+
+def get_slopes(fpr, tpr):
+  slopes = np.diff(tpr) / np.diff(fpr)
+  slopes[np.diff(fpr) == 0] = np.inf
+  slopes[np.diff(tpr) == 0] = 0
+  lr = np.geomspace(1e-2, 1e2, 100)
+  idx = np.searchsorted(slopes, lr)
+  return lr, idx

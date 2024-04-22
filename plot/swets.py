@@ -9,7 +9,8 @@ def plot_roc(roc, convex, interpolated_smooth, axs):
   plt.sca(axs[0])
   plt.title("Operating Characteristics")
   color = plt.scatter(roc.fpr_literal, roc.tpr_literal, s=1).get_facecolor()[0]
-  plt.plot(convex.fpr, convex.tpr, linewidth=3, alpha=0.2, color=color)
+  plt.scatter(convex.fpr[1:-1], convex.tpr[1:-1], s=100, alpha=0.2, color=color)
+  plt.plot(convex.fpr, convex.tpr, linewidth=3, alpha=0.4, color=color)
   plt.ylabel('TPR')
   plt.xlabel('FPR')
   plt.gca().xaxis.set_label_position('top') 
@@ -17,8 +18,9 @@ def plot_roc(roc, convex, interpolated_smooth, axs):
 
   plt.sca(axs[1])
   plt.title("Operating Characteristics\n(Q-Q plot)")
-  plt.scatter(roc.fpr_literal, roc.tpr_literal, alpha=0.5, color=color)
-  plt.plot(interpolated_smooth.fpr, interpolated_smooth.tpr, linewidth=3, alpha=0.2, color=color)
+  plt.scatter(roc.fpr_literal, roc.tpr_literal, s=1, alpha=0.7, color=color)
+  plt.scatter(convex.fpr[1:-1], convex.tpr[1:-1], s=100, alpha=0.2, color=color)
+  plt.plot(interpolated_smooth.fpr, interpolated_smooth.tpr, linewidth=3, alpha=0.4, color=color)
 
   cz0 = 1e-3
   z0 = norm.ppf(cz0)
@@ -40,31 +42,67 @@ def plot_roc(roc, convex, interpolated_smooth, axs):
   plt.axline((cz0, norm.cdf(z0+2)), (norm.cdf(z1-2), cz1), color="lightgray", linestyle = "--", zorder=-10)
 
   plt.sca(axs[2])
-  plt.title('rotated ROC curve')
+  plt.title('affine transformed\nROC curve')
   plus = convex.tpr + convex.fpr
   minus = convex.tpr - convex.fpr
-  plt.plot(plus, minus, linewidth=3, alpha=0.2, color=color)
+  plt.plot(-plus, 1+minus, linewidth=3, alpha=0.4, color=color)
+  plt.scatter(-plus[1:-1], 1+minus[1:-1], linewidth=3, s=100, alpha=0.2, color=color)
   plus = roc.tpr_literal + roc.fpr_literal
   minus = roc.tpr_literal - roc.fpr_literal
-  plt.scatter(plus, minus, s=1)
+  plt.scatter(-plus, 1+minus, s=1)
 
-  plt.plot([0, 1, 2], [0, 1, 0], linestyle='--', color="lightgray", zorder=-10)
-  plt.ylabel('TPR - FPR')
-  plt.xlabel('TPR + FPR')
+  plt.plot([-0, -1, -2], [1, 2, 1], linestyle='--', color="lightgray", zorder=-10)
+  plt.plot([-0, -2], [1, 1], linestyle=':', color="lightgray", zorder=-10)
+  plt.ylabel('TPR + TNR (1-FPR)')
+  plt.xlabel('-TPR - FPR')
   axs[2].set_aspect('equal')
   return color
 
-def plot_9_types(predicted, labels, axs):
-  register_scale(ProbitScale)
-  register_scale(LogOneMinusXScale)
-  roc = get_roc(predicted, labels)
-  convex = get_roc_convex_hull(roc.shape[0], roc.fpr_literal.values, roc.tpr_literal.values)
-  interpolated_smooth = get_roc_interpolated_convex_hull(convex.fpr, convex.tpr)
-  color = plot_roc(roc, convex, interpolated_smooth, axs)
+def plot_eta_dollar(eta, idx, roc, convex, interpolated_smooth, axs, color):
+  plt.sca(axs[3])
+  plt.title('TPR + TNR vs Likelihood Ratio')
+  minus = convex.tpr[idx] - convex.fpr[idx]
+  #plt.plot(eta, minus, linewidth=10, alpha=0.2, color=color)
+  minus[np.roll(minus, 1) == np.roll(minus, -1)] = np.nan
+  plt.plot(eta, 1+minus, linewidth=2, alpha=0.4, color=color)
+  minus = convex.tpr[idx] - convex.fpr[idx]
+  minus[np.roll(minus, 1) != np.roll(minus, -1)] = np.nan
+  plt.plot(eta, 1+minus, linewidth=10, alpha=0.2, color=color)
+  plt.plot(eta, 1+np.ones_like(eta), linestyle='--', color="lightgray", zorder=-10)
+  plt.plot(eta, 1+np.zeros_like(eta), linestyle=':', color="lightgray", zorder=-10)
+  plt.xlabel('Likelihood Ratio')
+  plt.xscale('log')
+  plt.ylabel('TPR + TNR')
+  
+  plt.sca(axs[4])
+  plt.title('Balanced Accuracy (equivalent)')
+  tpr_equiv = convex.tpr[idx] - eta * convex.fpr[idx]
+  tnr_equiv = 1 - convex.fpr[idx] - (1-convex.tpr[idx]) / eta
+  balanced = 1 - (1-tpr_equiv) / (1+eta)
+  plt.plot(eta, balanced)
+  plt.xlabel('Likelihood Ratio')
+  plt.xscale('log')
+  plt.ylabel('balanced accuracy\n(equivalent)')
+  plt.ylim([0, 1-1e-3])
+  plt.yscale('log1minusx')
 
-  return
-  project(convex.fpr, convex.tpr, axs)
+  plt.sca(axs[5])
+  plt.title('pure TPR or TNR (equivalent)')
+  flat_idx = tpr_equiv == np.roll(tpr_equiv, 1)
+  plt.plot(eta[flat_idx], tpr_equiv[flat_idx], linestyle='--', color=color)
+  plt.plot(eta[~flat_idx], tpr_equiv[~flat_idx], color=color)
+  flat_idx = tnr_equiv == np.roll(tnr_equiv, -1)
+  plt.plot(eta[flat_idx], tnr_equiv[flat_idx], linestyle='--', color=color, alpha=0.4)
+  plt.plot(eta[~flat_idx], tnr_equiv[~flat_idx], color=color, alpha=0.4)
+  plt.xlabel('Likelihood Ratio')
+  plt.xscale('log')
+  plt.ylabel('TPR')
+  plt.ylim([0, 1])
+  ax2 = plt.gca().twinx()
+  ax2.set_ylabel('TNR', color="lightgray")
+  ax2.tick_params(axis='y', color="lightgray", labelcolor="lightgray")
 
+def plot_precision(eta, idx, roc, convex, interpolated_smooth, axs, color):
   plt.sca(axs[6])
   plt.plot(interpolated_smooth.tpr, interpolated_smooth.tpr / (interpolated_smooth.tpr + interpolated_smooth.fpr), linewidth=3, alpha=0.2, color=color)
   plt.scatter(roc.tpr_literal, roc.tpr_literal / (roc.tpr_literal + roc.fpr_literal), s=1)
@@ -87,45 +125,17 @@ def plot_9_types(predicted, labels, axs):
   plt.xlabel('Triage Budget')
   plt.xscale('log')
   plt.xlim([1e-2, 1])
-  plt.ylabel('Number Needed to Evaluate')
+  plt.ylabel('Number\nNeeded to Evaluate')
 
-def project(fpr, tpr, axs):
-  slopes = np.diff(tpr) / np.diff(fpr)
-  slopes[np.diff(fpr) == 0] = np.inf
-  slopes[np.diff(tpr) == 0] = 0
-  lrt = np.geomspace(1e-2, 1e2, 100)
-  idx = np.searchsorted(slopes, lrt)
-  y = tpr[idx] - fpr[idx] * lrt
-  y0 = np.maximum(0, 1 - 1 * lrt)
-  ymax = np.ones_like(y)
-  ymin = -lrt
-  dy = (y - ymin) / (ymax - ymin)
-  dy0 = (y0 - ymin) / (ymax - ymin)
-  
-  plt.sca(axs[4])
-  plt.plot(lrt, dy)
-  plt.plot(lrt, dy0, color="lightgray", linestyle="--", zorder=-10)
-  plt.xscale("log")
-  plt.xlabel('Likelihood Ratio')
-  plt.ylabel('Value')
-  plt.yticks([0,1], ["Completely\nWrong", "Completely\nRight"])
 
-  plt.sca(axs[5])
-  plt.plot(lrt, dy - dy0)
-  plt.plot(lrt, 1 - dy0, color="lightgray", linestyle="--", zorder=-10)
-  plt.xscale("log")
-  plt.ylabel('Δ Value')
-  plt.xlabel('Likelihood Ratio')
+def plot_9_types(predicted, labels, axs):
+  register_scale(ProbitScale)
+  register_scale(LogOneMinusXScale)
+  roc = get_roc(predicted, labels)
+  convex = get_roc_convex_hull(roc.shape[0], roc.fpr_literal.values, roc.tpr_literal.values)
+  interpolated_smooth = get_roc_interpolated_convex_hull(convex.fpr, convex.tpr)
+  color = plot_roc(roc, convex, interpolated_smooth, axs)
 
-  plt.sca(axs[8])
-  plt.plot(lrt, tpr[idx] - fpr[idx])
-  plt.xscale("log")
-  plt.ylabel('Δ Equivalent TP\nwith zero FP')
-  plt.xlabel('Likelihood Ratio\n(at Threshold, evaluation uses 1)')
-
-  plt.sca(axs[3])
-  color = plt.plot(lrt, fpr[idx])[0].get_color()
-  plt.plot(lrt, tpr[idx], color=color, dashes=[1,1])
-  plt.legend(["FPR", "TPR"])
-  plt.xlabel('Likelihood Ratio')
-  plt.xscale("log")
+  eta, idx = get_slopes(convex.fpr, convex.tpr)
+  plot_eta_dollar(eta, idx, roc, convex, interpolated_smooth, axs, color)
+  plot_precision(eta, idx, roc, convex, interpolated_smooth, axs, color)
