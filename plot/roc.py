@@ -1,5 +1,5 @@
 import pandas as pd
-from scipy.stats import norm
+from scipy.stats import gaussian_kde
 from scipy.spatial import ConvexHull
 import numpy as np
 
@@ -50,4 +50,7 @@ def get_slopes(fpr, tpr):
   slopes[np.diff(tpr) == 0] = 0
   lr = np.geomspace(1e-2, 1e2, 100)
   idx = np.searchsorted(slopes, lr)
-  return lr, idx
+  counts = np.diff(tpr) + slopes * np.diff(fpr)
+  counts /= 1 + slopes
+  density = gaussian_kde(np.log(slopes)[1:-1], weights=counts[1:-1]).evaluate(np.log(lr))
+  return density, lr, idx

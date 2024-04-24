@@ -31,7 +31,7 @@ def read_dynamics(graph=True):
   summary = pd.concat(summary, axis=1).T
   summary.to_csv(pathlib.Path("/Users/abe/Desktop/features.csv"))
 
-def plot_features(path, axs):
+def plot_features(path, axs, weight_ratio=1):
   features = pd.read_csv(path).set_index("Unnamed: 0")
   labels = pd.read_csv(pathlib.Path("/Users/abe/Desktop/meta.csv")).set_index("AnonymizedID")
   assert(features.index.difference(labels.index).empty), (features.index, labels.index)
@@ -42,16 +42,17 @@ def plot_features(path, axs):
   #print(features.head().T)
   model = LogisticRegression()
   # Fit the model using features as the independent variable and labels as the dependent variable
-  model.fit(features.reindex(train.index).values, train)
+  model.fit(features.reindex(train.index).values, train, sample_weight=train.values + (1-train.values) * weight_ratio)
   print(pd.Series(model.coef_[0], index=features.columns))
   y_hat = model.predict_proba(features.reindex(V.index).values)[:, 1]
   axs = axs.flatten()
   plot_9_types(y_hat, V.values, axs)
 
 def make_plots():
-  fig, axs = plt.subplots(4, 3, figsize=(7, 9))
-  plot_features(pathlib.Path("/Users/abe/Desktop/features.csv"), axs)
-  plot_features(pathlib.Path("/Users/abe/Desktop/features_graph.csv"), axs)
+  fig, axs = plt.subplots(4, 3, figsize=(7/1.2, 9/1.2))
+  plot_features(pathlib.Path("/Users/abe/Desktop/features.csv"), axs, weight_ratio=1e3)
+  plot_features(pathlib.Path("/Users/abe/Desktop/features.csv"), axs, weight_ratio=1e-1)
+  #plot_features(pathlib.Path("/Users/abe/Desktop/features_graph.csv"), axs)
   plt.tight_layout()
   plt.show()
 
