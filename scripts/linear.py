@@ -49,7 +49,7 @@ def plot_features(path, axs, weight_ratio=1):
   plot_9_types(y_hat, V.values, axs)
 
 def make_plots():
-  fig, axs = plt.subplots(4, 3, figsize=(7/1.2, 9/1.2))
+  fig, axs = plt.subplots(3, 3, figsize=(12, 8))
   plot_features(pathlib.Path("/Users/abe/Desktop/features.csv"), axs, weight_ratio=1e3)
   plot_features(pathlib.Path("/Users/abe/Desktop/features.csv"), axs, weight_ratio=1e-1)
   #plot_features(pathlib.Path("/Users/abe/Desktop/features_graph.csv"), axs)
