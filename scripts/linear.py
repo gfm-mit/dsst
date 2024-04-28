@@ -46,10 +46,10 @@ def plot_features(path, axs, weight_ratio=1):
   print(pd.Series(model.coef_[0], index=features.columns))
   y_hat = model.predict_proba(features.reindex(V.index).values)[:, 1]
   axs = axs.flatten()
-  plot_9_types(y_hat, V.values, axs)
+  plot_3_types(y_hat, V.values, axs)
 
 def make_plots():
-  fig, axs = plt.subplots(1, 3, figsize=(12, 6), width_ratios=[2,1,1])
+  axs = get_3_axes()
   plot_features(pathlib.Path("/Users/abe/Desktop/features.csv"), axs, weight_ratio=1e3)
   plot_features(pathlib.Path("/Users/abe/Desktop/features.csv"), axs, weight_ratio=1e-1)
   #plot_features(pathlib.Path("/Users/abe/Desktop/features_graph.csv"), axs)

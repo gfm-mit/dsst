@@ -40,7 +40,7 @@ def plot_roc_swets(roc, convex, interpolated_smooth, axs, color):
   plt.xscale('probit')
   plt.xlim([cz0, cz1])
   plt.xticks([1e-2, 1e-1, 5e-1, 1-1e-1, 1-1e-2], "1% 10% 50% 90% 99%".split())
-  plt.gca().xaxis.set_label_position('top') 
+  #plt.gca().xaxis.set_label_position('top') 
   plt.gca().xaxis.tick_top()
 
   plt.axline((cz0, cz0), (cz1, cz1), color="lightgray", linestyle = "--", zorder=-10)
@@ -184,14 +184,13 @@ def plot_precision_at_k(eta, idx, roc, convex, interpolated_smooth, axs, color):
   precision = roc.tpr_literal * roc.labels.sum() / budget
   budget = budget / roc.shape[0]
   plt.scatter(budget, precision, s=1)
-  plt.gca().xaxis.set_label_position('top') 
-  plt.gca().xaxis.tick_top()
-  plt.xlabel('@K')
+  plt.xlabel('K/N')
   plt.xscale('log')
   plt.xlim([3e-2, 1])
   plt.xticks([1e-2, 1e-1, 1], "1% 10% 100%".split())
   plt.ylabel('Precision')
   plt.axhline(y=roc.labels.sum() / roc.shape[0], color="lightgray", linestyle='--', zorder=-10)
+  plt.title('Precision@K')
   return color
 
 def plot_nne_at_k(eta, idx, roc, convex, interpolated_smooth, axs, color):
