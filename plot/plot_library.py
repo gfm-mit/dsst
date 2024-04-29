@@ -2,6 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 
+def get_log_weighted_average(x, y):
+  return np.trapz(y, np.log(x)) / np.trapz(1 + 0 * y, np.log(x))
+
 def plot_roc_normal(roc, convex, interpolated_smooth, axs, color):
   plt.title("ROC")
   color = plt.scatter(roc.fpr_literal, roc.tpr_literal, s=1).get_facecolor()[0]
@@ -147,7 +150,8 @@ def plot_eta_percent(eta_density, eta, idx, roc, convex, interpolated_smooth, ax
   tnr_equiv = 1 - convex.fpr[idx] - (1-convex.tpr[idx]) / eta
   balanced = 1 - (1-tpr_equiv) / (1+eta)
   neutral = np.where(eta < 1, 1 / (1+eta), 1 - 1 / (1+eta))
-  plt.plot(eta, 1 - (1 - balanced) / (1 - neutral))
+  frac = 1 - (1 - balanced) / (1 - neutral)
+  artist = plt.plot(eta, frac)[0]
   #plt.xlabel('Ŷ = 𝟙[ℓ(x|1) ≥ η ℓ(x|0)]')
   plt.xlabel(r'$\hat{Y}(x) = \mathbb{1}\left[\frac{\ell(x\mid 1)}{\ell(x\mid 0)} \geq \eta \right]$')
   plt.xscale('log')
@@ -158,7 +162,8 @@ def plot_eta_percent(eta_density, eta, idx, roc, convex, interpolated_smooth, ax
   #plt.yticks([0, .25, .5, 0.75, 1], "Guessing 25% 50% 75% Oracle".split())
   if eta_hat is not None:
     plt.axvline(x=eta_hat, color="lightgray", linestyle='--', zorder=-10)
-  return color
+  idx = np.abs(np.log10(eta)) < 1
+  return color, artist, get_log_weighted_average(eta[idx], 100 * frac[idx])
 
 def plot_precision_recall(eta, idx, roc, convex, interpolated_smooth, axs, color):
   plt.plot(interpolated_smooth.tpr, interpolated_smooth.tpr / (interpolated_smooth.tpr + interpolated_smooth.fpr), linewidth=3, alpha=0.2, color=color)
@@ -175,7 +180,7 @@ def plot_precision_at_k(eta, idx, roc, convex, interpolated_smooth, axs, color):
   budget = interpolated_smooth.tpr * roc.labels.sum() + interpolated_smooth.fpr * (1-roc.labels).sum()
   precision = interpolated_smooth.tpr * roc.labels.sum() / budget
   budget = budget / roc.shape[0]
-  plt.plot(budget, precision, linewidth=3, alpha=0.2, color=color)
+  artist = plt.plot(budget, precision, linewidth=3, alpha=0.2, color=color)[0]
   budget = roc.tpr_literal * roc.labels.sum() + roc.fpr_literal * (1-roc.labels).sum()
   precision = roc.tpr_literal * roc.labels.sum() / budget
   budget = budget / roc.shape[0]
@@ -187,7 +192,8 @@ def plot_precision_at_k(eta, idx, roc, convex, interpolated_smooth, axs, color):
   plt.ylabel('Precision')
   plt.axhline(y=roc.labels.sum() / roc.shape[0], color="lightgray", linestyle='--', zorder=-10)
   plt.title('Precision@K')
-  return color
+
+  return color, artist, get_log_weighted_average(budget, 100 * precision)
 
 def plot_nne_at_k(eta, idx, roc, convex, interpolated_smooth, axs, color):
   budget = interpolated_smooth.tpr * roc.labels.sum() + interpolated_smooth.fpr * (1-roc.labels).sum()

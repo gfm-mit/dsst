@@ -6,7 +6,7 @@ from plot.probit import ProbitScale
 from plot.log_one_minus import LogOneMinusXScale
 from plot.roc import get_roc, get_roc_convex_hull, get_roc_interpolated_convex_hull, get_slopes
 from plot.plot_library import plot_eta_percent, plot_precision_at_k, plot_roc_swets
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, average_precision_score
 import pathlib
 from sklearn.linear_model import LogisticRegression
 
@@ -25,12 +25,19 @@ def plot_3_types(predicted, labels, axs):
   plt.sca(axs[1])
   artist, color = plot_roc_swets(roc, convex, interpolated_smooth, axs, color=None)
   plt.sca(axs[0])
-  plot_eta_percent(eta_density, eta, idx, roc, convex, interpolated_smooth, axs, color, labels.sum() / labels.size)
+  color, artist_eta, avg_eta = plot_eta_percent(eta_density, eta, idx, roc, convex, interpolated_smooth, axs, color, labels.sum() / labels.size)
   plt.sca(axs[2])
-  plot_precision_at_k(eta, idx, roc, convex, interpolated_smooth, axs, color)
+  color, artist_pr, avg_pr = plot_precision_at_k(eta, idx, roc, convex, interpolated_smooth, axs, color)
 
   aucroc = 100 * roc_auc_score(labels, predicted)
-  return f"{aucroc:.1f}%", artist
+  return dict(
+    roc_label=f"AUC {aucroc:.1f}%",
+    roc_artist=artist,
+    pr_label=f"Avg P {avg_pr:.1f}%",
+    pr_artist=artist_pr,
+    eta_label=f"Avg U {avg_eta:.1f}%",
+    eta_artist=artist_eta,
+  )
 
 def get_predictions(path, weight_ratio=1):
   features = pd.read_csv(path).set_index("Unnamed: 0")
