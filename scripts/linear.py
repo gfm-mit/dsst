@@ -1,5 +1,3 @@
-import random
-from lxml import etree
 import pandas as pd
 import pathlib
 import matplotlib.pyplot as plt
@@ -7,7 +5,7 @@ import matplotlib.pyplot as plt
 from etl.parse_semantics import *
 from etl.parse_dynamics import *
 
-from regression.regression import *
+from regression.linear_aggregate import *
 
 def read_dynamics(kind="graph"):
   dynamics_path = pathlib.Path("/Users/abe/Desktop/DYNAMICS/")
@@ -33,10 +31,12 @@ def make_plots():
   axs = get_3_axes()
   axs = axs.flatten()
   y_hat, y = get_predictions(pathlib.Path("/Users/abe/Desktop/features.csv"), weight_ratio=1e3)
-  plot_3_types(y_hat, y, axs)
+  auc, artist = plot_3_types(y_hat, y, axs)
   y_hat, y = get_predictions(pathlib.Path("/Users/abe/Desktop/features.csv"), weight_ratio=1e-1)
-  plot_3_types(y_hat, y, axs)
+  auc2, artist2 = plot_3_types(y_hat, y, axs)
   plt.tight_layout()
+  plt.sca(axs[1])
+  plt.legend([artist, artist2], [auc, auc2], loc="lower right")
   plt.show()
 
 if __name__ == "__main__":

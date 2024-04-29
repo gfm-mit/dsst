@@ -1,5 +1,5 @@
 import numpy as np
-from matplotlib.scale import ScaleBase, register_scale
+from matplotlib.scale import ScaleBase
 from matplotlib.transforms import Transform
 from scipy.stats import norm
 from matplotlib.ticker import NullFormatter, LogitLocator, LogitFormatter

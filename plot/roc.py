@@ -45,12 +45,12 @@ def get_roc_interpolated_convex_hull(fpr, tpr):
   return pd.DataFrame(dict(fpr=fpr, tpr=tpr))
 
 def get_slopes(fpr, tpr):
-  slopes = np.diff(tpr) / np.diff(fpr)
-  slopes[np.diff(fpr) == 0] = np.inf
-  slopes[np.diff(tpr) == 0] = 0
-  lr = np.geomspace(1e-2, 1e2, 100)
-  idx = np.searchsorted(slopes, lr)
-  counts = np.diff(tpr) + slopes * np.diff(fpr)
-  counts /= 1 + slopes
-  density = gaussian_kde(np.log(slopes)[1:-1], weights=counts[1:-1]).evaluate(np.log(lr))
-  return density, lr, idx
+  with np.errstate(invalid='ignore', divide='ignore'):
+    slopes = np.diff(tpr) / np.diff(fpr)
+    slopes[np.diff(fpr) == 0] = np.inf
+    slopes[np.diff(tpr) == 0] = 0
+    lr = np.geomspace(1e-2, 1e2, 100)
+    idx = np.searchsorted(slopes, lr)
+    counts = np.diff(tpr) + slopes * np.diff(fpr)
+    density = gaussian_kde(np.log(slopes)[1:-1], weights=counts[1:-1]).evaluate(np.log(lr))
+    return density, lr, idx

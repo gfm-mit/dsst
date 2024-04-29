@@ -1,9 +1,11 @@
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from plot.probit import *
-from plot.log_one_minus import *
-from plot.roc import *
-from plot.plot_library import *
+from matplotlib.scale import register_scale
+from plot.probit import ProbitScale
+from plot.log_one_minus import LogOneMinusXScale
+from plot.roc import get_roc, get_roc_convex_hull, get_roc_interpolated_convex_hull, get_slopes
+from plot.plot_library import plot_eta_percent, plot_precision_at_k, plot_roc_swets
 from sklearn.metrics import roc_auc_score
 import pathlib
 from sklearn.linear_model import LogisticRegression
@@ -21,13 +23,14 @@ def plot_3_types(predicted, labels, axs):
   eta_density, eta, idx = get_slopes(convex.fpr, convex.tpr)
 
   plt.sca(axs[1])
-  color = plot_roc_swets(roc, convex, interpolated_smooth, axs, color=None)
+  artist, color = plot_roc_swets(roc, convex, interpolated_smooth, axs, color=None)
   plt.sca(axs[0])
   plot_eta_percent(eta_density, eta, idx, roc, convex, interpolated_smooth, axs, color, labels.sum() / labels.size)
   plt.sca(axs[2])
   plot_precision_at_k(eta, idx, roc, convex, interpolated_smooth, axs, color)
-  aucroc = roc_auc_score(labels, predicted)
-  print("aucroc", aucroc)
+
+  aucroc = 100 * roc_auc_score(labels, predicted)
+  return f"{aucroc:.1f}%", artist
 
 def get_predictions(path, weight_ratio=1):
   features = pd.read_csv(path).set_index("Unnamed: 0")
@@ -40,6 +43,6 @@ def get_predictions(path, weight_ratio=1):
 
   model = LogisticRegression()
   model.fit(features.reindex(train.index).values, train, sample_weight=train.values + (1-train.values) * weight_ratio)
-  print(pd.Series(model.coef_[0], index=features.columns))
+  #print(pd.Series(model.coef_[0], index=features.columns))
   y_hat = model.predict_proba(features.reindex(V.index).values)[:, 1]
   return y_hat, V.values

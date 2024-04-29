@@ -1,10 +1,6 @@
-import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
-from plot.probit import *
-from plot.log_one_minus import *
-from plot.roc import *
-from sklearn.metrics import roc_auc_score
-from scipy.stats import norm, gaussian_kde
+from scipy.stats import norm
 
 def plot_roc_normal(roc, convex, interpolated_smooth, axs, color):
   plt.title("ROC")
@@ -22,7 +18,7 @@ def plot_roc_normal(roc, convex, interpolated_smooth, axs, color):
 def plot_roc_swets(roc, convex, interpolated_smooth, axs, color):
   plt.title("ROC (Q-Q plot)")
   color = plt.scatter(roc.fpr_literal, roc.tpr_literal, s=1, alpha=0.7, color=color).get_facecolor()[0]
-  plt.plot(roc.fpr_literal, roc.tpr_literal, alpha=0.2, color=color)
+  artist = plt.plot(roc.fpr_literal, roc.tpr_literal, alpha=0.2, color=color)[0]
   #plt.scatter(convex.fpr[1:-1], convex.tpr[1:-1], s=100, alpha=0.2, color=color)
   plt.plot(interpolated_smooth.fpr, interpolated_smooth.tpr, linewidth=3, alpha=0.4, color=color)
 
@@ -47,7 +43,7 @@ def plot_roc_swets(roc, convex, interpolated_smooth, axs, color):
   plt.axline((cz0, norm.cdf(z0+1)), (norm.cdf(z1-1), cz1), color="lightgray", linestyle = "--", zorder=-10)
   plt.axline((cz0, norm.cdf(z0+2)), (norm.cdf(z1-2), cz1), color="lightgray", linestyle = "--", zorder=-10)
   plt.gca().set_aspect('equal')
-  return color
+  return artist, color
 
 def plot_roc_affine(roc, convex, interpolated_smooth, axs, color):
   plt.title('ROC (affine transform)')
