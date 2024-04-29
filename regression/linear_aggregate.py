@@ -17,9 +17,11 @@ def get_3_axes():
 def plot_3_types(predicted, labels, axs):
   register_scale(ProbitScale)
   register_scale(LogOneMinusXScale)
+  print("predicted, labels", predicted, labels)
   roc = get_roc(predicted, labels)
   convex = get_roc_convex_hull(roc.shape[0], roc.fpr_literal.values, roc.tpr_literal.values)
   interpolated_smooth = get_roc_interpolated_convex_hull(convex.fpr, convex.tpr)
+  print("convex.shape", convex.shape)
   eta_density, eta, idx = get_slopes(convex.fpr, convex.tpr)
 
   plt.sca(axs[1])

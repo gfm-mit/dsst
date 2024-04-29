@@ -52,5 +52,6 @@ def get_slopes(fpr, tpr):
     lr = np.geomspace(1e-2, 1e2, 100)
     idx = np.searchsorted(slopes, lr)
     counts = np.diff(tpr) + slopes * np.diff(fpr)
-    density = gaussian_kde(np.log(slopes)[1:-1], weights=counts[1:-1]).evaluate(np.log(lr))
+    #density = gaussian_kde(np.log(slopes)[1:-1], weights=counts[1:-1]).evaluate(np.log(lr))
+    density = "DISABLED"
     return density, lr, idx

@@ -1,5 +1,8 @@
+einops
 lxml
 matplotlib
 pandas
 scipy
 scikit-learn
+torch
+tqdm
