@@ -33,18 +33,16 @@ def plot_data(g):
 if __name__ == "__main__":
   assigned_path = pathlib.Path("/Users/abe/Desktop/ASSIGNED/")
   dynamics_path = pathlib.Path("/Users/abe/Desktop/DYNAMICS/")
+  np_path = pathlib.Path("/Users/abe/Desktop/NP/")
   dynamics_path.mkdir(parents=True, exist_ok=True)
+  np_path.mkdir(parents=True, exist_ok=True)
   files = list(assigned_path.glob("*.csv"))
   random.shuffle(files)
   semantics = load_semantics()
-  #files = "/Users/abe/Desktop/ASSIGNED/CIN0750296502.csv".split()
   for csv in files:
     df = pd.read_csv(csv)
     df = assign_semantics(df, semantics)
     df = convert(df)
     df.to_csv(str(csv).replace("/ASSIGNED/", "/DYNAMICS/"))
-    print(csv)
-    #for idx, g in df.groupby("box"):
-    #  if idx <= 1:
-    #    continue
-    #  plot_data(g)
+    df2 = df["symbol task box t v_mag2 a_mag2 dv_mag2 cw j_mag2".split()]
+    np.save(str(csv).replace("/ASSIGNED/", "/NP/").replace(".csv", ".npy"), df2.values)
