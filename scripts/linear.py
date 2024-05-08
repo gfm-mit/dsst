@@ -6,6 +6,7 @@ from etl.parse_semantics import *
 from etl.parse_dynamics import *
 
 from regression.linear_aggregate import *
+from plot.palette import *
 
 def read_dynamics(kind="graph"):
   dynamics_path = pathlib.Path("/Users/abe/Desktop/DYNAMICS/")
