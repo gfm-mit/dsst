@@ -13,9 +13,10 @@ def get_roc(predicted, labels):
   points["fpr_literal"] = 1 - (negs.cumsum() - negs) / (negs.sum())
   return points
 
-def get_roc_convex_hull(_, fpr, tpr):
+def get_roc_convex_hull(fpr, tpr):
   L = 0
   H = 1
+  N = fpr.shape[0]
   fpr = np.concatenate([[L, H, H], fpr])
   tpr = np.concatenate([[L, L, H], tpr])
   idx = ConvexHull(
@@ -24,7 +25,8 @@ def get_roc_convex_hull(_, fpr, tpr):
   idx = np.roll(idx, -1)[1:]
   fpr = fpr[idx]
   tpr = tpr[idx]
-  return pd.DataFrame(dict(fpr=fpr, tpr=tpr))
+  idx[-1] = N + 3 # - 2
+  return pd.DataFrame(dict(fpr=fpr, tpr=tpr, idx=idx-2))
 
 def interpolate(f1, f2, t1, t2):
   N = 100

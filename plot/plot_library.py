@@ -145,21 +145,19 @@ def plot_eta_density(eta_density, eta, idx, roc, convex, interpolated_smooth, ax
   plt.yscale('log')
 
 def plot_eta_percent(eta_density, eta, idx, roc, convex, interpolated_smooth, axs, color, eta_hat=None):
-  plt.title('Scaled Expected Utility\nConstant -> Oracle')
+  plt.title('Surplus\n(Constant -> Oracle)')
   tpr_equiv = convex.tpr[idx] - eta * convex.fpr[idx]
   tnr_equiv = 1 - convex.fpr[idx] - (1-convex.tpr[idx]) / eta
   balanced = 1 - (1-tpr_equiv) / (1+eta)
   neutral = np.where(eta < 1, 1 / (1+eta), 1 - 1 / (1+eta))
   frac = 1 - (1 - balanced) / (1 - neutral)
   artist = plt.plot(eta, frac)[0]
-  #plt.xlabel('Ŷ = 𝟙[ℓ(x|1) ≥ η ℓ(x|0)]')
   plt.xlabel(r'$\hat{Y}(x) = \mathbb{1}\left[\frac{\ell(x\mid 1)}{\ell(x\mid 0)} \geq \eta \right]$')
   plt.xscale('log')
   plt.xticks([.1, 1, 10], "0.1x 1x 10x".split())
   plt.ylabel(r'$\mathbb{E}\ \left[U(\hat{Y}(x), Y)\right]$')
   y = plt.gca().get_yticks()
   plt.yticks(y, [f"{int(100 * y)}%" for y in y])
-  #plt.yticks([0, .25, .5, 0.75, 1], "Guessing 25% 50% 75% Oracle".split())
   if eta_hat is not None:
     plt.axvline(x=eta_hat, color="lightgray", linestyle='--', zorder=-10)
   idx = np.abs(np.log10(eta)) < 1
@@ -190,6 +188,8 @@ def plot_precision_at_k(eta, idx, roc, convex, interpolated_smooth, axs, color):
   plt.xlim([3e-2, 1])
   plt.xticks([1e-2, 1e-1, 1], "1% 10% 100%".split())
   plt.ylabel('Precision')
+  y = plt.gca().get_yticks()
+  plt.yticks(y, [f"{int(100 * y)}%" for y in y])
   plt.axhline(y=roc.labels.sum() / roc.shape[0], color="lightgray", linestyle='--', zorder=-10)
   plt.title('Precision@K')
 
@@ -212,3 +212,20 @@ def plot_nne_at_k(eta, idx, roc, convex, interpolated_smooth, axs, color):
   plt.xticks([1e-2, 1e-1, 1], "1% 10% 100%".split())
   plt.ylabel('NNE (PP / TP)')
   return color
+
+def plot_supply_demand(eta, idx, roc, convex, interpolated_smooth, axs, color):
+  N = convex.idx.max()
+  # TODO: figure out the outliers on both sides... laplace?
+  tpr_smooth = (convex.tpr * N + 1) / (N + 2)
+  fpr_smooth = (convex.fpr * N + 1) / (N + 2)
+  tpr_smooth[0] = 1
+  fpr_smooth[0] = 1
+  tpr_smooth.iloc[-1] = 0
+  fpr_smooth.iloc[-1] = 0
+  slope = np.diff(tpr_smooth) / np.diff(fpr_smooth)
+  slope[-1] = np.maximum(slope[-1], slope[-2])
+  plt.stairs(slope, 1 - convex.idx / N, baseline=np.inf)
+  plt.xlabel('Q(uantity)')
+  plt.ylabel('P(rice)')
+  plt.yscale('log')
+  plt.title('Demand')
