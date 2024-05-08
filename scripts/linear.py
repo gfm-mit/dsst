@@ -35,14 +35,7 @@ def make_plots():
   line1 = plot_3_types(y_hat, y, axs)
   y_hat, y = get_predictions(pathlib.Path("/Users/abe/Desktop/features.csv"), weight_ratio=1e-1)
   line2 = plot_3_types(y_hat, y, axs)
-  plt.tight_layout()
-  plt.sca(axs[0])
-  plt.legend([x["eta_artist"] for x in [line1, line2]], [x["eta_label"] for x in [line1, line2]], loc="upper right")
-  plt.sca(axs[1])
-  plt.legend([x["roc_artist"] for x in [line1, line2]], [x["roc_label"] for x in [line1, line2]], loc="lower right")
-  plt.sca(axs[2])
-  plt.legend([x["pr_artist"] for x in [line1, line2]], [x["pr_label"] for x in [line1, line2]], loc="lower left")
-  plt.show()
+  draw_3_legends(axs, [line1, line2])
 
 if __name__ == "__main__":
   #read_dynamics(graph=True)

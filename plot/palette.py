@@ -43,3 +43,13 @@ def plot_3_types(predicted, labels, axs):
     eta_label=f"Avg U {avg_eta:.1f}%",
     eta_artist=artist_eta,
   )
+
+def draw_3_legends(axs, dicts):
+  plt.sca(axs[0])
+  plt.legend([x["eta_artist"] for x in dicts], [x["eta_label"] for x in dicts], loc="upper right")
+  plt.sca(axs[1])
+  plt.legend([x["roc_artist"] for x in dicts], [x["roc_label"] for x in dicts], loc="lower right")
+  plt.sca(axs[2])
+  plt.legend([x["pr_artist"] for x in dicts], [x["pr_label"] for x in dicts], loc="lower left")
+  plt.tight_layout()
+  plt.show()
