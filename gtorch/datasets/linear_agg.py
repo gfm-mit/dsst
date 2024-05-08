@@ -19,17 +19,13 @@ class SeqDataset(torch.utils.data.Dataset):
         rows = []
         for _, (pkey, coarse) in self.md.iterrows():
           csv = Path('/Users/abe/Desktop/NP/') / f"{pkey}.npy"
-          data = np.load(csv)
-          data = np.nan_to_num(data, 0)
-          data = pd.DataFrame(data, columns="symbol task box t v_mag2 a_mag2 dv_mag2 cw j_mag2".split())
-          data = data.groupby("symbol task box".split()).apply(lambda g: g.mean(skipna=True))
-          data = data.reset_index(drop=True).drop(columns="symbol task box".split())
-          data["pkey"] = pkey
+          data = np.nanmean(np.load(csv), axis=0)
+          data = pd.Series(data, index="symbol task box t v_mag2 a_mag2 dv_mag2 cw j_mag2".split())
           data["label"] = coarse
-          data = data.set_index("pkey")
+          data = data.drop("symbol task box".split()).rename(pkey)
           rows += [data]
         assert len(rows)
-        self.files = pd.concat(rows, axis=0)
+        self.files = pd.DataFrame(rows)
 
     def __getitem__(self, index):
         coarse = self.files.iloc[index, -1]
