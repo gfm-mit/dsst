@@ -18,10 +18,11 @@ class SeqDataset(torch.utils.data.Dataset):
         self.md = metadata.copy()
         rows = []
         for _, (pkey, coarse) in self.md.iterrows():
-          csv = Path('/Users/abe/Desktop/DYNAMICS/') / f"{pkey}.csv"
-          data = pd.read_csv(csv).drop(columns="x y t row_number box symbol task".split())
-          data = data.mean(skipna=True).rename(pkey)
+          csv = Path('/Users/abe/Desktop/NP/') / f"{pkey}.npy"
+          data = np.nanmean(np.load(csv), axis=0)
+          data = pd.Series(data, index="symbol task box t v_mag2 a_mag2 dv_mag2 cw j_mag2".split())
           data["label"] = coarse
+          data = data.drop("symbol task box".split()).rename(pkey)
           rows += [data]
         assert len(rows)
         self.files = pd.DataFrame(rows)

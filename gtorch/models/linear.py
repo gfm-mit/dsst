@@ -23,7 +23,7 @@ def get_model(hidden_width=512, device='cuda', classes=2):
       NegCat(),
       torch.nn.AdaptiveMaxPool1d(1),
       Rearrange('b c 1 -> b c'),
-      torch.nn.Linear(10, classes),
+      torch.nn.Linear(12, classes),
       torch.nn.Softmax(dim=-1),
   )
   model = model.to(device)
