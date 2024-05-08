@@ -40,8 +40,8 @@ def plot_3_types(predicted, labels, axs):
     roc_artist=artist,
     pr_label=f"Avg P {avg_pr:.1f}%",
     pr_artist=artist_pr,
-    #eta_label=f"Avg U {avg_eta:.1f}%",
-    #eta_artist=artist_eta,
+    eta_label=f"Avg U {avg_eta:.1f}%",
+    eta_artist=artist_eta,
   )
 
 def get_predictions(path, weight_ratio=1):
