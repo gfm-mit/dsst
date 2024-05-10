@@ -4,5 +4,6 @@ matplotlib
 pandas
 scipy
 scikit-learn
+scikit-image
 torch
 tqdm
