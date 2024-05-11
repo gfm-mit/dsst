@@ -37,13 +37,19 @@ if __name__ == "__main__":
     data = []
     for (symbol, task, box), g in df.groupby("symbol task box".split()):
       bitmap = np.zeros([W, W], dtype=np.uint8)
-      if symbol != 12:
-        continue
       for _, stroke in g.groupby("stroke_id"):
-        xy = stroke["x y".split()].values
+        xy = stroke["x y".split()].copy()
+        xy.x += .1
+        xy.y -= .1
+        xy /= 1.2
+        xy = xy[xy.x.between(0, 1)]
+        xy = xy[xy.y.between(0, 1)]
+        xy.y = 1 - xy.y
+        xy = xy.values
         xy = np.round(W * xy).astype(int)
-        xy[:, 1] = W/4 - xy[:, 1]
         rasterize_path_to_bitmap(xy, bitmap)
+      if bitmap.sum() == 0:
+        print("empty box", pkey, symbol, task, box)
       bitmap = csr_matrix(bitmap.reshape([-1]))
       meta += [(symbol, task, box)]
       data += [bitmap]
