@@ -18,7 +18,7 @@ def assign_semantics(df, semantics):
   df["debug_x"] = df.x + 15 * (1 - df.symbol_digit)
   df["debug_y"] = df.y
   df.x -= df.x_assigned
-  df.y -= df.y_assigned
+  df.y -= df.y_assigned * 2
 
   df.y_assigned = df.y_assigned.astype(int) + 4
   df.x_assigned = df.x_assigned.astype(int)
