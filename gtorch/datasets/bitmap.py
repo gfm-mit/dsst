@@ -19,23 +19,23 @@ class SeqDataset(torch.utils.data.Dataset):
         rows = []
         for _, (pkey, coarse) in self.md.iterrows():
           csv = Path('/Users/abe/Desktop/BITMAP/') / f"{pkey}.csv"
-          data = np.load(csv)
-          print(data.head().T)
-          assert False
-          data = np.nan_to_num(data, 0)
-          data = pd.DataFrame(data, columns="symbol task box t v_mag2 a_mag2 dv_mag2 cw j_mag2".split())
-          data = data.groupby("symbol task box".split()).apply(lambda g: g.mean(skipna=True))
-          data = data.reset_index(drop=True).drop(columns="symbol task box".split())
-          data["pkey"] = pkey
-          data["label"] = coarse
-          data = data.set_index("pkey")
-          rows += [data]
+          npz = Path('/Users/abe/Desktop/BITMAP/') / f"{pkey}.npz"
+          meta = pd.read_csv(csv)
+          data = scipy.sparse.load_npz(npz)
+          meta["bitmap"] = [
+             data[i].reshape([64, 64])
+             for i in range(data.shape[0])
+          ]
+          meta["pkey"] = pkey
+          meta["label"] = coarse
+          meta = meta.set_index("pkey")
+          rows += [meta]
         assert len(rows)
         self.files = pd.concat(rows, axis=0)
 
     def __getitem__(self, index):
         coarse = self.files.iloc[index, -1]
-        nda = self.files.iloc[index, :-1].astype(float).values[:, np.newaxis]
+        nda = self.files.iloc[index, -2].toarray()
         x = torch.Tensor(nda[:, :])
         y = torch.LongTensor([coarse])
         return x, y
