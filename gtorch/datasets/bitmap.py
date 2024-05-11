@@ -36,7 +36,7 @@ class SeqDataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
         coarse = self.files.iloc[index, -1]
         nda = self.files.iloc[index, -2].toarray()
-        x = torch.Tensor(nda[:, :])
+        x = torch.Tensor(nda[np.newaxis, :, :])
         y = torch.LongTensor([coarse])
         return x, y
 

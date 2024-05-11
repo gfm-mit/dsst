@@ -8,18 +8,18 @@ from etl.parse_dynamics import *
 
 from plot.palette import *
 import gtorch.datasets.bitmap
-import gtorch.models.linear
+import gtorch.models.cnn
 import gtorch.optimize.optimize
 import gtorch.hyper.params
 import cProfile
 
 def main(train_loader, val_loader, axs=None):
-  model, base_params = gtorch.models.linear.get_model(hidden_width=2, device='cpu', classes=1)
+  model, base_params = gtorch.models.cnn.get_model(hidden_width=4, device='cpu', classes=1)
   base_params["max_epochs"] = 3
   #r = q(next(iter(train_loader))[0].to('cpu'))
   #gtorch.optimize.optimize.optimize(0, q, gtorch.optimize.optimize.FakeOptimizer(q), train_loader)
   #loss, accuracy = gtorch.optimize.optimize.metrics(q, val_loader=train_loader)
-  retval, model = gtorch.hyper.params.many_hyperparams(base_params, model_factory_fn=gtorch.models.linear.get_model,
+  retval, model = gtorch.hyper.params.many_hyperparams(base_params, model_factory_fn=gtorch.models.cnn.get_model,
                                                        train_loader=train_loader, val_loader=val_loader)
 
   DEVICE = 'cpu'
@@ -50,7 +50,7 @@ if __name__ == "__main__":
   train_loader = gtorch.datasets.bitmap.get_loaders()
   val_loader = train_loader #TODO: evil!!
   axs, line1 = main(train_loader, val_loader, axs=axs)
-  train_loader = gtorch.datasets.linear.get_loaders()
+  train_loader = gtorch.datasets.bitmap.get_loaders()
   val_loader = train_loader #TODO: evil!!
   axs, line2 = main(train_loader, val_loader, axs=axs)
   draw_3_legends(axs, [line1, line2])
