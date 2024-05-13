@@ -27,7 +27,7 @@ if __name__ == "__main__":
   files = list(assigned_path.glob("*.csv"))
   random.shuffle(files)
   semantics = load_semantics()
-  W = 64
+  W = 28
   for csv in files:
     pkey = next(re.finditer(r"/(CIN\d+).csv$", str(csv))).group(1)
     df = pd.read_csv(csv)

@@ -22,13 +22,17 @@ class SeqDataset(torch.utils.data.Dataset):
           npz = Path('/Users/abe/Desktop/BITMAP/') / f"{pkey}.npz"
           meta = pd.read_csv(csv)
           data = scipy.sparse.load_npz(npz)
+          N = np.sqrt(data.shape[1])
+          assert N == int(N)
+          N = int(N)
           meta["bitmap"] = [
-             data[i].reshape([64, 64])
+             data[i].reshape([N, N])
              for i in range(data.shape[0])
           ]
           meta["pkey"] = pkey
           meta["label"] = coarse
           meta = meta.set_index("pkey")
+          #meta = meta[meta.task.isin([2, 3])]
           rows += [meta]
         assert len(rows)
         self.files = pd.concat(rows, axis=0)
