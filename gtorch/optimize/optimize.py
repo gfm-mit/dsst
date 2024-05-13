@@ -25,7 +25,9 @@ def balance_class_weights(target):
 def optimize(epoch, model, optimizer, train_loader):
   DEVICE = next(model.parameters()).device
   model.train()
+  loader_has_batches = False
   for data, target in train_loader:
+    loader_has_batches = True
     optimizer.zero_grad()
     output = model(data.to(DEVICE))
     class_weights = balance_class_weights(target)
@@ -34,6 +36,7 @@ def optimize(epoch, model, optimizer, train_loader):
     loss = torch.nn.functional.nll_loss(output[:, 0], target[:, 0].to(DEVICE))
     loss.backward()
     optimizer.step()
+  assert loader_has_batches
   torch.save(model.state_dict(), './results/model.pth')
   print('Train Epoch: {} \tLoss: {:.6f}'.format(epoch, loss.item()))
   return loss.item()
