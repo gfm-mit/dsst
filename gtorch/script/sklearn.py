@@ -33,11 +33,14 @@ def main(train_loader, val_loader, test_loader, axs=None, device='cpu'):
   model.fit(x, y)
   print("coef", model.coef_)
 
-  x, y = [z[0] for z in zip(*train_loader)]
+  x, y, g = [z[0] for z in zip(*test_loader)]
   x = x[:, :, 0]
   y = y[:, 0]
   logits = model.predict_log_proba(x)[:, 1]
   targets = y.numpy()
+  df = pd.DataFrame(dict(logits=logits, targets=targets, groups=g))
+  df = df.groupby("groups").mean()
+  logits, targets = df.logits, df.targets
 
   axs = get_3_axes() if axs is None else axs
   line1 = plot_3_types(logits, targets, axs)
