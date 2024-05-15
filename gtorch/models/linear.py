@@ -21,7 +21,6 @@ def get_model(hidden_width=512, device='cuda', classes=2):
   device = 'cpu' #TODO: jank!!!!
   model = torch.nn.Sequential(
       NegCat(),
-      torch.nn.AdaptiveMaxPool1d(1),
       Rearrange('b c 1 -> b c'),
       torch.nn.Linear(12, classes),
       torch.nn.Softmax(dim=-1),
@@ -36,7 +35,7 @@ def get_model(hidden_width=512, device='cuda', classes=2):
     max_epochs=5,
     min_epochs=2,
 
-    learning_rate=1e-4,
+    learning_rate=1e-3, # unclear if this is right
     hidden_width=2,
   )
   return model, base_params

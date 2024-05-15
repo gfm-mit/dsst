@@ -36,7 +36,8 @@ class SeqDataset(torch.utils.data.Dataset):
         nda = self.files.iloc[index, :-1].astype(float).values[:, np.newaxis]
         x = torch.Tensor(nda[:, :])
         y = torch.LongTensor([coarse])
-        return x, y
+        g = self.files.iloc[index].name
+        return x, y, g
 
     def __len__(self):
         return self.files.shape[0]
@@ -50,11 +51,9 @@ def get_loaders():
   labels["split"] = np.where(split == 0, 'test', np.where(split == 1, 'validation', 'train'))
   labels = labels.set_index("split")
   train_data = SeqDataset(labels.loc["train"])
-  #val_data = SeqDataset(metadata.loc["val"])
-  #test_data = SeqDataset(metadata.loc["test"])
+  val_data = SeqDataset(labels.loc["train"])
+  test_data = SeqDataset(labels.loc["train"], test_split=True)
   train_loader = torch.utils.data.DataLoader(train_data, batch_size=64, shuffle=True)
-  #val_loader = torch.utils.data.DataLoader(
-  #    val_data, batch_size=1000, shuffle=True, collate_fn=collate_fn_padd)
-  #test_loader = torch.utils.data.DataLoader(
-  #    test_data, batch_size=1000, shuffle=True, collate_fn=collate_fn_padd)
-  return train_loader
+  val_loader = torch.utils.data.DataLoader(val_data, batch_size=1000, shuffle=True)
+  test_loader = torch.utils.data.DataLoader(test_data, batch_size=1000, shuffle=True)
+  return train_loader, val_loader, test_loader
