@@ -15,7 +15,7 @@ import gtorch.hyper.params
 import cProfile
 
 def main(train_loader, val_loader, test_loader, axs=None, device='cpu'):
-  torch.manual_seed(42)
+  #torch.manual_seed(42)
   model, base_params = gtorch.models.linear.get_model(hidden_width=2, device=device, classes=1)
   #r = q(next(iter(train_loader))[0].to('cpu'))
   #gtorch.optimize.optimize.optimize(0, q, gtorch.optimize.optimize.FakeOptimizer(q), train_loader)
@@ -30,7 +30,7 @@ def main(train_loader, val_loader, test_loader, axs=None, device='cpu'):
       #print(target)
       output = model(data.to(device)).to('cpu')
       results += [pd.DataFrame(dict(
-          logits=output.detach().numpy()[:, 0],
+          logits=output.detach().numpy()[:, 1],
           targets=target.detach().to('cpu').numpy()[:, 0],
           groups=g,
       ))]
@@ -51,7 +51,7 @@ if __name__ == "__main__":
   train_loader, val_loader, test_loader = gtorch.datasets.linear_agg.get_loaders()
   # TODO: evil!  val and test on train set
   axs, line1 = main(train_loader, val_loader, test_loader, axs=axs, device='cpu')
-  train_loader, val_loader, test_loader = gtorch.datasets.linear_agg.get_loaders()
+  train_loader, val_loader, test_loader = gtorch.datasets.linear.get_loaders()
   axs, line2 = main(train_loader, val_loader, test_loader, axs=axs)
   draw_3_legends(axs, [line1, line2])
   #draw_3_legends(axs, [line1])

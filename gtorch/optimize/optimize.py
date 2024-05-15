@@ -9,8 +9,6 @@ import scipy
 from tqdm.notebook import tqdm
 import einops
 from einops.layers.torch import Rearrange
-#@title def optimize(epoch, model, optimizer), metrics(model):
-#%%prun -s cumtime
 from pathlib import Path
 
 Path('./results/').mkdir(parents=True, exist_ok=True)

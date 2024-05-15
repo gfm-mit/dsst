@@ -10,7 +10,7 @@ import scipy
 from tqdm import tqdm
 import einops
 
-from gtorch.optimize.optimize import optimize, metrics
+from gtorch.optimize.optimize import optimize, metrics, FakeOptimizer
 
 Path('./results').mkdir(parents=True, exist_ok=True)
 def one_hyperparam(model, optimizer, scheduler, min_epochs, max_epochs, train_loader, val_loader):
@@ -59,12 +59,13 @@ def many_hyperparams(params, model_factory_fn, pretrained=False, train_loader=No
                                     params["beta2"],
                                 ],
                                 weight_decay=params["weight_decay"])
-  scheduler = torch.optim.lr_scheduler.OneCycleLR(
-      optimizer,
-      max_lr=params["learning_rate"],
-      steps_per_epoch=1,
-      pct_start=params["pct_start"],
-      epochs=int(params["max_epochs"]))
+  #scheduler = torch.optim.lr_scheduler.OneCycleLR(
+  #    optimizer,
+  #    max_lr=params["learning_rate"],
+  #    steps_per_epoch=1,
+  #    pct_start=params["pct_start"],
+  #    epochs=int(params["max_epochs"]))
+  scheduler = FakeOptimizer(model)
 
   torch.cuda.empty_cache()
   return one_hyperparam(model, optimizer, scheduler,

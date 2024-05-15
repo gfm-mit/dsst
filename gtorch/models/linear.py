@@ -35,7 +35,7 @@ def get_model(hidden_width=512, device='cuda', classes=2):
     max_epochs=5,
     min_epochs=2,
 
-    learning_rate=1e-3, # unclear if this is right
+    learning_rate=1e-2, # unclear if this is right
     hidden_width=2,
   )
   return model, base_params
