@@ -15,6 +15,7 @@ import gtorch.hyper.params
 import cProfile
 
 def main(train_loader, val_loader, test_loader, axs=None, device='cpu'):
+  torch.manual_seed(42)
   model, base_params = gtorch.models.linear.get_model(hidden_width=2, device=device, classes=1)
   #r = q(next(iter(train_loader))[0].to('cpu'))
   #gtorch.optimize.optimize.optimize(0, q, gtorch.optimize.optimize.FakeOptimizer(q), train_loader)

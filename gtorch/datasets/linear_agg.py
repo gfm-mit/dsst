@@ -1,14 +1,9 @@
 import numpy as np
 import pandas as pd
 import torch
-import shutil
 from pathlib import Path
-import re
-import matplotlib.pyplot as plt
-import scipy
-from tqdm import tqdm
-import einops
 import pathlib
+from hashlib import sha1
 
 class SeqDataset(torch.utils.data.Dataset):
     def __init__(self, metadata, test_split=False):
@@ -41,18 +36,18 @@ class SeqDataset(torch.utils.data.Dataset):
         return self.files.shape[0]
 
 def get_loaders():
-  labels = pd.read_csv(pathlib.Path("/Users/abe/Desktop/meta.csv")).set_index("AnonymizedID")
+  labels = pd.read_csv(pathlib.Path("/Users/abe/Desktop/meta.csv")).set_index("AnonymizedID").sort_index()
   #assert(features.index.difference(labels.index).empty), (features.index, labels.index)
   labels = labels.Diagnosis[labels.Diagnosis.isin(["Healthy Control", "Dementia-AD senile onset"])] == "Dementia-AD senile onset"
   labels = labels.reset_index()
-  split = labels.index.astype(str).map(hash).astype(np.uint64) % 5
+  split = labels.index.astype(str).map(lambda x: int(sha1(bytes(x, 'utf8')).hexdigest(),  16) % 5)
   labels["split"] = np.where(split == 0, 'test', np.where(split == 1, 'validation', 'train'))
   labels = labels.set_index("split")
   train_data = SeqDataset(labels.loc["train"])
   val_data = SeqDataset(labels.loc["train"])
   #test_data = SeqDataset(labels.loc["test"], test=True)
   test_data = SeqDataset(labels.loc["train"], test_split=True)
-  train_loader = torch.utils.data.DataLoader(train_data, batch_size=128, shuffle=True)
-  val_loader = torch.utils.data.DataLoader(val_data, batch_size=1000, shuffle=True)
-  test_loader = torch.utils.data.DataLoader(test_data, batch_size=1000, shuffle=True)
+  train_loader = torch.utils.data.DataLoader(train_data, batch_size=1000, shuffle=False)
+  val_loader = torch.utils.data.DataLoader(val_data, batch_size=1000, shuffle=False)
+  test_loader = torch.utils.data.DataLoader(test_data, batch_size=1000, shuffle=False)
   return train_loader, val_loader, test_loader

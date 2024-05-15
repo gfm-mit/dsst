@@ -12,15 +12,6 @@ import gtorch.datasets.linear
 import gtorch.models.linear
 import gtorch.optimize.optimize
 import gtorch.hyper.params
-import cProfile
-
-class First2:
-  def __init__(self, iterable):
-    self.iterable = iterable
-
-  def __iter__(self):
-    for x, y, _ in self.iterable:
-      yield x, y
 
 
 def main(train_loader, val_loader, test_loader, axs=None, device='cpu'):
@@ -28,8 +19,9 @@ def main(train_loader, val_loader, test_loader, axs=None, device='cpu'):
   x = x[:, :, 0]
   y = y[:, 0]
 
-  print(np.hstack([x, y[:, np.newaxis]])[:2])
-  model = LogisticRegression()
+  print(f"{hash(y):0b}", y[:4])
+  #print(np.hstack([x, y[:, np.newaxis]])[:2])
+  model = LogisticRegression(random_state=42)
   model.fit(x, y)
   print("coef", model.coef_)
 
