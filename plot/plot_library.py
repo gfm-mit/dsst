@@ -214,17 +214,20 @@ def plot_nne_at_k(eta, idx, roc, convex, interpolated_smooth, axs, color):
   return color
 
 def plot_supply_demand(eta, idx, roc, convex, interpolated_smooth, axs, color):
-  N = convex.idx.max()
-  # TODO: figure out the outliers on both sides... laplace?
-  tpr_smooth = (convex.tpr * N + 1) / (N + 2)
-  fpr_smooth = (convex.fpr * N + 1) / (N + 2)
-  tpr_smooth[0] = 1
-  fpr_smooth[0] = 1
-  tpr_smooth.iloc[-1] = 0
-  fpr_smooth.iloc[-1] = 0
-  slope = np.diff(tpr_smooth) / np.diff(fpr_smooth)
-  slope[-1] = np.maximum(slope[-1], slope[-2])
-  plt.stairs(slope, 1 - convex.idx / N, baseline=np.inf)
+  if convex.shape[0] > 2:
+    N = convex.idx.max()
+    # TODO: figure out the outliers on both sides... laplace?
+    tpr_smooth = (convex.tpr * N + 1) / (N + 2)
+    fpr_smooth = (convex.fpr * N + 1) / (N + 2)
+    tpr_smooth[0] = 1
+    fpr_smooth[0] = 1
+    tpr_smooth.iloc[-1] = 0
+    fpr_smooth.iloc[-1] = 0
+    slope = np.diff(tpr_smooth) / np.diff(fpr_smooth)
+    slope[-1] = np.maximum(slope[-1], slope[-2])
+    plt.stairs(slope, 1 - convex.idx / N, baseline=np.inf, color=color)
+  else:
+    plt.plot([0, 1], [1, 1], color=color)
   plt.xlabel('Q(uantity)')
   plt.ylabel('P(rice)')
   plt.yscale('log')
