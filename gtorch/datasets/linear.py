@@ -11,8 +11,8 @@ import einops
 import pathlib
 
 class SeqDataset(torch.utils.data.Dataset):
-    def __init__(self, metadata, trunc=512):
-        self.trunc = trunc
+    def __init__(self, metadata, test_split=False):
+        self.test_split = test_split
         uniq_splits = np.unique(metadata.index)
         assert uniq_splits.shape[0] == 1, uniq_splits
         self.md = metadata.copy()
@@ -36,8 +36,11 @@ class SeqDataset(torch.utils.data.Dataset):
         nda = self.files.iloc[index, :-1].astype(float).values[:, np.newaxis]
         x = torch.Tensor(nda[:, :])
         y = torch.LongTensor([coarse])
-        g = self.files.iloc[index].name
-        return x, y, g
+        if self.test_split:
+          g = self.files.iloc[index].name
+          return x, y, g
+        else:
+           return x, y
 
     def __len__(self):
         return self.files.shape[0]
