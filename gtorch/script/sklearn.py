@@ -23,7 +23,7 @@ def main(train_loader, val_loader, test_loader, axs=None, device='cpu'):
   #print(np.hstack([x, y[:, np.newaxis]])[:2])
   model = LogisticRegression(random_state=42)
   model.fit(x, y)
-  print("coef", model.coef_)
+  print("bias", model.intercept_, "coef", model.coef_)
 
   x, y, g = [z[0] for z in zip(*test_loader)]
   x = x[:, :, 0]
