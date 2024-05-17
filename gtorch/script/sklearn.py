@@ -42,9 +42,7 @@ def main(train_loader, val_loader, test_loader, axs=None, device='cpu'):
 if __name__ == "__main__":
   axs = None
   train_loader, val_loader, test_loader = gtorch.datasets.linear_agg.get_loaders()
-  # TODO: evil!  val and test on train set
   axs, line1 = main(train_loader, val_loader, test_loader, axs=axs, device='cpu')
-  train_loader, val_loader, test_loader = gtorch.datasets.linear.get_loaders()
-  axs, line2 = main(train_loader, val_loader, test_loader, axs=axs)
-  draw_3_legends(axs, [line1, line2])
-  #cProfile.run('main()', 'output_file.prof')
+  #train_loader, val_loader, test_loader = gtorch.datasets.linear.get_loaders()
+  #axs, line2 = main(train_loader, val_loader, test_loader, axs=axs)
+  #draw_3_legends(axs, [line1, line2])
