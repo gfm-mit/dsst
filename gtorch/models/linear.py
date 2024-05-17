@@ -17,34 +17,45 @@ class NegCat(torch.nn.Module):
   def forward(self, input):
     #return torch.cat([input, -input, torch.ones([input.shape[0], 1, 1])], axis=1)
     return torch.cat([input, -input], axis=1)
-class ProbCat(torch.nn.Module):
+
+class OneCat(torch.nn.Module):
   def forward(self, input):
-    return torch.cat([input, 1-input], axis=1)
+    return torch.cat([torch.zeros([input.shape[0], 1]), input], axis=1)
+
+class PrintCat(torch.nn.Module):
+  def forward(self, input):
+    print(input[:, :, 0].T)
+    return input
 
 def get_model(hidden_width=512, device='cuda', classes=2):
-  assert classes == 2 # oof
+  assert classes == 2, classes
   device = 'cpu' #TODO: jank!!!!
   model = torch.nn.Sequential(
-      NegCat(),
+      #NegCat(),
+      #PrintCat(),
       Rearrange('b c 1 -> b c'),
       # torch.nn.Linear(12, classes),
       # torch.nn.Softmax(dim=-1),
       # why is 2 class prediction worse!?!
-      torch.nn.Linear(12, 1),
-      torch.nn.Softmax(dim=-2),
-      ProbCat(),
+      torch.nn.Linear(6, 1),
+      OneCat(),
+      torch.nn.LogSoftmax(dim=-1),
   )
   model = model.to(device)
   base_params = dict(
-    weight_decay=3e1,
+    weight_decay=0,
     momentum=0.,
     beta2=0.,
     pct_start=0.1,
 
-    max_epochs=5,
+    max_epochs=10,
     min_epochs=2,
 
     learning_rate=1e-2, # unclear if this is right
     hidden_width=2,
+    tune=dict(
+      #learning_rate=np.geomspace(1e-5, 1e+0, 35),
+      #weight_decay=np.geomspace(1e-5, 1e+3, 35),
+    ),
   )
   return model, base_params
