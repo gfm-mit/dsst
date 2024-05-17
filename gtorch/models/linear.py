@@ -48,8 +48,8 @@ def get_model(hidden_width=512, device='cuda', classes=2):
     beta2=0.,
     pct_start=0.1,
 
-    max_epochs=10,
-    min_epochs=2,
+    max_epochs=1,
+    min_epochs=1,
 
     learning_rate=1e-2, # unclear if this is right
     hidden_width=2,
@@ -58,4 +58,6 @@ def get_model(hidden_width=512, device='cuda', classes=2):
       #weight_decay=np.geomspace(1e-5, 1e+3, 35),
     ),
   )
+  model.state_dict()['1.bias'][0] = -2.65
+  #artist = plt.scatter(np.arange(7), [-2.64393084, 1.49190833, -0.79180225, 0.57461165, 0.18255898, 0.42163847, -0.13575019], color='lightgray', zorder=-10, s=200)
   return model, base_params

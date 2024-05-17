@@ -20,7 +20,6 @@ def main(train_loader, val_loader, test_loader, axs=None, device='cpu'):
   y = y[:, 0]
 
   print(f"{hash(y):0b}", y[:4])
-  #print(np.hstack([x, y[:, np.newaxis]])[:2])
   model = LogisticRegression(random_state=42)
   model.fit(x, y)
   print("bias", model.intercept_, "coef", model.coef_)
