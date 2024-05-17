@@ -20,20 +20,15 @@ def get_spaces(**kwargs):
 
 def main(train_loader, val_loader, test_loader, axs=None, device='cpu'):
   torch.manual_seed(42)
-  model, base_params = gtorch.models.linear.get_model(hidden_width=2, device=device, classes=1)
-  spaces = get_spaces(
-    #min_epochs=np.array([15]),
-    #max_epochs=np.array([30]),
-    #learning_rate=np.geomspace(1e-2, 1e+1, 35),
-    #weight_decay=np.geomspace(1e-2, 1e+2, 35),
-  )
+  model, base_params = gtorch.models.linear.get_model(hidden_width=2, device=device, classes=2)
+  spaces = get_spaces(**base_params["tune"])
   results = []
   for i in tqdm(spaces.index):
     params = dict(**base_params)
     for k in spaces.columns:
       params[k] = spaces.loc[i, k]
     retval, model = gtorch.hyper.params.many_hyperparams(params, model_factory_fn=gtorch.models.linear.get_model,
-                                                        train_loader=train_loader, val_loader=val_loader)
+                                                         train_loader=train_loader, val_loader=val_loader)
     results += [dict(**params, **retval)]
   results = pd.DataFrame(results)
   fig, axs = plt.subplots(1, 2)
