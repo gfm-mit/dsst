@@ -11,7 +11,9 @@ def filter_traceback(tb):
   filtered_tb = []
   for line in tb:
     if not any(ignored_module in line for ignored_module in IGNORED_MODULES):
-      line = line.replace('/Users/abe/Documents/GitHub/dsst/', '~/')[2:]
+      line = line.replace('/Users/abe/Documents/GitHub/dsst/', '~/')
+      if line[:2] == '  ':
+        line = line[2:]
       filtered_tb.append(line)
   return filtered_tb
 
