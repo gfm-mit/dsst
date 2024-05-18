@@ -10,6 +10,7 @@ from tqdm.notebook import tqdm
 import einops
 from einops.layers.torch import Rearrange
 from pathlib import Path
+from sklearn.metrics import roc_auc_score
 
 Path('./results/').mkdir(parents=True, exist_ok=True)
 
@@ -74,8 +75,9 @@ def metrics(model, val_loader):
   logits = np.concatenate(logits)
   predictions = np.argmax(logits, axis=1)
   targets = np.concatenate(targets)
-  return None, (predictions == targets).mean()
-  #return logits, targets
+  #return None, (predictions == targets).mean()
+  # AUC is more useful than accuracy here.
+  return None, roc_auc_score(targets, logits[:, 1])
 
 class FakeOptimizer():
   def __init__(self, model):

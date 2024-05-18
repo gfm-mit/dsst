@@ -31,15 +31,14 @@ def main(train_loader, val_loader, test_loader, axs=None, device='cpu', classes=
                                                          train_loader=train_loader, val_loader=val_loader)
     results += [dict(**params, **retval)]
   results = pd.DataFrame(results)
-  fig, axs = plt.subplots(1, 2)
-  plt.sca(axs[0])
-  plt.scatter(results.weight_decay, results.accuracy)
-  plt.xscale('log')
-  plt.xlabel('weight_decay')
-  plt.sca(axs[1])
-  plt.scatter(results.learning_rate, results.accuracy)
-  plt.xscale('log')
-  plt.xlabel('learning_rate')
+  fig, axs = plt.subplots(1, len(base_params["tune"]))
+  if not isinstance(axs, np.ndarray):
+    axs = [axs]
+  for e, k in enumerate(base_params["tune"].keys()):
+    plt.sca(axs[e])
+    plt.scatter(results[k], results.accuracy)
+    plt.xlabel(k)
+    plt.xscale('log')
   plt.show()
   print(results)
   return axs, None
