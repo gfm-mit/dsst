@@ -29,6 +29,7 @@ class PrintCat(torch.nn.Module):
 
 def get_model(hidden_width=512, device='cuda', classes=2):
   device = 'cpu' #TODO: jank!!!!
+  classes = 1 # TODO: jank!!!!
   if classes == 1:
     model = torch.nn.Sequential(
         Rearrange('b c 1 -> b c'),
@@ -44,19 +45,20 @@ def get_model(hidden_width=512, device='cuda', classes=2):
     )
   model = model.to(device)
   base_params = dict(
-    weight_decay=3e-2,
+    weight_decay=1e-7,
     momentum=0.,
     beta2=0.,
-    pct_start=0.1,
+    pct_start=0.0,
 
-    max_epochs=4,
-    min_epochs=1,
+    max_epochs=30,
+    min_epochs=0,
 
-    learning_rate=3e-1, # unclear if this is right
+    learning_rate=1e-2, # unclear if this is right
     hidden_width=2,
     tune=dict(
-      #learning_rate=np.geomspace(1e-5, 1e+0, 35),
-      #weight_decay=np.geomspace(1e-5, 1e+3, 35),
+      #learning_rate=np.geomspace(1e-5, 1e+1, 35),
+      #weight_decay=np.geomspace(1e-8, 1e0, 35), 
+      #pct_start=np.linspace(0, 1, 35),
     ),
   )
   return model, base_params
