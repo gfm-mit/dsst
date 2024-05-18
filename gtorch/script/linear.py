@@ -30,8 +30,7 @@ def get_coef(model):
     np.concatenate([
       model.state_dict()['1.bias'].numpy(),
       model.state_dict()['1.weight'].numpy()[0]
-    ]),
-    index='bias t v_mag2 a_mag2 dv_mag2 cw j_mag2'.split()
+    ])
   )
 
 def get_roc(model, device='cpu'):

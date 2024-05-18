@@ -37,7 +37,7 @@ def get_model(hidden_width=512, device='cuda', classes=2):
       # torch.nn.Linear(12, classes),
       # torch.nn.Softmax(dim=-1),
       # why is 2 class prediction worse!?!
-      torch.nn.Linear(6, 1),
+      torch.nn.Linear(12, 1),
       OneCat(),
       torch.nn.LogSoftmax(dim=-1),
   )
@@ -48,7 +48,7 @@ def get_model(hidden_width=512, device='cuda', classes=2):
     beta2=0.,
     pct_start=0.1,
 
-    max_epochs=3,
+    max_epochs=4,
     min_epochs=1,
 
     learning_rate=3e-1, # unclear if this is right
