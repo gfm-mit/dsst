@@ -7,23 +7,17 @@ import scipy.special
 from hashlib import sha1
 
 class SeqDataset(torch.utils.data.Dataset):
-    def __init__(self, test_split=False):
+    def __init__(self, test_split=False, corr=0):
       self.N = 200
       self.test_split = test_split
-      self.files = pd.DataFrame([
-        np.random.normal(size=self.N),
-        np.random.normal(size=self.N),
-        np.random.normal(size=self.N),
-        np.random.normal(size=self.N),
-        np.random.normal(size=self.N),
-        np.random.normal(size=self.N),
-        np.random.normal(size=self.N),
-        np.random.normal(size=self.N),
-        np.random.normal(size=self.N),
-        np.random.normal(size=self.N),
-        np.random.normal(size=self.N),
-        np.random.normal(size=self.N),
-      ], index="one two three four five six seven eight nine ten eleven twelve".split()).T
+      inv_cov = np.eye(12)
+      inv_cov -= corr * np.diag(np.ones(11), k=1)
+      inv_cov -= corr * np.diag(np.ones(11), k=-1)
+      cov = np.linalg.inv(inv_cov)
+      print(np.round(cov * 100).astype(int))
+      self.files = pd.DataFrame(
+        np.random.default_rng().multivariate_normal(np.zeros([12]), cov=cov, size=self.N)
+      , columns="one two three four five six seven eight nine ten eleven twelve".split())
       logit = self.files.one + self.files.two + self.files.three + self.files.four + self.files.five + self.files.six
       logit -= self.files.seven + self.files.eight + self.files.nine + self.files.ten + self.files.eleven + self.files.twelve
       print("self.files.shape", self.files.shape)
@@ -42,9 +36,9 @@ class SeqDataset(torch.utils.data.Dataset):
         return self.N
 
 def get_loaders():
-  train_data = SeqDataset()
-  val_data = SeqDataset()
-  test_data = SeqDataset(test_split=True)
+  train_data = SeqDataset(corr=0.5)
+  val_data = SeqDataset(corr=0.5)
+  test_data = SeqDataset(corr=0.5, test_split=True)
   train_loader = torch.utils.data.DataLoader(train_data, batch_size=50, shuffle=False)
   val_loader = torch.utils.data.DataLoader(val_data, batch_size=50, shuffle=False)
   test_loader = torch.utils.data.DataLoader(test_data, batch_size=50, shuffle=False)
