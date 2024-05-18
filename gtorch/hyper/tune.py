@@ -21,6 +21,7 @@ def get_spaces(**kwargs):
 def main(train_loader, val_loader, test_loader, axs=None, device='cpu', classes=2):
   torch.manual_seed(42)
   model, base_params = gtorch.models.linear.get_model(hidden_width=2, device=device, classes=classes)
+  assert "tune" in base_params and len(base_params["tune"]) > 0, "no parameters to tune"
   spaces = get_spaces(**base_params["tune"])
   results = []
   for i in tqdm(spaces.index):
