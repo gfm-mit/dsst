@@ -14,20 +14,27 @@ class SeqDataset(torch.utils.data.Dataset):
         rows = []
         for _, (pkey, coarse) in self.md.iterrows():
           csv = Path('/Users/abe/Desktop/NP/') / f"{pkey}.npy"
-          data = np.nanmean(np.load(csv), axis=0)
-          data = pd.Series(data, index="symbol task box t v_mag2 a_mag2 dv_mag2 cw j_mag2".split())
+          data = np.load(csv)[:, 3:]
+          data = np.concatenate([
+             np.nanmax(data, axis=0),
+             np.nanmin(data, axis=0),
+          ])
+          data = pd.Series(data, index=
+                           "t_max v_mag2_max a_mag2_max dv_mag2_max cw_max j_mag2_max"
+                           " t_min v_mag2_min a_mag2_min dv_mag2_min cw_min j_mag2_min"
+                           .split()).rename(pkey)
           data["label"] = coarse
-          data = data.drop("symbol task box".split()).rename(pkey)
           rows += [data]
         assert len(rows)
         self.files = pd.DataFrame(rows)
-        for c in "t v_mag2 a_mag2 dv_mag2 cw j_mag2".split():
+        for c in self.files.columns[:-1]:
           self.files[c] = self.files[c] - self.files[c].mean()
 
     def __getitem__(self, index):
-        coarse = self.files.iloc[index, -1]
-        nda = self.files.iloc[index, :-1].astype(float).values[:, np.newaxis]
-        x = torch.Tensor(nda[:, :])
+        row = self.files.iloc[index]
+        coarse = row.iloc[-1]
+        nda = row.iloc[:-1].astype(float).values[:, np.newaxis]
+        x = torch.Tensor(nda)
         y = torch.LongTensor([coarse])
         if self.test_split:
           return x, y, index
