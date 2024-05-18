@@ -31,7 +31,7 @@ def optimize(epoch, model, optimizer, train_loader):
     class_weights = balance_class_weights(target)
     #loss = torch.nn.functional.nll_loss(
     #    output, target.to(DEVICE), weight=class_weights.to(DEVICE))
-    loss = torch.nn.functional.nll_loss(output[:, 0], target[:, 0].to(DEVICE))
+    loss = torch.nn.functional.nll_loss(output, target[:, 0].to(DEVICE))
     loss.backward()
     optimizer.step()
   assert loader_has_batches
