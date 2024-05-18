@@ -20,11 +20,11 @@ def main(train_loader, val_loader, test_loader, axs=None, device='cpu', classes=
   model, base_params = gtorch.models.linear.get_model(hidden_width=2, device=device, classes=classes)
   retval, model = gtorch.hyper.params.many_hyperparams(base_params, model_factory_fn=gtorch.models.linear.get_model,
                                                        train_loader=train_loader, val_loader=val_loader)
-  results = []
   model.eval()
   return model
 
-def get_roc(model, device='cpu'):
+def get_roc(model, test_loader, axs=None, device='cpu'):
+  results = []
   with torch.no_grad():
     for idx, (data, target, g) in enumerate(test_loader):
       #print(target)
@@ -50,15 +50,18 @@ if __name__ == "__main__":
   # Set the custom excepthook
   sys.excepthook = util.excepthook.custom_excepthook
   axs = None
+  lines = []
   train_loader, val_loader, test_loader = gtorch.datasets.linear_agg.get_loaders()
   #gtorch.hyper.coef.get_coef_dist(
   #  lambda: main(train_loader, val_loader, test_loader, axs=axs, device='cpu'))
   # TODO: evil!  val and test on train set
 
-  axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader, test_loader, axs=axs, device='cpu')
-  draw_3_legends(axs, [line1])
+  #axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader, test_loader, axs=axs, device='cpu')
+  #draw_3_legends(axs, [line1])
 
   #train_loader, val_loader, test_loader = gtorch.datasets.linear.get_loaders()
-  #axs, line2 = main(train_loader, val_loader, test_loader, axs=axs)
-  #draw_3_legends(axs, [line1, line2])
+  model = main(train_loader, val_loader, test_loader, axs=axs)
+  axs, line2 = get_roc(model, test_loader, axs=axs)
+  lines += [line2]
+  draw_3_legends(axs, lines)
   #cProfile.run('main()', 'output_file.prof')

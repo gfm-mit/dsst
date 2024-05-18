@@ -12,13 +12,13 @@ import gtorch.hyper.params
 import util.excepthook
 
 
-def main(train_loader, val_loader, test_loader, axs=None, device='cpu'):
+def main(train_loader, val_loader, test_loader, axs=None, device='cpu', random_state=None):
   x, y = [z[0] for z in zip(*train_loader)]
   x = x[:, :, 0]
   y = y[:, 0]
 
   print(f"{hash(y):0b}", y[:4])
-  model = LogisticRegression(random_state=42)
+  model = LogisticRegression(random_state=random_state)
   model.fit(x, y)
   print("bias", model.intercept_, "coef", model.coef_)
 
@@ -38,9 +38,12 @@ def main(train_loader, val_loader, test_loader, axs=None, device='cpu'):
 
 if __name__ == "__main__":
   axs = None
+  lines = []
   sys.excepthook = util.excepthook.custom_excepthook
-  train_loader, val_loader, test_loader = gtorch.datasets.synthetic.get_loaders()
-  axs, line1 = main(train_loader, val_loader, test_loader, axs=axs, device='cpu')
+  train_loader, val_loader, test_loader = gtorch.datasets.linear_agg.get_loaders()
+  for _ in range(3):
+    axs, line1 = main(train_loader, val_loader, test_loader, axs=axs, device='cpu', random_state=42)
+    lines += [line1]
   #train_loader, val_loader, test_loader = gtorch.datasets.linear.get_loaders()
   #axs, line2 = main(train_loader, val_loader, test_loader, axs=axs)
-  #draw_3_legends(axs, [line1, line2])
+  draw_3_legends(axs, lines)
