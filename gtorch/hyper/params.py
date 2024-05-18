@@ -59,13 +59,13 @@ def many_hyperparams(params, model_factory_fn, pretrained=False, train_loader=No
                                     params["beta2"],
                                 ],
                                 weight_decay=params["weight_decay"])
-  #scheduler = torch.optim.lr_scheduler.OneCycleLR(
-  #    optimizer,
-  #    max_lr=params["learning_rate"],
-  #    steps_per_epoch=1,
-  #    pct_start=params["pct_start"],
-  #    epochs=int(params["max_epochs"]))
-  scheduler = FakeOptimizer(model)
+  scheduler = torch.optim.lr_scheduler.OneCycleLR(
+      optimizer,
+      max_lr=params["learning_rate"],
+      steps_per_epoch=1,
+      pct_start=params["pct_start"],
+      epochs=int(params["max_epochs"]))
+  #scheduler = FakeOptimizer(model)
 
   torch.cuda.empty_cache()
   return one_hyperparam(model, optimizer, scheduler,
