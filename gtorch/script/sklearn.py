@@ -1,17 +1,15 @@
 import pandas as pd
-import pathlib
-import matplotlib.pyplot as plt
-import torch
+import sys
 
-from etl.parse_semantics import *
-from etl.parse_dynamics import *
-
-from plot.palette import *
+from plot.palette import get_3_axes, plot_3_types, draw_3_legends
+from sklearn.linear_model import LogisticRegression
+import gtorch.datasets.synthetic
 import gtorch.datasets.linear_agg
 import gtorch.datasets.linear
 import gtorch.models.linear
 import gtorch.optimize.optimize
 import gtorch.hyper.params
+import util.excepthook
 
 
 def main(train_loader, val_loader, test_loader, axs=None, device='cpu'):
@@ -40,7 +38,8 @@ def main(train_loader, val_loader, test_loader, axs=None, device='cpu'):
 
 if __name__ == "__main__":
   axs = None
-  train_loader, val_loader, test_loader = gtorch.datasets.linear_agg.get_loaders()
+  sys.excepthook = util.excepthook.custom_excepthook
+  train_loader, val_loader, test_loader = gtorch.datasets.synthetic.get_loaders()
   axs, line1 = main(train_loader, val_loader, test_loader, axs=axs, device='cpu')
   #train_loader, val_loader, test_loader = gtorch.datasets.linear.get_loaders()
   #axs, line2 = main(train_loader, val_loader, test_loader, axs=axs)
