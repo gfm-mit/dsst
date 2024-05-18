@@ -25,11 +25,22 @@ def one_hyperparam(model, optimizer, scheduler, min_epochs, max_epochs, train_lo
     #val_loader = torch.utils.data.DataLoader(
     #    val_data, batch_size=batch_size_test, shuffle=False, collate_fn=collate_fn_padd)
 
+    #torch.save(model, './results/model.pth')
+    state_dict = dict(**model.state_dict())
     next_loss = optimize(x, model, optimizer, train_loader)
     scheduler.step()
     if next_loss > max_loss and x > min_epochs:
+      print("next_loss too big")
+      #model.load_state_dict(torch.load('./results/model.pth'))
+      model.load_state_dict(state_dict)
+      #return dict(loss=99, accuracy=0), model
       break
     if np.isnan(next_loss):
+      print("next_loss isnan")
+      #model.load_state_dict(torch.load('./results/model.pth'))
+      model.load_state_dict(state_dict)
+      #torch.load()
+      #return dict(loss=99, accuracy=0), model
       break
     max_loss = next_loss
     torch.cuda.empty_cache()
