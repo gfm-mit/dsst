@@ -4,6 +4,7 @@ import traceback
 IGNORED_MODULES = [
     'Traceback (most recent call last)',
     '/Documents/GitHub/dsst/.venv/lib/python3.9/site-packages/torch/nn/modules/',
+    '/Users/abe/Documents/GitHub/dsst/.venv/lib/python3.9/site-packages/pandas/',
     '/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py',
 ]
 
