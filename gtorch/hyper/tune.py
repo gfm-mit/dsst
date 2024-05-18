@@ -18,9 +18,9 @@ def get_spaces(**kwargs):
     spaces[col] = np.random.permutation(spaces[col].values)
   return spaces
 
-def main(train_loader, val_loader, test_loader, axs=None, device='cpu'):
+def main(train_loader, val_loader, test_loader, axs=None, device='cpu', classes=2):
   torch.manual_seed(42)
-  model, base_params = gtorch.models.linear.get_model(hidden_width=2, device=device, classes=2)
+  model, base_params = gtorch.models.linear.get_model(hidden_width=2, device=device, classes=classes)
   spaces = get_spaces(**base_params["tune"])
   results = []
   for i in tqdm(spaces.index):

@@ -28,19 +28,20 @@ class PrintCat(torch.nn.Module):
     return input
 
 def get_model(hidden_width=512, device='cuda', classes=2):
-  assert classes == 2, classes
   device = 'cpu' #TODO: jank!!!!
-  model = torch.nn.Sequential(
-      #NegCat(),
-      #PrintCat(),
-      Rearrange('b c 1 -> b c'),
-      # torch.nn.Linear(12, classes),
-      # torch.nn.Softmax(dim=-1),
-      # why is 2 class prediction worse!?!
-      torch.nn.Linear(12, 1),
-      OneCat(),
-      torch.nn.LogSoftmax(dim=-1),
-  )
+  if classes == 1:
+    model = torch.nn.Sequential(
+        Rearrange('b c 1 -> b c'),
+        torch.nn.Linear(12, 1),
+        OneCat(),
+        torch.nn.LogSoftmax(dim=-1),
+    )
+  else:
+    model = torch.nn.Sequential(
+        Rearrange('b c 1 -> b c'),
+        torch.nn.Linear(12, classes),
+        torch.nn.LogSoftmax(dim=-1),
+    )
   model = model.to(device)
   base_params = dict(
     weight_decay=3e-2,
