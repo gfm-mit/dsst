@@ -28,6 +28,7 @@ def main(train_loader, val_loader, test_loader, axs=None, device='cpu', classes=
     params = dict(**base_params)
     for k in spaces.columns:
       params[k] = spaces.loc[i, k]
+    print("tune:", spaces.loc[i].to_dict())
     retval, model = gtorch.hyper.params.many_hyperparams(params, model_factory_fn=gtorch.models.linear.get_model,
                                                          train_loader=train_loader, val_loader=val_loader)
     results += [dict(**params, **retval)]
@@ -39,7 +40,12 @@ def main(train_loader, val_loader, test_loader, axs=None, device='cpu', classes=
     plt.sca(axs[e])
     plt.scatter(results[k], results.accuracy)
     plt.xlabel(k)
-    plt.xscale('log')
+    if results[k].max() < 1:
+      plt.xscale('logit')
+    elif 0 < results[k].min() < 1:
+      plt.xscale('log')
+    else:
+      pass
   plt.show()
   print(results)
   return axs, None
