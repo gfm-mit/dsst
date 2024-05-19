@@ -52,13 +52,13 @@ def get_model(hidden_width=512, device='cuda', classes=2):
     beta2=0.9,
     pct_start=0.0,
 
-    max_epochs=5,
+    max_epochs=10,
     min_epochs=0,
 
     learning_rate=1e-1,
     hidden_width=2,
     tune=dict(
-      #learning_rate=np.geomspace(1e-2, 1e0, 15),
+      #learning_rate=np.geomspace(1e-1, 1e1, 15),
       #weight_decay=np.geomspace(1e-8, 1e0, 35), 
       #pct_start=np.geomspace(0.005, .95, 35),
       #max_epochs=np.linspace(5, 15, 35).astype(int),
