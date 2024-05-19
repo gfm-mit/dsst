@@ -44,21 +44,26 @@ def get_model(hidden_width=512, device='cuda', classes=2):
         torch.nn.LogSoftmax(dim=-1),
     )
   model = model.to(device)
+  torch.nn.init.zeros_(model[1].weight)
+  torch.nn.init.zeros_(model[1].bias)
   base_params = dict(
     weight_decay=1e-7,
-    momentum=0.,
-    beta2=0.,
+    momentum=0.999,
+    beta2=0.9,
     pct_start=0.0,
 
-    max_epochs=30,
+    max_epochs=5,
     min_epochs=0,
 
-    learning_rate=1e-2, # unclear if this is right
+    learning_rate=1e-1,
     hidden_width=2,
     tune=dict(
-      #learning_rate=np.geomspace(1e-5, 1e+1, 35),
+      #learning_rate=np.geomspace(1e-2, 1e0, 15),
       #weight_decay=np.geomspace(1e-8, 1e0, 35), 
-      #pct_start=np.linspace(0, 1, 35),
+      #pct_start=np.geomspace(0.005, .95, 35),
+      #max_epochs=np.linspace(5, 15, 35).astype(int),
+      #momentum=1-np.geomspace(.1, .0001, 15),
+      #beta2=1-np.geomspace(.5, .0001, 15),
     ),
   )
   return model, base_params
