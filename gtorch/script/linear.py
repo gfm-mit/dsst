@@ -64,4 +64,3 @@ if __name__ == "__main__":
   axs, line2 = get_roc(model, test_loader, axs=axs)
   lines += [line2]
   draw_3_legends(axs, lines)
-  #cProfile.run('main()', 'output_file.prof')
