@@ -13,30 +13,35 @@ import gtorch.optimize.optimize
 import gtorch.hyper.params
 
 def get_spaces(**kwargs):
+  print("spaces.kwargs", kwargs)
   spaces = pd.DataFrame(kwargs)
   for col in spaces.columns:
     spaces[col] = np.random.permutation(spaces[col].values)
   return spaces
 
-def main(train_loader, val_loader, test_loader, axs=None, device='cpu', classes=2):
+def main(train_loader, val_loader, test_loader, axs=None, device='cpu', classes=2, builder=None):
   torch.manual_seed(42)
-  model, base_params = gtorch.models.linear.get_model(hidden_width=2, device=device, classes=classes)
-  assert "tune" in base_params and len(base_params["tune"]) > 0, "no parameters to tune"
-  spaces = get_spaces(**base_params["tune"])
+  assert isinstance(builder, gtorch.models.base.Base)
+  base_params = builder.get_parameters()
+  assert builder.get_tuning_ranges(), "no parameters to tune"
+  spaces = get_spaces(**builder.get_tuning_ranges())
   results = []
   for i in tqdm(spaces.index):
     params = dict(**base_params)
     for k in spaces.columns:
       params[k] = spaces.loc[i, k]
     print("tune:", spaces.loc[i].to_dict())
-    retval, model = gtorch.hyper.params.many_hyperparams(params, model_factory_fn=gtorch.models.linear.get_model,
+    retval, model = gtorch.hyper.params.many_hyperparams(params, model_factory_fn=builder,
                                                          train_loader=train_loader, val_loader=val_loader)
     results += [dict(**params, **retval)]
   results = pd.DataFrame(results)
-  fig, axs = plt.subplots(1, len(base_params["tune"]))
+  N = int(np.ceil(np.sqrt(spaces.shape[1])))
+  fig, axs = plt.subplots(N, N)
   if not isinstance(axs, np.ndarray):
     axs = [axs]
-  for e, k in enumerate(base_params["tune"].keys()):
+  else:
+    axs = axs.flatten()
+  for e, k in enumerate(spaces.columns):
     plt.sca(axs[e])
     plt.scatter(results[k], results.accuracy)
     plt.xlabel(k)

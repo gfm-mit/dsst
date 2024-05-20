@@ -17,9 +17,10 @@ import util.excepthook
 import sys
 
 def get_model(train_loader, val_loader, test_loader, axs=None, device='cpu', classes=2):
+  builder = gtorch.models.linear.Linear(classes=classes)
   #torch.manual_seed(42)
-  _, base_params = gtorch.models.linear.get_model(hidden_width=2, device=device, classes=classes)
-  retval, model = gtorch.hyper.params.many_hyperparams(base_params, model_factory_fn=gtorch.models.linear.get_model,
+  base_params = builder.get_parameters()
+  retval, model = gtorch.hyper.params.many_hyperparams(base_params, model_factory_fn=builder,
                                                        train_loader=train_loader, val_loader=val_loader)
   model.eval()
   return model
@@ -62,10 +63,13 @@ if __name__ == "__main__":
   if args.coef:
     # check coefficients
     gtorch.hyper.coef.get_coef_dist(
-      lambda: get_model(train_loader, val_loader, test_loader, axs=axs, device='cpu'))
+      builder=gtorch.models.linear.Linear(classes=2),
+      train_loader=train_loader,
+      val_loader=val_loader,
+      test_loader=test_loader)
   elif args.tune:
     # tune parameters
-    axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader, test_loader, axs=axs, device='cpu')
+    axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader, test_loader, axs=axs, device='cpu', builder=gtorch.models.linear.Linear(classes=2))
   else:
     # just train a model and display ROC plots
     model = get_model(train_loader, val_loader, test_loader, axs=axs)

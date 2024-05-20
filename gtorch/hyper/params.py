@@ -6,6 +6,7 @@ from pathlib import Path
 from gtorch.optimize.metrics import metrics
 from gtorch.optimize.optimize import optimize
 from gtorch.optimize.optimize import get_optimizer
+import gtorch.models.base
 
 Path('./results').mkdir(parents=True, exist_ok=True)
 def one_hyperparam(model, optimizer, scheduler, min_epochs, max_epochs, train_loader, val_loader):
@@ -42,7 +43,8 @@ def one_hyperparam(model, optimizer, scheduler, min_epochs, max_epochs, train_lo
   return resdict, model
 
 def many_hyperparams(params, model_factory_fn, pretrained=False, train_loader=None, val_loader=None):
-  model, _ = model_factory_fn(**{
+  assert isinstance(model_factory_fn, gtorch.models.base.Base)
+  model = model_factory_fn.get_architecture(**{
       k: params[k]
       for k in "hidden_width".split()
       })
