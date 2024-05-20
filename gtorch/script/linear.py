@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
+import argparse
 
 from plot.palette import plot_3_types, get_3_axes, draw_3_legends
 import gtorch.datasets.synthetic
@@ -15,9 +16,9 @@ import gtorch.hyper.coef
 import util.excepthook
 import sys
 
-def main(train_loader, val_loader, test_loader, axs=None, device='cpu', classes=2):
+def get_model(train_loader, val_loader, test_loader, axs=None, device='cpu', classes=2):
   #torch.manual_seed(42)
-  model, base_params = gtorch.models.linear.get_model(hidden_width=2, device=device, classes=classes)
+  _, base_params = gtorch.models.linear.get_model(hidden_width=2, device=device, classes=classes)
   retval, model = gtorch.hyper.params.many_hyperparams(base_params, model_factory_fn=gtorch.models.linear.get_model,
                                                        train_loader=train_loader, val_loader=val_loader)
   model.eval()
@@ -49,18 +50,25 @@ def get_roc(model, test_loader, axs=None, device='cpu'):
 if __name__ == "__main__":
   # Set the custom excepthook
   sys.excepthook = util.excepthook.custom_excepthook
+
+  parser = argparse.ArgumentParser(description='My script description')
+  parser.add_argument('--coef', action='store_true', help='Plot coefficients')
+  parser.add_argument('--tune', action='store_true', help='Tune parameters')
+  args = parser.parse_args()
+
   axs = None
   lines = []
   train_loader, val_loader, test_loader = gtorch.datasets.linear_agg.get_loaders()
-  #gtorch.hyper.coef.get_coef_dist(
-  #  lambda: main(train_loader, val_loader, test_loader, axs=axs, device='cpu'))
-  # TODO: evil!  val and test on train set
-
-  #axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader, test_loader, axs=axs, device='cpu')
-  #draw_3_legends(axs, [line1])
-
-  #train_loader, val_loader, test_loader = gtorch.datasets.linear.get_loaders()
-  model = main(train_loader, val_loader, test_loader, axs=axs)
-  axs, line2 = get_roc(model, test_loader, axs=axs)
-  lines += [line2]
-  draw_3_legends(axs, lines)
+  if args.coef:
+    # check coefficients
+    gtorch.hyper.coef.get_coef_dist(
+      lambda: get_model(train_loader, val_loader, test_loader, axs=axs, device='cpu'))
+  elif args.tune:
+    # tune parameters
+    axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader, test_loader, axs=axs, device='cpu')
+  else:
+    # just train a model and display ROC plots
+    model = get_model(train_loader, val_loader, test_loader, axs=axs)
+    axs, line2 = get_roc(model, test_loader, axs=axs)
+    lines += [line2]
+    draw_3_legends(axs, lines)
