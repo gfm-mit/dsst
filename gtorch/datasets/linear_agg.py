@@ -27,8 +27,6 @@ class SeqDataset(torch.utils.data.Dataset):
           rows += [data]
         assert len(rows)
         self.files = pd.DataFrame(rows)
-        for c in self.files.columns[:-1]:
-          self.files[c] = self.files[c] - self.files[c].mean()
 
     def __getitem__(self, index):
         row = self.files.iloc[index]
