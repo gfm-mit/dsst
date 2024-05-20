@@ -21,12 +21,6 @@ def main(train_loader, val_loader, test_loader, axs=None, device='cpu', random_s
   x = x[:, :, 0]
   y = y[:, 0]
 
-  #corr = np.corrcoef(x.numpy(), rowvar=False)
-  #print("std", np.std(x.numpy(), axis=0))
-  ##cov = np.round(x.T @ x).type(torch.int64).numpy()
-  ##cov = cov / np.max(np.abs(cov))
-  #plt.imshow(corr, vmin=-1, vmax=1, cmap='coolwarm')
-  #plt.show()
   hash = int(sha1(bytes(str(y), 'utf8')).hexdigest(), 16) & ((1<<16) - 1)
   print(f"{hash:0b}", y[:4])
   model = LogisticRegression(random_state=random_state)
