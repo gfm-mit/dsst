@@ -4,6 +4,7 @@ import sys
 import torch
 from hashlib import sha1
 import matplotlib.pyplot as plt
+import argparse
 
 from plot.palette import get_3_axes, plot_3_types, draw_3_legends
 from sklearn.linear_model import LogisticRegression
@@ -16,14 +17,14 @@ import gtorch.hyper.params
 import util.excepthook
 
 
-def main(train_loader, val_loader, test_loader, axs=None, device='cpu', random_state=None):
+def main(train_loader, val_loader, test_loader, axs=None, device='cpu', random_state=None, solver=None):
   x, y = [z[0] for z in zip(*train_loader)]
   x = x[:, :, 0]
   y = y[:, 0]
 
   hash = int(sha1(bytes(str(y), 'utf8')).hexdigest(), 16) & ((1<<16) - 1)
   print(f"{hash:0b}", y[:4])
-  model = LogisticRegression(random_state=random_state)
+  model = LogisticRegression(random_state=random_state, solver=solver, max_iter=1 << 9)
   model.fit(x, y)
   print("bias", model.intercept_, "coef", model.coef_)
 
@@ -42,11 +43,14 @@ def main(train_loader, val_loader, test_loader, axs=None, device='cpu', random_s
   draw_3_legends(axs, [line1])
 
 if __name__ == "__main__":
+  parser = argparse.ArgumentParser(description='Use SKLearn on the pytorch data loader')
+  parser.add_argument('--solver', default='lbfgs', help='SKLearn Logistic Regresion Solver')
+  args = parser.parse_args()
   axs = None
   lines = []
   sys.excepthook = util.excepthook.custom_excepthook
   train_loader, val_loader, test_loader = gtorch.datasets.linear_agg.get_loaders()
-  axs, line1 = main(train_loader, val_loader, test_loader, axs=axs, device='cpu', random_state=42)
+  axs, line1 = main(train_loader, val_loader, test_loader, axs=axs, device='cpu', random_state=42, solver=args.solver)
   lines += [line1]
   #train_loader, val_loader, test_loader = gtorch.datasets.linear.get_loaders()
   #axs, line2 = main(train_loader, val_loader, test_loader, axs=axs)
