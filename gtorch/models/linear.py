@@ -29,7 +29,6 @@ class PrintCat(torch.nn.Module):
 
 def get_model(hidden_width=512, device='cuda', classes=2):
   device = 'cpu' #TODO: jank!!!!
-  classes = 1 # TODO: jank!!!!
   if classes == 1:
     model = torch.nn.Sequential(
         Rearrange('b c 1 -> b c'),
