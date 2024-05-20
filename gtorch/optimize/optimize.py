@@ -1,5 +1,5 @@
-import numpy as np
 import pandas as pd
+from pytorch_optimizer import DAdaptLion, Prodigy
 import torch
 import shutil
 from pathlib import Path
@@ -10,7 +10,6 @@ from tqdm.notebook import tqdm
 import einops
 from einops.layers.torch import Rearrange
 from pathlib import Path
-from sklearn.metrics import roc_auc_score
 
 Path('./results/').mkdir(parents=True, exist_ok=True)
 
@@ -60,25 +59,6 @@ def optimize(epoch, model, optimizer, train_loader):
   print('Train Epoch: {} \tLoss: {:.6f}'.format(epoch, loss.item()))
   return loss.item()
 
-def metrics(model, val_loader):
-  DEVICE = next(model.parameters()).device
-  results = []
-  model.eval()
-  with torch.no_grad():
-    for data, target in val_loader:
-      output = model(data.to(DEVICE)).to('cpu')
-      results += [(
-          output.detach().numpy(),
-          target.detach().to('cpu').numpy(),
-      )]
-  logits, targets = zip(*results)
-  logits = np.concatenate(logits)
-  predictions = np.argmax(logits, axis=1)
-  targets = np.concatenate(targets)
-  #return None, (predictions == targets).mean()
-  # AUC is more useful than accuracy here.
-  return None, roc_auc_score(targets, logits[:, 1])
-
 class FakeOptimizer():
   def __init__(self, model):
     super(FakeOptimizer, self).__init__()
@@ -101,3 +81,45 @@ class FakeOptimizer():
     pass
   def state_dict(self):
     return {}
+
+
+def get_optimizer(params, model):
+  if "optimizer" in params and params["optimizer"] == "adam":
+    optimizer = torch.optim.AdamW(model.parameters(),
+                                  lr=params["learning_rate"],
+                                  betas=[
+                                      params["momentum"],
+                                      params["beta2"],
+                                  ],
+                                  weight_decay=params["weight_decay"])
+  elif "optimizer" in params and params["optimizer"] == "dadaptlion":
+    optimizer = DAdaptLion(model.parameters(),
+                           betas=[
+                               params["momentum"],
+                               params["beta2"],
+                           ],
+                           weight_decouple=True,
+                           weight_decay=params["weight_decay"])
+  elif "optimizer" in params and params["optimizer"] == "prodigy":
+    optimizer = Prodigy(model.parameters(),
+                        betas=[
+                            params["momentum"],
+                            params["beta2"],
+                        ],
+                        weight_decouple=True,
+                        weight_decay=params["weight_decay"])
+  else:
+    optimizer = torch.optim.SGD(model.parameters(),
+                                lr=params["learning_rate"],
+                                momentum=params["momentum"],
+                                weight_decay=params["weight_decay"])
+  if "schedule" in params and params["schedule"] == "onecycle":
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(
+        optimizer,
+        max_lr=params["learning_rate"],
+        steps_per_epoch=1,
+        pct_start=params["pct_start"],
+        epochs=int(params["max_epochs"]))
+  else:
+    scheduler = FakeOptimizer(model)
+  return optimizer, scheduler

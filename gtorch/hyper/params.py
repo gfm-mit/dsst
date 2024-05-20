@@ -1,16 +1,11 @@
 #@title def one_hyperparam(), many_hyperparams():
 import numpy as np
-import pandas as pd
 import torch
-import shutil
 from pathlib import Path
-import re
-import matplotlib.pyplot as plt
-import scipy
-from tqdm import tqdm
-import einops
 
-from gtorch.optimize.optimize import optimize, metrics, FakeOptimizer
+from gtorch.optimize.metrics import metrics
+from gtorch.optimize.optimize import optimize
+from gtorch.optimize.optimize import get_optimizer
 
 Path('./results').mkdir(parents=True, exist_ok=True)
 def one_hyperparam(model, optimizer, scheduler, min_epochs, max_epochs, train_loader, val_loader):
@@ -31,16 +26,13 @@ def one_hyperparam(model, optimizer, scheduler, min_epochs, max_epochs, train_lo
     scheduler.step()
     if next_loss > max_loss and x > min_epochs:
       print("next_loss too big")
-      #model.load_state_dict(torch.load('./results/model.pth'))
       model.load_state_dict(state_dict)
-      #return dict(loss=99, accuracy=0), model
+      return dict(loss=99, accuracy=0), model
       break
     if np.isnan(next_loss):
       print("next_loss isnan")
-      #model.load_state_dict(torch.load('./results/model.pth'))
       model.load_state_dict(state_dict)
-      #torch.load()
-      #return dict(loss=99, accuracy=0), model
+      return dict(loss=99, accuracy=0), model
       break
     max_loss = next_loss
     torch.cuda.empty_cache()
@@ -63,28 +55,7 @@ def many_hyperparams(params, model_factory_fn, pretrained=False, train_loader=No
       if hasattr(layer, 'reset_parameters'):
         layer.reset_parameters()
 
-  if "optimizer" in params and params["optimizer"] == "adam":
-    optimizer = torch.optim.AdamW(model.parameters(),
-                                  lr=params["learning_rate"],
-                                  betas=[
-                                      params["momentum"],
-                                      params["beta2"],
-                                  ],
-                                  weight_decay=params["weight_decay"])
-  else:
-    optimizer = torch.optim.SGD(model.parameters(),
-                                lr=params["learning_rate"],
-                                momentum=params["momentum"],
-                                weight_decay=params["weight_decay"])
-  if "schedule" in params and params["schedule"] == "onecycle":
-    scheduler = torch.optim.lr_scheduler.OneCycleLR(
-        optimizer,
-        max_lr=params["learning_rate"],
-        steps_per_epoch=1,
-        pct_start=params["pct_start"],
-        epochs=int(params["max_epochs"]))
-  else:
-    scheduler = FakeOptimizer(model)
+  optimizer, scheduler = get_optimizer(params, model)
 
   torch.cuda.empty_cache()
   return one_hyperparam(model, optimizer, scheduler,
