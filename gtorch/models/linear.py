@@ -32,6 +32,7 @@ def get_model(hidden_width=512, device='cuda', classes=2):
   if classes == 1:
     model = torch.nn.Sequential(
         Rearrange('b c 1 -> b c'),
+        torch.nn.LayerNorm(normalized_shape=12),
         torch.nn.Linear(12, 1),
         OneCat(),
         torch.nn.LogSoftmax(dim=-1),
@@ -39,6 +40,7 @@ def get_model(hidden_width=512, device='cuda', classes=2):
   else:
     model = torch.nn.Sequential(
         Rearrange('b c 1 -> b c'),
+        torch.nn.LayerNorm(normalized_shape=12),
         torch.nn.Linear(12, classes),
         torch.nn.LogSoftmax(dim=-1),
     )
