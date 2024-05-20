@@ -2,6 +2,7 @@ einops
 lxml
 matplotlib
 pandas
+pytorch-optimizer
 scipy
 scikit-learn
 scikit-image
