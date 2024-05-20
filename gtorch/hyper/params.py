@@ -63,20 +63,28 @@ def many_hyperparams(params, model_factory_fn, pretrained=False, train_loader=No
       if hasattr(layer, 'reset_parameters'):
         layer.reset_parameters()
 
-  optimizer = torch.optim.AdamW(model.parameters(),
+  if "optimizer" in params and params["optimizer"] == "adam":
+    optimizer = torch.optim.AdamW(model.parameters(),
+                                  lr=params["learning_rate"],
+                                  betas=[
+                                      params["momentum"],
+                                      params["beta2"],
+                                  ],
+                                  weight_decay=params["weight_decay"])
+  else:
+    optimizer = torch.optim.SGD(model.parameters(),
                                 lr=params["learning_rate"],
-                                betas=[
-                                    params["momentum"],
-                                    params["beta2"],
-                                ],
+                                momentum=params["momentum"],
                                 weight_decay=params["weight_decay"])
-  scheduler = torch.optim.lr_scheduler.OneCycleLR(
-      optimizer,
-      max_lr=params["learning_rate"],
-      steps_per_epoch=1,
-      pct_start=params["pct_start"],
-      epochs=int(params["max_epochs"]))
-  #scheduler = FakeOptimizer(model)
+  if "schedule" in params and params["schedule"] == "onecycle":
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(
+        optimizer,
+        max_lr=params["learning_rate"],
+        steps_per_epoch=1,
+        pct_start=params["pct_start"],
+        epochs=int(params["max_epochs"]))
+  else:
+    scheduler = FakeOptimizer(model)
 
   torch.cuda.empty_cache()
   return one_hyperparam(model, optimizer, scheduler,
