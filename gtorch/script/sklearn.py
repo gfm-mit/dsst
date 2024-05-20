@@ -41,9 +41,8 @@ if __name__ == "__main__":
   lines = []
   sys.excepthook = util.excepthook.custom_excepthook
   train_loader, val_loader, test_loader = gtorch.datasets.linear_agg.get_loaders()
-  for _ in range(3):
-    axs, line1 = main(train_loader, val_loader, test_loader, axs=axs, device='cpu', random_state=42)
-    lines += [line1]
+  axs, line1 = main(train_loader, val_loader, test_loader, axs=axs, device='cpu', random_state=42)
+  lines += [line1]
   #train_loader, val_loader, test_loader = gtorch.datasets.linear.get_loaders()
   #axs, line2 = main(train_loader, val_loader, test_loader, axs=axs)
   draw_3_legends(axs, lines)
