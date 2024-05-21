@@ -6,8 +6,8 @@ from etl.parse_semantics import *
 from etl.parse_dynamics import *
 
 from plot.palette import *
-import gtorch.datasets.linear_agg
-import gtorch.datasets.linear
+import gtorch.datasets.linear_patient
+import gtorch.datasets.linear_box
 import gtorch.models.linear
 import gtorch.optimize.optimize
 import gtorch.hyper.params

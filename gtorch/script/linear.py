@@ -8,8 +8,8 @@ import cProfile
 
 from plot.palette import plot_3_types, get_3_axes, draw_3_legends
 import gtorch.datasets.synthetic
-import gtorch.datasets.linear_agg
-import gtorch.datasets.linear
+import gtorch.datasets.linear_patient
+import gtorch.datasets.linear_box
 import gtorch.models.linear
 import gtorch.optimize.optimize
 import gtorch.hyper.params
@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
   axs = None
   lines = []
-  train_loader, val_loader, test_loader = gtorch.datasets.linear_agg.get_loaders()
+  train_loader, val_loader, test_loader = gtorch.datasets.linear_patient.get_loaders()
   if args.coef:
     # check coefficients
     gtorch.hyper.coef.get_coef_dist(
