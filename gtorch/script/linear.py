@@ -55,16 +55,16 @@ if __name__ == "__main__":
   if args.coef:
     # check coefficients
     gtorch.hyper.coef.get_coef_dist(
-      builder=gtorch.models.linear.Linear(classes=2),
+      builder=gtorch.models.linear.Linear(n_classes=2),
       train_loader=train_loader,
       val_loader=val_loader,
       test_loader=test_loader)
   elif args.tune:
     # tune parameters
-    axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader, test_loader, axs=axs, device='cpu', builder=gtorch.models.linear.Linear(classes=2))
+    axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader, test_loader, axs=axs, device='cpu', builder=gtorch.models.linear.Linear(n_classes=2))
   else:
     # just train a model and display ROC plots
-    builder = gtorch.models.linear.Linear(classes=2)
+    builder = gtorch.models.linear.Linear(n_classes=2)
     #torch.manual_seed(42)
     base_params = builder.get_parameters()
     #with cProfile.Profile() as pr:
