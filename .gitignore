@@ -1,4 +1,4 @@
 .venv
 .DS_Store
-results/*.pth
+results/*
 scripts/local.py
