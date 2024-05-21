@@ -30,8 +30,9 @@ class PrintCat(torch.nn.Module):
     return input
 
 class Linear(gtorch.models.base.Base):
-  def __init__(self, classes=2):
-    self.classes = classes
+  def __init__(self, n_features=12, n_classes=2):
+    self.classes = n_classes
+    self.features = n_features
     super().__init__()
 
   def get_architecture(self, device='cpu', hidden_width='unused'):
@@ -39,16 +40,16 @@ class Linear(gtorch.models.base.Base):
     if self.classes == 1:
       model = torch.nn.Sequential(
           Rearrange('b c 1 -> b c'),
-          torch.nn.LayerNorm(normalized_shape=12),
-          torch.nn.Linear(12, 1),
+          torch.nn.LayerNorm(normalized_shape=self.features),
+          torch.nn.Linear(self.features, 1),
           OneCat(),
           torch.nn.LogSoftmax(dim=-1),
       )
     else:
       model = torch.nn.Sequential(
           Rearrange('b c 1 -> b c'),
-          torch.nn.LayerNorm(normalized_shape=12),
-          torch.nn.Linear(12, self.classes),
+          torch.nn.LayerNorm(normalized_shape=self.features),
+          torch.nn.Linear(self.features, self.classes),
           torch.nn.LogSoftmax(dim=-1),
       )
     model = model.to(device)
