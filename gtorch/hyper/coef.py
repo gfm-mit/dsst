@@ -11,16 +11,13 @@ def get_coef_dist(builder, train_loader, val_loader, test_loader):
   for _ in range(10):
     #torch.manual_seed(42)
     base_params = builder.get_parameters()
-    retval, model = gtorch.hyper.params.many_hyperparams(base_params, model_factory_fn=builder,
+    metrics, model = gtorch.hyper.params.setup_training_run(base_params, model_factory_fn=builder,
                                                          train_loader=train_loader, val_loader=val_loader)
     model.eval()
     coef = builder.get_coefficients(model)
-    metrics = gtorch.optimize.metrics.metrics(model, val_loader)[1]
-    coef = np.concatenate([[metrics], coef])
+    #coef = np.concatenate([[metrics], coef])
     results += [coef]
   results = pd.DataFrame(results)
-  #plt.hist(results.iloc[:, 0], bins=10)
-  #plt.show()
   for e, col in enumerate(results.columns):
     print(col)
     plt.scatter(np.random.normal(loc=e, scale=0.1, size=results.shape[0]), results.loc[:, col], label="col", alpha=0.5)

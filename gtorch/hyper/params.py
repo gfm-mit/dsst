@@ -1,4 +1,3 @@
-#@title def one_hyperparam(), many_hyperparams():
 import numpy as np
 import torch
 from pathlib import Path
@@ -9,7 +8,7 @@ from gtorch.optimize.optimize import get_optimizer
 import gtorch.models.base
 
 Path('./results').mkdir(parents=True, exist_ok=True)
-def one_hyperparam(model, optimizer, scheduler, min_epochs, max_epochs, train_loader, val_loader):
+def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_loader, val_loader):
   max_loss = 3
   resdict = dict(loss=np.nan, accuracy=np.nan)
   for x in range(max_epochs):
@@ -26,23 +25,21 @@ def one_hyperparam(model, optimizer, scheduler, min_epochs, max_epochs, train_lo
     next_loss = optimize(x, model, optimizer, train_loader)
     scheduler.step()
     if next_loss > max_loss and x > min_epochs:
-      print("next_loss too big")
+      print(f"next_loss too big: {next_loss} > {max_loss}")
       model.load_state_dict(state_dict)
-      return dict(loss=99, accuracy=0), model
+      return dict(roc=0), model
       break
     if np.isnan(next_loss):
       print("next_loss isnan")
       model.load_state_dict(state_dict)
-      return dict(loss=99, accuracy=0), model
+      return dict(roc=0), model
       break
-    max_loss = next_loss
+    max_loss = 1.5 * next_loss
     torch.cuda.empty_cache()
-    resdict = dict(zip("loss accuracy".split(), metrics(model, val_loader)))
-
-    torch.cuda.empty_cache()
+  resdict = metrics(model, val_loader)
   return resdict, model
 
-def many_hyperparams(params, model_factory_fn, pretrained=False, train_loader=None, val_loader=None):
+def setup_training_run(params, model_factory_fn, pretrained=False, train_loader=None, val_loader=None):
   assert isinstance(model_factory_fn, gtorch.models.base.Base)
   model = model_factory_fn.get_architecture(**{
       k: params[k]
@@ -60,7 +57,7 @@ def many_hyperparams(params, model_factory_fn, pretrained=False, train_loader=No
   optimizer, scheduler = get_optimizer(params, model)
 
   torch.cuda.empty_cache()
-  return one_hyperparam(model, optimizer, scheduler,
+  return one_training_run(model, optimizer, scheduler,
                         min_epochs=params["min_epochs"],
                         max_epochs=params["max_epochs"],
                         train_loader=train_loader,

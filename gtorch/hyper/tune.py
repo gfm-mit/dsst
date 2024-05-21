@@ -31,8 +31,8 @@ def main(train_loader, val_loader, test_loader, axs=None, device='cpu', classes=
     for k in spaces.columns:
       params[k] = spaces.loc[i, k]
     print("tune:", spaces.loc[i].to_dict())
-    retval, model = gtorch.hyper.params.many_hyperparams(params, model_factory_fn=builder,
-                                                         train_loader=train_loader, val_loader=val_loader)
+    retval, model = gtorch.hyper.params.setup_training_run(params, model_factory_fn=builder,
+                                                           train_loader=train_loader, val_loader=val_loader)
     results += [dict(**params, **retval)]
   results = pd.DataFrame(results)
   N = int(np.ceil(np.sqrt(spaces.shape[1])))
@@ -43,7 +43,7 @@ def main(train_loader, val_loader, test_loader, axs=None, device='cpu', classes=
     axs = axs.flatten()
   for e, k in enumerate(spaces.columns):
     plt.sca(axs[e])
-    plt.scatter(results[k], results.accuracy)
+    plt.scatter(results[k], results.roc)
     plt.xlabel(k)
     if results[k].max() < 1:
       plt.xscale('logit')

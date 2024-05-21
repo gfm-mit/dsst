@@ -16,8 +16,7 @@ def metrics(model, val_loader):
       )]
   logits, targets = zip(*results)
   logits = np.concatenate(logits)
-  predictions = np.argmax(logits, axis=1)
+  # only needed for accuracy
+  #predictions = np.argmax(logits, axis=1)
   targets = np.concatenate(targets)
-  #return None, (predictions == targets).mean()
-  # AUC is more useful than accuracy here.
-  return None, roc_auc_score(targets, logits[:, 1])
+  return dict(roc=roc_auc_score(targets, logits[:, 1]))
