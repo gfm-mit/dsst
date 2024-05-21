@@ -58,26 +58,28 @@ class Linear(gtorch.models.base.Base):
   
   def get_parameters(self):
     return dict(
-      weight_decay=1e-7,
-      momentum=0.999,
+      #solver='adam',
+      schedule='onecycle',
+      weight_decay=0,
+      momentum=0,
       beta2=0.9,
       pct_start=0.0,
 
-      max_epochs=10,
+      max_epochs=1000,
       min_epochs=0,
 
-      learning_rate=1e-3,
+      learning_rate=3e-1, # stupid edge of stability!!
       hidden_width=2,
     )
 
   def get_tuning_ranges(self):
     return dict(
-        nonce=np.arange(35),
-        #learning_rate=np.geomspace(1e-5, 1e1, 15),
-        #weight_decay=np.geomspace(1e-8, 1e0, 35), 
-        #pct_start=np.geomspace(0.005, .95, 35),
-        #max_epochs=np.linspace(5, 15, 35).astype(int),
-        #momentum=1-np.geomspace(.1, .0001, 15),
+        #nonce=np.arange(5),
+        #learning_rate=np.geomspace(1e-1, 5e-1, 15),
+        #weight_decay=np.geomspace(1e-8, 1e-4, 15), 
+        #pct_start=np.geomspace(0.01, .95, 15),
+        #max_epochs=np.geomspace(5, 100, 15).astype(int),
+        #momentum=1-np.geomspace(.1, 1e-5, 15),
         #beta2=1-np.geomspace(.5, .0001, 15),
     )
 
