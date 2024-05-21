@@ -11,7 +11,8 @@ class SeqDataset(torch.utils.data.Dataset):
         uniq_splits = np.unique(metadata.index)
         assert uniq_splits.shape[0] == 1, uniq_splits
         self.md = metadata.copy()
-        rows = []
+        features = []
+        labels = []
         for _, (pkey, coarse) in self.md.iterrows():
           csv = Path('/Users/abe/Desktop/NP/') / f"{pkey}.npy"
           data = np.load(csv)[:, 3:]
@@ -23,15 +24,16 @@ class SeqDataset(torch.utils.data.Dataset):
                            "t_max v_mag2_max a_mag2_max dv_mag2_max cw_max j_mag2_max"
                            " t_min v_mag2_min a_mag2_min dv_mag2_min cw_min j_mag2_min"
                            .split()).rename(pkey)
-          data["label"] = coarse
-          rows += [data]
-        assert len(rows)
-        self.files = pd.DataFrame(rows)
+          features += [data]
+          labels += [coarse]
+        assert len(features)
+        self.features = pd.DataFrame(features).values
+        self.labels = pd.array(labels)
+        assert self.features.shape[0] == self.labels.shape[0]
 
     def __getitem__(self, index):
-        row = self.files.iloc[index]
-        coarse = row.iloc[-1]
-        nda = row.iloc[:-1].astype(float).values[:, np.newaxis]
+        coarse = self.labels[index]
+        nda = self.features[[index], :].T
         x = torch.Tensor(nda)
         y = torch.LongTensor([coarse])
         if self.test_split:
@@ -40,7 +42,7 @@ class SeqDataset(torch.utils.data.Dataset):
           return x, y
 
     def __len__(self):
-        return self.files.shape[0]
+        return self.labels.shape[0]
 
 def get_loaders():
   labels = pd.read_csv(pathlib.Path("/Users/abe/Desktop/meta.csv")).set_index("AnonymizedID").sort_index()
