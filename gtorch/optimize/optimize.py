@@ -1,14 +1,5 @@
-import pandas as pd
 from pytorch_optimizer import DAdaptLion, Prodigy
 import torch
-import shutil
-from pathlib import Path
-import re
-import matplotlib.pyplot as plt
-import scipy
-from tqdm.notebook import tqdm
-import einops
-from einops.layers.torch import Rearrange
 from pathlib import Path
 
 Path('./results/').mkdir(parents=True, exist_ok=True)
@@ -56,7 +47,8 @@ def optimize(epoch, model, optimizer, train_loader):
     optimizer.step()
   assert loader_has_batches
   torch.save(model.state_dict(), './results/model.pth')
-  print('Train Epoch: {} \tLoss: {:.6f}'.format(epoch, loss.item()))
+  if epoch % 10 == 0:
+    print('Train Epoch: {} \tLoss: {:.6f}'.format(epoch, loss.item()))
   return loss.item()
 
 class FakeOptimizer():
