@@ -19,7 +19,7 @@ def main(train_loader, val_loader, axs=None):
   #r = q(next(iter(train_loader))[0].to('cpu'))
   #gtorch.optimize.optimize.optimize(0, q, gtorch.optimize.optimize.FakeOptimizer(q), train_loader)
   #loss, accuracy = gtorch.optimize.optimize.metrics(q, val_loader=train_loader)
-  retval, model = gtorch.hyper.params.many_hyperparams(base_params, model_factory_fn=gtorch.models.cnn.get_model,
+  retval, model = gtorch.hyper.params.setup_training_run(base_params, model_factory_fn=gtorch.models.cnn.get_model,
                                                        train_loader=train_loader, val_loader=val_loader)
 
   DEVICE = 'cpu'

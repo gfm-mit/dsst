@@ -3,6 +3,8 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 import argparse
+import sys
+import cProfile
 
 from plot.palette import plot_3_types, get_3_axes, draw_3_legends
 import gtorch.datasets.synthetic
@@ -14,16 +16,6 @@ import gtorch.hyper.params
 import gtorch.hyper.tune
 import gtorch.hyper.coef
 import util.excepthook
-import sys
-
-def get_model(train_loader, val_loader, test_loader, axs=None, device='cpu', classes=2):
-  builder = gtorch.models.linear.Linear(classes=classes)
-  #torch.manual_seed(42)
-  base_params = builder.get_parameters()
-  retval, model = gtorch.hyper.params.many_hyperparams(base_params, model_factory_fn=builder,
-                                                       train_loader=train_loader, val_loader=val_loader)
-  model.eval()
-  return model
 
 def get_roc(model, test_loader, axs=None, device='cpu'):
   results = []
@@ -52,7 +44,7 @@ if __name__ == "__main__":
   # Set the custom excepthook
   sys.excepthook = util.excepthook.custom_excepthook
 
-  parser = argparse.ArgumentParser(description='My script description')
+  parser = argparse.ArgumentParser(description='Run a linear pytorch model')
   parser.add_argument('--coef', action='store_true', help='Plot coefficients')
   parser.add_argument('--tune', action='store_true', help='Tune parameters')
   args = parser.parse_args()
@@ -72,7 +64,15 @@ if __name__ == "__main__":
     axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader, test_loader, axs=axs, device='cpu', builder=gtorch.models.linear.Linear(classes=2))
   else:
     # just train a model and display ROC plots
-    model = get_model(train_loader, val_loader, test_loader, axs=axs)
+    builder = gtorch.models.linear.Linear(classes=2)
+    #torch.manual_seed(42)
+    base_params = builder.get_parameters()
+    #with cProfile.Profile() as pr:
+    retval, model = gtorch.hyper.params.setup_training_run(base_params, model_factory_fn=builder,
+                                                        train_loader=train_loader, val_loader=val_loader)
+
+    #pr.dump_stats('results/output_file.prof')
+    model.eval()
     axs, line2 = get_roc(model, test_loader, axs=axs)
     lines += [line2]
     draw_3_legends(axs, lines)
