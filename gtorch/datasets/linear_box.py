@@ -5,6 +5,12 @@ from pathlib import Path
 import pathlib
 from hashlib import sha1
 
+def get_minmax(data):
+  return pd.Series(np.concatenate([
+     np.nanmax(data.values[:, 3:], axis=0),
+     np.nanmin(data.values[:, 3:], axis=0),
+  ]))
+
 class SeqDataset(torch.utils.data.Dataset):
     def __init__(self, metadata, test_split=False):
         self.test_split = test_split
@@ -15,10 +21,13 @@ class SeqDataset(torch.utils.data.Dataset):
         for _, (pkey, coarse) in self.md.iterrows():
           csv = Path('/Users/abe/Desktop/NP/') / f"{pkey}.npy"
           data = np.load(csv)
-          data = np.nan_to_num(data, 0)
           data = pd.DataFrame(data, columns="symbol task box t v_mag2 a_mag2 dv_mag2 cw j_mag2".split())
-          data = data.groupby("symbol task box".split()).apply(lambda g: g.mean(skipna=True))
-          data = data.reset_index(drop=True).drop(columns="symbol task box".split())
+          data = data.groupby("symbol task box".split()).apply(get_minmax)
+          #data.columns = (
+          #   "t_max v_mag2_max a_mag2_max dv_mag2_max cw_max j_mag2_max"
+          #   " t_min v_mag2_min a_mag2_min dv_mag2_min cw_min j_mag2_min"
+          #).split()
+          data = data.reset_index(drop=True)
           data["pkey"] = pkey
           data["label"] = coarse
           data = data.set_index("pkey")
