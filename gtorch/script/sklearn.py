@@ -17,7 +17,7 @@ import gtorch.hyper.params
 import util.excepthook
 
 
-def main(train_loader, val_loader, test_loader, axs=None, device='cpu', random_state=None, solver=None, combiner=None):
+def main(train_loader, val_loader, test_loader, axs=None, random_state=None, solver=None, combiner=None):
   x, y = [z[0] for z in zip(*train_loader)]
   x = x[:, :, 0]
   y = y[:, 0]
@@ -77,13 +77,6 @@ if __name__ == "__main__":
   lines = []
   sys.excepthook = util.excepthook.custom_excepthook
   train_loader, val_loader, test_loader = gtorch.datasets.linear_patient.get_loaders()
-  axs, line1 = main(train_loader, val_loader, test_loader, axs=axs, device='cpu', random_state=42, solver=args.solver)
-  #lines += [line1]
-  #train_loader, val_loader, test_loader = gtorch.datasets.linear_box.get_loaders()
-  #axs, line2 = main(train_loader, val_loader, test_loader, axs=axs, device='cpu', random_state=42, solver=args.solver)
-  #lines += [line2]
-  #train_loader, val_loader, test_loader = gtorch.datasets.linear_box.get_loaders()
-  #axs, line3 = main(train_loader, val_loader, test_loader, axs=axs, device='cpu', random_state=42, solver=args.solver,
-  #                  combiner=gtorch.datasets.linear_box.combiner)
-  #lines += [line3]
-  #draw_3_legends(axs, lines)
+  axs, line1 = main(train_loader, val_loader, test_loader, axs=axs, random_state=42, solver=args.solver)
+  lines += [line1]
+  draw_3_legends(axs, lines)
