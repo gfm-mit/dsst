@@ -15,11 +15,6 @@ os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 
 import gtorch.models.base
 
-class NegCat(torch.nn.Module):
-  def forward(self, input):
-    #return torch.cat([input, -input, torch.ones([input.shape[0], 1, 1])], axis=1)
-    return torch.cat([input, -input], axis=1)
-
 class OneCat(torch.nn.Module):
   def forward(self, input):
     return torch.cat([torch.zeros([input.shape[0], 1]), input], axis=1)

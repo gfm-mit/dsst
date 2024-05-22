@@ -1,87 +1,86 @@
-#@title def get_jank_model(Linear):
 import numpy as np
 import pandas as pd
 import torch
-import shutil
-from pathlib import Path
-import re
-import matplotlib.pyplot as plt
-import scipy
-from tqdm.notebook import tqdm
-import einops
-import torchvision
 from einops.layers.torch import Rearrange
 import os
 os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 
-def get_model(hidden_width=32, device='cpu', classes=2):
-  width2 = hidden_width // 2
-  model = torch.nn.Sequential(
-      torch.nn.Conv2d(
-          in_channels=1,
-          out_channels=width2,
-          kernel_size=3,
-          stride=1,
-          padding=1,
-          bias=False,
-      ),
-      torch.nn.ReLU6(),
-      torch.nn.BatchNorm2d(width2), 
-      torch.nn.MaxPool2d(2, 2),
+import gtorch.models.base
 
-      # efficientnet block
-      torch.nn.Conv2d(
-          in_channels=width2,
-          out_channels=hidden_width,
-          kernel_size=1,
-          stride=1,
-          padding=0,
-          bias=False,
-      ),
-      torch.nn.ReLU6(),
-      torch.nn.BatchNorm2d(hidden_width), 
-      torch.nn.Conv2d(
-          in_channels=hidden_width,
-          groups=hidden_width,
-          out_channels=hidden_width,
-          kernel_size=3,
-          stride=1,
-          padding=1,
-          bias=False,
-      ),
-      torch.nn.ReLU(),
-      torch.nn.BatchNorm2d(hidden_width), 
-      torchvision.ops.SqueezeExcitation(hidden_width, hidden_width),
-      torch.nn.ReLU(),
-      torch.nn.BatchNorm2d(hidden_width), 
-      torch.nn.Conv2d(
-          in_channels=hidden_width,
-          out_channels=width2,
-          kernel_size=1,
-          stride=1,
-          padding=0,
-          bias=False,
-      ),
-      torch.nn.ReLU(),
-      torch.nn.BatchNorm2d(width2), 
+class PrintCat(torch.nn.Module):
+  def forward(self, input):
+    print("shape", input.shape)
+    exit(0)
+    #print(input[:, :, 0].T)
+    return input
 
-      # some stuff
-      torch.nn.AdaptiveMaxPool2d(1),
-      Rearrange('b c 1 1 -> b c'),
-      torch.nn.Linear(width2, 2),
-      torch.nn.Softmax(dim=-1),
-  )
-  model = model.to(device)
-  base_params = dict(
-    weight_decay=1e-4,
-    momentum=0.,
-    beta2=0.,
-    pct_start=0.1,
+class Cnn(gtorch.models.base.Base):
+  def __init__(self, n_features=12, n_classes=2):
+    self.classes = n_classes
+    self.features = n_features
+    super().__init__()
 
-    max_epochs=5,
-    min_epochs=2,
+  def get_architecture(self, device='cpu', hidden_width='unused'):
+    device = 'cpu' #TODO: jank!!!!
+    model = torch.nn.Sequential(
+        # b c h w
+        torch.nn.LayerNorm([28, 28]),
+        torch.nn.Conv2d(
+            in_channels=1,
+            out_channels=self.features,
+            kernel_size=3,
+            stride=1,
+            padding=1,
+            bias=False,
+        ),
+        torch.nn.AdaptiveAvgPool2d((1, 1)),
+        Rearrange('b c 1 1 -> b c'),
+        torch.nn.Linear(self.features, self.classes),
+        torch.nn.LogSoftmax(dim=-1),
+    )
+    model = model.to(device)
+    return model
+  
+  def get_parameters(self):
+    return dict(
+      #solver='adam',
+      schedule='onecycle',
+      weight_decay=0,
+      momentum=0,
+      beta2=0.9,
+      pct_start=0.0,
 
-    learning_rate=1e-4,
-    hidden_width=8,
-  )
-  return model, base_params
+      max_epochs=10,
+      min_epochs=0,
+
+      learning_rate=3e-1, # stupid edge of stability!!
+      hidden_width=2,
+    )
+
+  def get_tuning_ranges(self):
+    return dict(
+        #nonce=np.arange(5),
+        #learning_rate=np.geomspace(1e-1, 5e-1, 15),
+        #weight_decay=np.geomspace(1e-8, 1e-4, 15), 
+        #pct_start=np.geomspace(0.01, .95, 15),
+        #max_epochs=np.geomspace(5, 100, 15).astype(int),
+        #momentum=1-np.geomspace(.1, 1e-5, 15),
+        #beta2=1-np.geomspace(.5, .0001, 15),
+    )
+
+  def get_coefficients(self, model):
+    if self.classes == 2:
+      return pd.Series(
+        np.concatenate([
+          [model.state_dict()['2.bias'].numpy()[1]
+          - model.state_dict()['2.bias'].numpy()[0]],
+          model.state_dict()['2.weight'].numpy()[1]
+          - model.state_dict()['2.weight'].numpy()[0]
+        ])
+      )
+    return pd.Series(
+      np.concatenate([
+        model.state_dict()['1.bias'].numpy(),
+        model.state_dict()['1.weight'].numpy().flatten(),
+      ])
+    )

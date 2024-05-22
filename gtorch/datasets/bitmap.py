@@ -11,8 +11,8 @@ import einops
 import pathlib
 
 class SeqDataset(torch.utils.data.Dataset):
-    def __init__(self, metadata, trunc=512):
-        self.trunc = trunc
+    def __init__(self, metadata, test_split=False):
+        self.test_split = test_split
         uniq_splits = np.unique(metadata.index)
         assert uniq_splits.shape[0] == 1, uniq_splits
         self.md = metadata.copy()
@@ -42,7 +42,10 @@ class SeqDataset(torch.utils.data.Dataset):
         nda = self.files.iloc[index, -2].toarray()
         x = torch.Tensor(nda[np.newaxis, :, :])
         y = torch.LongTensor([coarse])
-        return x, y
+        if self.test_split:
+          return x, y, index
+        else:
+          return x, y
 
     def __len__(self):
         return self.files.shape[0]
@@ -56,11 +59,9 @@ def get_loaders():
   labels["split"] = np.where(split == 0, 'test', np.where(split == 1, 'validation', 'train'))
   labels = labels.set_index("split")
   train_data = SeqDataset(labels.loc["train"])
-  #val_data = SeqDataset(metadata.loc["val"])
-  #test_data = SeqDataset(metadata.loc["test"])
+  val_data = SeqDataset(labels.loc["train"])
+  test_data = SeqDataset(labels.loc["train"], test_split=True)
   train_loader = torch.utils.data.DataLoader(train_data, batch_size=64, shuffle=True)
-  #val_loader = torch.utils.data.DataLoader(
-  #    val_data, batch_size=1000, shuffle=True, collate_fn=collate_fn_padd)
-  #test_loader = torch.utils.data.DataLoader(
-  #    test_data, batch_size=1000, shuffle=True, collate_fn=collate_fn_padd)
-  return train_loader
+  val_loader = torch.utils.data.DataLoader(val_data, batch_size=64, shuffle=True)
+  test_loader = torch.utils.data.DataLoader(test_data, batch_size=64, shuffle=True)
+  return train_loader, val_loader, test_loader

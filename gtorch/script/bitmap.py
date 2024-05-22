@@ -1,57 +1,66 @@
 import pandas as pd
-import pathlib
-import matplotlib.pyplot as plt
+import numpy as np
 import torch
+import matplotlib.pyplot as plt
+import argparse
+import sys
+import cProfile
 
-from etl.parse_semantics import *
-from etl.parse_dynamics import *
-
-from plot.palette import *
+from plot.palette import plot_3_types, get_3_axes, draw_3_legends
 import gtorch.datasets.bitmap
 import gtorch.models.cnn
 import gtorch.optimize.optimize
 import gtorch.hyper.params
-import cProfile
+import gtorch.hyper.tune
+import util.excepthook
 
-def main(train_loader, val_loader, axs=None):
-  model, base_params = gtorch.models.cnn.get_model(hidden_width=4, device='cpu', classes=1)
-  base_params["max_epochs"] = 3
-  #r = q(next(iter(train_loader))[0].to('cpu'))
-  #gtorch.optimize.optimize.optimize(0, q, gtorch.optimize.optimize.FakeOptimizer(q), train_loader)
-  #loss, accuracy = gtorch.optimize.optimize.metrics(q, val_loader=train_loader)
-  retval, model = gtorch.hyper.params.setup_training_run(base_params, model_factory_fn=gtorch.models.cnn.get_model,
-                                                       train_loader=train_loader, val_loader=val_loader)
-
-  DEVICE = 'cpu'
+def get_roc(model, test_loader, axs=None, device='cpu'):
   results = []
-  model.eval()
   with torch.no_grad():
-    for idx, (data, target) in enumerate(val_loader):
+    for idx, (data, target, g) in enumerate(test_loader):
       #print(target)
-      output = model(data.to(DEVICE)).to('cpu')
-      results += [(
-          output.detach().numpy(),
-          target.detach().to('cpu').numpy(),
-      )]
+      output = model(data.to(device)).to('cpu')
+      results += [pd.DataFrame(dict(
+          logits=output.detach().numpy()[:, 1],
+          targets=target.detach().to('cpu').numpy()[:, 0],
+          groups=g,
+      ))]
       if idx % 100 == 0:
         print(idx)
-  logits, targets = zip(*results)
+  # TODO: why is this thing not working at all?
+  df = pd.concat(results)
+  df = df.groupby("groups").mean()
+  logits, targets = df.logits.values, df.targets.values
 
   axs = get_3_axes() if axs is None else axs
-  logits = logits[0][:, 0]
-  targets = targets[0][:, 0]
-  #print(pd.DataFrame(dict(logits=logits, targets=targets)).head())
   line1 = plot_3_types(logits, targets, axs)
   return axs, line1
-  draw_3_legends(axs, [line1])
 
 if __name__ == "__main__":
+  # Set the custom excepthook
+  sys.excepthook = util.excepthook.custom_excepthook
+
+  parser = argparse.ArgumentParser(description='Run a linear pytorch model')
+  parser.add_argument('--tune', action='store_true', help='Tune parameters')
+  args = parser.parse_args()
+
   axs = None
-  train_loader = gtorch.datasets.bitmap.get_loaders()
-  val_loader = train_loader #TODO: evil!!
-  axs, line1 = main(train_loader, val_loader, axs=axs)
-  train_loader = gtorch.datasets.bitmap.get_loaders()
-  val_loader = train_loader #TODO: evil!!
-  axs, line2 = main(train_loader, val_loader, axs=axs)
-  draw_3_legends(axs, [line1, line2])
-  #cProfile.run('main()', 'output_file.prof')
+  lines = []
+  train_loader, val_loader, test_loader = gtorch.datasets.bitmap.get_loaders()
+  if args.tune:
+    # tune parameters
+    axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader, test_loader, axs=axs, device='cpu', builder=gtorch.models.cnn.Cnn(n_classes=2))
+  else:
+    # just train a model and display ROC plots
+    builder = gtorch.models.cnn.Cnn(n_classes=2)
+    #torch.manual_seed(42)
+    base_params = builder.get_parameters()
+    #with cProfile.Profile() as pr:
+    retval, model = gtorch.hyper.params.setup_training_run(base_params, model_factory_fn=builder,
+                                                        train_loader=train_loader, val_loader=val_loader)
+
+    #pr.dump_stats('results/output_file.prof')
+    model.eval()
+    axs, line1 = get_roc(model, test_loader, axs=axs)
+    lines += [line1]
+    draw_3_legends(axs, lines)
