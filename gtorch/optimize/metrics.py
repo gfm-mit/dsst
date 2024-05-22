@@ -22,14 +22,15 @@ def metrics(model, val_loader):
   targets = np.concatenate(targets)
   return dict(roc=roc_auc_score(targets, logits[:, 1]))
 
-def get_combined_roc(model, test_loader, device='cpu', combine_fn=None):
+def get_combined_roc(model, test_loader, combine_fn=None):
   logits = []
   targets = []
   groups = []
+  DEVICE = next(model.parameters()).device
   with torch.no_grad():
     for idx, (data, target, g) in enumerate(test_loader):
       #print(target)
-      output = model(data.to(device)).to('cpu')
+      output = model(data.to(DEVICE)).to('cpu')
       logits += [output.detach().numpy()[:, 1]]
       targets += [target.detach().to('cpu').numpy()[:, 0]]
       groups += [g]

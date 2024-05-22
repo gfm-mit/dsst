@@ -3,7 +3,6 @@ import pandas as pd
 import torch
 from einops.layers.torch import Rearrange
 import os
-os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 
 import gtorch.models.base
 
@@ -15,13 +14,13 @@ class PrintCat(torch.nn.Module):
     return input
 
 class Cnn(gtorch.models.base.Base):
-  def __init__(self, n_features=12, n_classes=2):
+  def __init__(self, n_features=12, n_classes=2, device='cpu'):
     self.classes = n_classes
     self.features = n_features
+    self.device = device
     super().__init__()
 
-  def get_architecture(self, device='cpu', hidden_width='unused'):
-    device = 'cpu' #TODO: jank!!!!
+  def get_architecture(self, hidden_width='unused'):
     model = torch.nn.Sequential(
         # b c h w
         torch.nn.LayerNorm([28, 28]),
@@ -38,7 +37,7 @@ class Cnn(gtorch.models.base.Base):
         torch.nn.Linear(self.features, self.classes),
         torch.nn.LogSoftmax(dim=-1),
     )
-    model = model.to(device)
+    model = model.to(self.device)
     return model
   
   def get_parameters(self):
