@@ -38,7 +38,6 @@ def get_roc(model, test_loader, axs=None, device='cpu'):
   axs = get_3_axes() if axs is None else axs
   line1 = plot_3_types(logits, targets, axs)
   return axs, line1
-  draw_3_legends(axs, [line1])
 
 if __name__ == "__main__":
   # Set the custom excepthook
@@ -47,6 +46,7 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Run a linear pytorch model')
   parser.add_argument('--coef', action='store_true', help='Plot coefficients')
   parser.add_argument('--tune', action='store_true', help='Tune parameters')
+  parser.add_argument('--compare', action='store_true', help='Run on both linear_agg and linear')
   args = parser.parse_args()
 
   axs = None
@@ -73,6 +73,22 @@ if __name__ == "__main__":
 
     #pr.dump_stats('results/output_file.prof')
     model.eval()
-    axs, line2 = get_roc(model, test_loader, axs=axs)
-    lines += [line2]
+    axs, line1 = get_roc(model, test_loader, axs=axs)
+    lines += [line1]
+    if args.compare:
+      train_loader, val_loader, test_loader = gtorch.datasets.linear_patient.get_loaders()
+      # just train a model and display ROC plots
+      builder = gtorch.models.linear.Linear(n_classes=2)
+      #torch.manual_seed(42)
+      base_params = builder.get_parameters()
+      #with cProfile.Profile() as pr:
+      if True: # just placeholder for with cProfile
+        base_params["max_epochs"] *= 100 # because less data
+        retval, model = gtorch.hyper.params.setup_training_run(base_params, model_factory_fn=builder,
+                                                               train_loader=train_loader, val_loader=val_loader)
+
+      #pr.dump_stats('results/output_file.prof')
+      model.eval()
+      axs, line2 = get_roc(model, test_loader, axs=axs)
+      lines += [line2]
     draw_3_legends(axs, lines)
