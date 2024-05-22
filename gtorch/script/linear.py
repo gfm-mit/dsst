@@ -12,32 +12,11 @@ import gtorch.datasets.linear_patient
 import gtorch.datasets.linear_box
 import gtorch.models.linear
 import gtorch.optimize.optimize
+import gtorch.optimize.metrics
 import gtorch.hyper.params
 import gtorch.hyper.tune
 import gtorch.hyper.coef
 import util.excepthook
-
-def get_roc(model, test_loader, axs=None, device='cpu'):
-  results = []
-  with torch.no_grad():
-    for idx, (data, target, g) in enumerate(test_loader):
-      #print(target)
-      output = model(data.to(device)).to('cpu')
-      results += [pd.DataFrame(dict(
-          logits=output.detach().numpy()[:, 1],
-          targets=target.detach().to('cpu').numpy()[:, 0],
-          groups=g,
-      ))]
-      if idx % 100 == 0:
-        print(idx)
-  # TODO: why is this thing not working at all?
-  df = pd.concat(results)
-  df = df.groupby("groups").mean()
-  logits, targets = df.logits.values, df.targets.values
-
-  axs = get_3_axes() if axs is None else axs
-  line1 = plot_3_types(logits, targets, axs)
-  return axs, line1
 
 if __name__ == "__main__":
   # Set the custom excepthook
@@ -73,10 +52,11 @@ if __name__ == "__main__":
 
     #pr.dump_stats('results/output_file.prof')
     model.eval()
-    axs, line1 = get_roc(model, test_loader, axs=axs)
-    lines += [line1]
+    logits, targets = gtorch.optimize.metrics.get_combined_roc(model, test_loader, device='cpu', combine_fn=None)
+    axs = get_3_axes() if axs is None else axs
+    lines += [plot_3_types(logits, targets, axs)]
     if args.compare:
-      train_loader, val_loader, test_loader = gtorch.datasets.linear_patient.get_loaders()
+      train_loader, val_loader, test_loader = gtorch.datasets.linear_box.get_loaders()
       # just train a model and display ROC plots
       builder = gtorch.models.linear.Linear(n_classes=2)
       #torch.manual_seed(42)
@@ -89,6 +69,7 @@ if __name__ == "__main__":
 
       #pr.dump_stats('results/output_file.prof')
       model.eval()
-      axs, line2 = get_roc(model, test_loader, axs=axs)
-      lines += [line2]
+      logits, targets = gtorch.optimize.metrics.get_combined_roc(model, test_loader, device='cpu', combine_fn=gtorch.datasets.linear_box.combiner)
+      axs = get_3_axes() if axs is None else axs
+      lines += [plot_3_types(logits, targets, axs)]
     draw_3_legends(axs, lines)

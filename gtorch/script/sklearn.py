@@ -17,7 +17,7 @@ import gtorch.hyper.params
 import util.excepthook
 
 
-def main(train_loader, val_loader, test_loader, axs=None, random_state=None, solver=None, combiner=None):
+def main(train_loader, val_loader, test_loader, axs=None, random_state=None, solver=None, combine_fn=None):
   x, y = [z[0] for z in zip(*train_loader)]
   x = x[:, :, 0]
   y = y[:, 0]
@@ -36,14 +36,14 @@ def main(train_loader, val_loader, test_loader, axs=None, random_state=None, sol
   y = y[:, 0]
   logits = model.predict_log_proba(x)[:, 1]
   targets = y.numpy()
-  if combiner is not None:
-    logits, targets = combiner(logits, targets, g)
+  if combine_fn is not None:
+    logits, targets = combine_fn(logits, targets, g)
 
   axs = get_3_axes() if axs is None else axs
   line1 = plot_3_types(logits, targets, axs)
   return axs, line1
 
-def measure_conditioining(x, y, model):
+def measure_conditioning(x, y, model):
     print("cond", np.linalg.cond(x @ x.T))
     base = np.array(model.coef_)
     basis = 1e-2 * np.eye(base.shape[1])
@@ -76,7 +76,7 @@ if __name__ == "__main__":
   axs = None
   lines = []
   sys.excepthook = util.excepthook.custom_excepthook
-  train_loader, val_loader, test_loader = gtorch.datasets.linear_patient.get_loaders()
-  axs, line1 = main(train_loader, val_loader, test_loader, axs=axs, random_state=42, solver=args.solver)
+  train_loader, val_loader, test_loader = gtorch.datasets.linear_box.get_loaders()
+  axs, line1 = main(train_loader, val_loader, test_loader, axs=axs, random_state=42, solver=args.solver, combine_fn=gtorch.datasets.linear_box.combiner)
   lines += [line1]
   draw_3_legends(axs, lines)
