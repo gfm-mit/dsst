@@ -53,8 +53,6 @@ class Linear(gtorch.models.base.Base):
           torch.nn.LogSoftmax(dim=-1),
       )
     model = model.to(device)
-    torch.nn.init.zeros_(model[1].weight)
-    torch.nn.init.zeros_(model[1].bias)
     return model
   
   def get_parameters(self):
