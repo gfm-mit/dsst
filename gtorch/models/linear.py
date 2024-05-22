@@ -40,7 +40,7 @@ class Linear(gtorch.models.base.Base):
     if self.classes == 1:
       model = torch.nn.Sequential(
           Rearrange('b c 1 -> b c'),
-          torch.nn.LayerNorm(normalized_shape=self.features),
+          torch.nn.BatchNorm1d(num_features=12),
           torch.nn.Linear(self.features, 1),
           OneCat(),
           torch.nn.LogSoftmax(dim=-1),
@@ -48,7 +48,7 @@ class Linear(gtorch.models.base.Base):
     else:
       model = torch.nn.Sequential(
           Rearrange('b c 1 -> b c'),
-          torch.nn.LayerNorm(normalized_shape=self.features),
+          torch.nn.BatchNorm1d(num_features=12),
           torch.nn.Linear(self.features, self.classes),
           torch.nn.LogSoftmax(dim=-1),
       )
@@ -66,7 +66,7 @@ class Linear(gtorch.models.base.Base):
       beta2=0.9,
       pct_start=0.0,
 
-      max_epochs=1000,
+      max_epochs=10,
       min_epochs=0,
 
       learning_rate=3e-1, # stupid edge of stability!!
