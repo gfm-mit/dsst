@@ -5,6 +5,12 @@ from pathlib import Path
 import pathlib
 from hashlib import sha1
 
+def combiner(logits, targets, groups):
+  df = pd.DataFrame(dict(logits=logits, targets=targets, groups=groups))
+  df = df.groupby("groups").mean()
+  logits, targets = df.logits, df.targets
+  return logits, targets
+
 def get_minmax(data):
   return pd.Series(np.concatenate([
      np.nanmax(data.values[:, 3:], axis=0),
@@ -17,7 +23,9 @@ class SeqDataset(torch.utils.data.Dataset):
         uniq_splits = np.unique(metadata.index)
         assert uniq_splits.shape[0] == 1, uniq_splits
         self.md = metadata.copy()
-        rows = []
+        features = []
+        labels = []
+        groups = []
         for _, (pkey, coarse) in self.md.iterrows():
           csv = Path('/Users/abe/Desktop/NP/') / f"{pkey}.npy"
           data = np.load(csv)
@@ -28,26 +36,38 @@ class SeqDataset(torch.utils.data.Dataset):
           #   " t_min v_mag2_min a_mag2_min dv_mag2_min cw_min j_mag2_min"
           #).split()
           data = data.reset_index(drop=True)
-          data["pkey"] = pkey
-          data["label"] = coarse
-          data = data.set_index("pkey")
-          rows += [data]
-        assert len(rows)
-        self.files = pd.concat(rows, axis=0)
+          features += [data]
+          labels += [coarse] * data.shape[0]
+          groups += [pkey] * data.shape[0]
+        assert len(features)
+        self.features = pd.concat(features).values
+        self.labels = np.array(labels)
+        self.groups = np.array(groups)
+
+    def __getitems__(self, indices):
+        coarse = self.labels[indices, np.newaxis]
+        nda = self.features[indices, :, np.newaxis]
+        x = torch.Tensor(nda)
+        y = torch.LongTensor(coarse)
+        if self.test_split:
+          g = self.groups[indices]
+          return x, y, g
+        else:
+           return x, y
 
     def __getitem__(self, index):
-        coarse = self.files.iloc[index, -1]
-        nda = self.files.iloc[index, :-1].astype(float).values[:, np.newaxis]
-        x = torch.Tensor(nda[:, :])
-        y = torch.LongTensor([coarse])
+        coarse = self.labels[[index]]
+        nda = self.features[[index], :].T
+        x = torch.Tensor(nda)
+        y = torch.LongTensor(coarse)
         if self.test_split:
-          g = self.files.iloc[index].name
+          g = self.groups[index]
           return x, y, g
         else:
            return x, y
 
     def __len__(self):
-        return self.files.shape[0]
+        return self.labels.shape[0]
 
 def get_loaders():
   labels = pd.read_csv(pathlib.Path("/Users/abe/Desktop/meta.csv")).set_index("AnonymizedID")
@@ -60,7 +80,7 @@ def get_loaders():
   train_data = SeqDataset(labels.loc["train"])
   val_data = SeqDataset(labels.loc["train"])
   test_data = SeqDataset(labels.loc["train"], test_split=True)
-  train_loader = torch.utils.data.DataLoader(train_data, batch_size=1000, shuffle=False)
-  val_loader = torch.utils.data.DataLoader(val_data, batch_size=1000, shuffle=False)
-  test_loader = torch.utils.data.DataLoader(test_data, batch_size=1000, shuffle=False)
+  train_loader = torch.utils.data.DataLoader(train_data, batch_size=1000, shuffle=False, collate_fn=lambda x: x)
+  val_loader = torch.utils.data.DataLoader(val_data, batch_size=1000, shuffle=False, collate_fn=lambda x: x)
+  test_loader = torch.utils.data.DataLoader(test_data, batch_size=1000, shuffle=False, collate_fn=lambda x: x)
   return train_loader, val_loader, test_loader

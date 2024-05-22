@@ -28,7 +28,7 @@ class SeqDataset(torch.utils.data.Dataset):
           labels += [coarse]
         assert len(features)
         self.features = pd.DataFrame(features).values
-        self.labels = pd.array(labels)
+        self.labels = np.array(labels)
         assert self.features.shape[0] == self.labels.shape[0]
 
     def __getitem__(self, index):
