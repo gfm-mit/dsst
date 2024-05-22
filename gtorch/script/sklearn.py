@@ -17,15 +17,18 @@ import gtorch.hyper.params
 import util.excepthook
 
 
-def main(train_loader, val_loader, test_loader, axs=None, device='cpu', random_state=None, solver=None):
+def main(train_loader, val_loader, test_loader, axs=None, device='cpu', random_state=None, solver=None, combiner=None):
   x, y = [z[0] for z in zip(*train_loader)]
   x = x[:, :, 0]
   y = y[:, 0]
 
   hash = int(sha1(bytes(str(y), 'utf8')).hexdigest(), 16) & ((1<<16) - 1)
-  print(f"{hash:0b}", y[:4])
-  model = LogisticRegression(random_state=random_state, solver=solver, max_iter=1 << 9)
+  #print(f"{hash:0b}", y[:4])
+  model = LogisticRegression(random_state=random_state, solver=solver, max_iter=1 << 9, multi_class='multinomial')
   model.fit(x, y)
+
+  #return measure_conditioining(x, y, model)
+
   print("bias", model.intercept_, "coef", model.coef_)
 
   x, y, g = [z[0] for z in zip(*test_loader)]
@@ -33,14 +36,38 @@ def main(train_loader, val_loader, test_loader, axs=None, device='cpu', random_s
   y = y[:, 0]
   logits = model.predict_log_proba(x)[:, 1]
   targets = y.numpy()
-  df = pd.DataFrame(dict(logits=logits, targets=targets, groups=g))
-  df = df.groupby("groups").mean()
-  logits, targets = df.logits, df.targets
+  if combiner is not None:
+    logits, targets = combiner(logits, targets, g)
 
   axs = get_3_axes() if axs is None else axs
   line1 = plot_3_types(logits, targets, axs)
   return axs, line1
-  draw_3_legends(axs, [line1])
+
+def measure_conditioining(x, y, model):
+    print("cond", np.linalg.cond(x @ x.T))
+    base = np.array(model.coef_)
+    basis = 1e-2 * np.eye(base.shape[1])
+    def score(delta):
+      model.coef_ = base + delta
+      score = model.score(x, y)
+      model.coef_ = base
+      return score
+    delta1 = np.zeros(basis.shape[0])
+    delta2 = np.zeros_like(basis)
+    zero = score(0 * basis[0])
+    curvature = np.zeros_like(basis)
+    for i in range(basis.shape[0]):
+      delta1[i] = score(basis[i]) - zero
+    for i in range(basis.shape[0]):
+      for j in range(basis.shape[1]):
+        delta2[i, j] = score(basis[i] + basis[j]) - zero
+        curvature[i, j] = delta2[i, j] - delta1[i] - delta1[j]
+    print("vals", np.linalg.eigvals(curvature))
+    print("curvature", np.linalg.cond(curvature))
+    curvature /= np.max(np.abs(curvature))
+    plt.imshow(curvature, cmap='coolwarm', vmin=-1, vmax=1)
+    plt.show()
+    exit(0)
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Use SKLearn on the pytorch data loader')
@@ -51,7 +78,12 @@ if __name__ == "__main__":
   sys.excepthook = util.excepthook.custom_excepthook
   train_loader, val_loader, test_loader = gtorch.datasets.linear_patient.get_loaders()
   axs, line1 = main(train_loader, val_loader, test_loader, axs=axs, device='cpu', random_state=42, solver=args.solver)
-  lines += [line1]
-  #train_loader, val_loader, test_loader = gtorch.datasets.linear.get_loaders()
-  #axs, line2 = main(train_loader, val_loader, test_loader, axs=axs)
-  draw_3_legends(axs, lines)
+  #lines += [line1]
+  #train_loader, val_loader, test_loader = gtorch.datasets.linear_box.get_loaders()
+  #axs, line2 = main(train_loader, val_loader, test_loader, axs=axs, device='cpu', random_state=42, solver=args.solver)
+  #lines += [line2]
+  #train_loader, val_loader, test_loader = gtorch.datasets.linear_box.get_loaders()
+  #axs, line3 = main(train_loader, val_loader, test_loader, axs=axs, device='cpu', random_state=42, solver=args.solver,
+  #                  combiner=gtorch.datasets.linear_box.combiner)
+  #lines += [line3]
+  #draw_3_legends(axs, lines)
