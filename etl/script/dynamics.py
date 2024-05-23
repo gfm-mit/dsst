@@ -1,11 +1,12 @@
 import random
+import numpy as np
 from lxml import etree
 import pandas as pd
 import pathlib
 import matplotlib.pyplot as plt
 
-from etl.parse_semantics import *
-from etl.parse_dynamics import *
+from etl.parse_semantics import load_semantics, assign_semantics
+from etl.parse_dynamics import convert
 
 PATH = "CIN0750296502.csv"
 

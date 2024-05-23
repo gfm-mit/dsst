@@ -2,11 +2,11 @@ import pandas as pd
 import pathlib
 import matplotlib.pyplot as plt
 
-from etl.parse_semantics import *
-from etl.parse_dynamics import *
+#from etl.parse_semantics import
+#from etl.parse_dynamics import
 
-from regression.linear_aggregate import *
-from plot.palette import *
+from regression.linear_aggregate import get_predictions
+from plot.palette import get_3_axes, plot_3_types, draw_3_legends
 
 def read_dynamics(kind="graph"):
   dynamics_path = pathlib.Path("/Users/abe/Desktop/DYNAMICS/")

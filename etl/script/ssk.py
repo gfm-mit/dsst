@@ -3,7 +3,7 @@ import pandas as pd
 import pathlib
 import matplotlib.pyplot as plt
 
-from etl.parse_xml import *
+from etl.parse_xml import parse_into_path
 
 PATH = "CIN1314662258-2016-11-02-15-42-25V6.5.ssk"
 

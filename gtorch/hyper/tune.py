@@ -1,11 +1,9 @@
 import pandas as pd
 import torch
 from tqdm import tqdm
+import numpy as np
+import matplotlib.pyplot as plt
 
-from etl.parse_semantics import *
-from etl.parse_dynamics import *
-
-from plot.palette import *
 import gtorch.datasets.linear_patient
 import gtorch.datasets.linear_box
 import gtorch.models.linear

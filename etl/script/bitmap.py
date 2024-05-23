@@ -1,4 +1,5 @@
 import random
+import numpy as np
 from lxml import etree
 import pandas as pd
 import pathlib
@@ -7,8 +8,7 @@ from skimage.draw import line
 from scipy.sparse import csr_matrix, save_npz, vstack
 import re
 
-from etl.parse_semantics import *
-from etl.parse_dynamics import *
+from etl.parse_semantics import load_semantics, assign_semantics
 
 def rasterize_path_to_bitmap(points, bitmap=None):
   for i in range(len(points) - 1):
