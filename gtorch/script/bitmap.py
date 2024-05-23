@@ -14,28 +14,6 @@ import gtorch.hyper.params
 import gtorch.hyper.tune
 import util.excepthook
 
-def get_roc(model, test_loader, axs=None, device='cpu'):
-  results = []
-  with torch.no_grad():
-    for idx, (data, target, g) in enumerate(test_loader):
-      #print(target)
-      output = model(data.to(device)).to('cpu')
-      results += [pd.DataFrame(dict(
-          logits=output.detach().numpy()[:, 1],
-          targets=target.detach().to('cpu').numpy()[:, 0],
-          groups=g,
-      ))]
-      if idx % 100 == 0:
-        print(idx)
-  # TODO: why is this thing not working at all?
-  df = pd.concat(results)
-  df = df.groupby("groups").mean()
-  logits, targets = df.logits.values, df.targets.values
-
-  axs = get_3_axes() if axs is None else axs
-  line1 = plot_3_types(logits, targets, axs)
-  return axs, line1
-
 if __name__ == "__main__":
   # Set the custom excepthook
   sys.excepthook = util.excepthook.custom_excepthook
@@ -50,14 +28,14 @@ if __name__ == "__main__":
   train_loader, val_loader, test_loader = gtorch.datasets.bitmap.get_loaders()
   if args.tune:
     # tune parameters
-    axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader, test_loader, axs=axs, builder=gtorch.models.cnn.Cnn(n_classes=2, device='cpu'))
+    axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader, test_loader, axs=axs, builder=gtorch.models.cnn.Cnn(n_classes=2, device=args.device, n_features=12))
   else:
-    builder = gtorch.models.cnn.Cnn(n_classes=2, device='cpu')
+    builder = gtorch.models.cnn.Cnn(n_classes=2, device=args.device, n_features=12)
     #torch.manual_seed(42)
     base_params = builder.get_parameters()
     with cProfile.Profile() as pr:
       retval, model = gtorch.hyper.params.setup_training_run(base_params, model_factory_fn=builder,
-                                                          train_loader=train_loader, val_loader=val_loader)
+                                                             train_loader=train_loader, val_loader=val_loader)
     pr.dump_stats('results/output_file.prof')
     model.eval()
     logits, targets = gtorch.optimize.metrics.get_combined_roc(model, test_loader, combine_fn=gtorch.datasets.linear_box.combiner)
