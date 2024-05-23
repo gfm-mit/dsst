@@ -20,8 +20,7 @@ class SeqDataset(torch.utils.data.Dataset):
               np.nanmax(data, axis=0),
               np.nanmin(data, axis=0),
           ])
-          data = pd.Series(data, index=
-                           "t_max v_mag2_max a_mag2_max dv_mag2_max cw_max j_mag2_max"
+          data = pd.Series(data, index="t_max v_mag2_max a_mag2_max dv_mag2_max cw_max j_mag2_max"
                            " t_min v_mag2_min a_mag2_min dv_mag2_min cw_min j_mag2_min"
                            .split()).rename(pkey)
           features += [data]

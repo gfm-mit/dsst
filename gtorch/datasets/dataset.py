@@ -38,8 +38,8 @@ def collate_fn_padd(batch):
     max_l = np.max([nda.shape[0] for nda in features])
 
     # TODO: silly to go to numpy and back to tensors
-    def pad_to(seq, l):
-      dl = l - seq.shape[0]
+    def pad_to(seq, pad_l):
+      dl = pad_l - seq.shape[0]
       return np.pad(seq, [(0, dl), (0, 0)])
     features = np.stack([
         pad_to(x, max_l)
@@ -54,7 +54,7 @@ def get_loaders():
   #assert(features.index.difference(labels.index).empty), (features.index, labels.index)
   labels = labels.Diagnosis[labels.Diagnosis.isin(["Healthy Control", "Dementia-AD senile onset"])] == "Dementia-AD senile onset"
   train = labels[labels.index.astype(str).map(hash).astype(np.uint64) % 5 > 1]
-  validation = labels[labels.index.astype(str).map(hash).astype(np.uint64) % 5 == 1]
+  #validation = labels[labels.index.astype(str).map(hash).astype(np.uint64) % 5 == 1]
   print(train.head())
   #train_data = SeqDataset(metadata.loc["train"])
   #val_data = SeqDataset(metadata.loc["val"])
