@@ -9,7 +9,6 @@ from skimage.draw import line
 
 from etl.parse_semantics import assign_semantics, load_semantics
 
-from etl.parse_semantics import load_semantics, assign_semantics
 
 def rasterize_path_to_bitmap(points, bitmap=None):
   for i in range(len(points) - 1):
