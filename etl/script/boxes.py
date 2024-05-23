@@ -1,8 +1,6 @@
 import random
-from lxml import etree
 import pandas as pd
 import pathlib
-import matplotlib.pyplot as plt
 
 from etl.parse_boxes import get_boxes
 

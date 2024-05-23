@@ -1,6 +1,5 @@
 import random
 import numpy as np
-from lxml import etree
 import pandas as pd
 import pathlib
 import matplotlib.pyplot as plt

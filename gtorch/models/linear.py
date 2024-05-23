@@ -2,15 +2,7 @@
 import numpy as np
 import pandas as pd
 import torch
-import shutil
-from pathlib import Path
-import re
-import matplotlib.pyplot as plt
-import scipy
-from tqdm.notebook import tqdm
-import einops
 from einops.layers.torch import Rearrange
-import os
 
 import gtorch.models.base
 
@@ -48,7 +40,7 @@ class Linear(gtorch.models.base.Base):
       )
     model = model.to(self.device)
     return model
-  
+
   def get_parameters(self):
     return dict(
       #solver='adam',
@@ -69,7 +61,7 @@ class Linear(gtorch.models.base.Base):
     return dict(
         #nonce=np.arange(5),
         #learning_rate=np.geomspace(1e-1, 5e-1, 15),
-        #weight_decay=np.geomspace(1e-8, 1e-4, 15), 
+        #weight_decay=np.geomspace(1e-8, 1e-4, 15),
         #pct_start=np.geomspace(0.01, .95, 15),
         #max_epochs=np.geomspace(5, 100, 15).astype(int),
         #momentum=1-np.geomspace(.1, 1e-5, 15),

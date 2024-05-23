@@ -44,7 +44,7 @@ def setup_training_run(params, model_factory_fn, pretrained=False, train_loader=
   model = model_factory_fn.get_architecture(**{
       k: params[k]
       for k in "hidden_width".split()
-      })
+  })
 
   if pretrained:
     network_state_dict = torch.load('sequence_pretrain.pth')
@@ -58,7 +58,7 @@ def setup_training_run(params, model_factory_fn, pretrained=False, train_loader=
 
   torch.cuda.empty_cache()
   return one_training_run(model, optimizer, scheduler,
-                        min_epochs=params["min_epochs"],
-                        max_epochs=params["max_epochs"],
-                        train_loader=train_loader,
-                        val_loader=val_loader)
+                          min_epochs=params["min_epochs"],
+                          max_epochs=params["max_epochs"],
+                          train_loader=train_loader,
+                          val_loader=val_loader)

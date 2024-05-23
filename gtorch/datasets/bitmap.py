@@ -1,13 +1,8 @@
 import numpy as np
 import pandas as pd
 import torch
-import shutil
 from pathlib import Path
-import re
-import matplotlib.pyplot as plt
 import scipy
-from tqdm import tqdm
-import einops
 import pathlib
 
 class SeqDataset(torch.utils.data.Dataset):
@@ -20,9 +15,7 @@ class SeqDataset(torch.utils.data.Dataset):
         labels = []
         groups = []
         for _, (pkey, coarse) in self.md.iterrows():
-          csv = Path('/Users/abe/Desktop/BITMAP/') / f"{pkey}.csv"
           npz = Path('/Users/abe/Desktop/BITMAP/') / f"{pkey}.npz"
-          meta = pd.read_csv(csv)
           data = scipy.sparse.load_npz(npz)
           N = np.sqrt(data.shape[1])
           assert N == int(N)

@@ -1,12 +1,7 @@
 import numpy as np
 import pandas as pd
 import torch
-import shutil
 from pathlib import Path
-import re
-import matplotlib.pyplot as plt
-import scipy
-from tqdm import tqdm
 import einops
 import pathlib
 
@@ -29,7 +24,7 @@ class SeqDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         path, coarse = self.files.iloc[index]
-        nda = np.load(str(path)) # t, c
+        nda = np.load(str(path))
         x = torch.Tensor(nda[:self.trunc, :])
         y = torch.LongTensor([coarse])
         return x, y
@@ -40,14 +35,14 @@ class SeqDataset(torch.utils.data.Dataset):
 def collate_fn_padd(batch):
     features, targets = zip(*batch)
 
-    l = np.max([nda.shape[0] for nda in features])
+    max_l = np.max([nda.shape[0] for nda in features])
 
     # TODO: silly to go to numpy and back to tensors
     def pad_to(seq, l):
       dl = l - seq.shape[0]
       return np.pad(seq, [(0, dl), (0, 0)])
     features = np.stack([
-        pad_to(x, l)
+        pad_to(x, max_l)
         for x in features
     ])
     features = np.nan_to_num(features, 0)

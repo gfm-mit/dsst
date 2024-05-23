@@ -33,7 +33,7 @@ def optimize(epoch, model, optimizer, train_loader):
     loader_has_batches = True
     optimizer.zero_grad()
     output = model(data.to(DEVICE))
-    class_weights = balance_class_weights(target)
+    #class_weights = balance_class_weights(target)
     #loss = torch.nn.functional.nll_loss(
     #    output, target.to(DEVICE), weight=class_weights.to(DEVICE))
     loss = torch.nn.functional.nll_loss(output, target[:, 0].to(DEVICE))
@@ -67,10 +67,13 @@ class FakeOptimizer():
       print("{:>10}: {:10}<-{}".format(
           ", ".join(s[::-1]), p, layer_lookup.get(l, l)
       ))
+
   def zero_grad(self):
     pass
+
   def step(self):
     pass
+
   def state_dict(self):
     return {}
 

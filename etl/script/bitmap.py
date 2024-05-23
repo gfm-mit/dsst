@@ -1,12 +1,13 @@
-import random
-import numpy as np
-from lxml import etree
-import pandas as pd
 import pathlib
-import matplotlib.pyplot as plt
-from skimage.draw import line
-from scipy.sparse import csr_matrix, save_npz, vstack
+import random
 import re
+
+import numpy as np
+import pandas as pd
+from scipy.sparse import csr_matrix, save_npz, vstack
+from skimage.draw import line
+
+from etl.parse_semantics import assign_semantics, load_semantics
 
 from etl.parse_semantics import load_semantics, assign_semantics
 

@@ -15,7 +15,7 @@ class Base(ABC):
   @abstractmethod
   def get_tuning_ranges(self):
     pass
-  
+
   @abstractmethod
   def get_coefficients(self, model):
     pass

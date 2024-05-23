@@ -17,8 +17,8 @@ class SeqDataset(torch.utils.data.Dataset):
           csv = Path('/Users/abe/Desktop/NP/') / f"{pkey}.npy"
           data = np.load(csv)[:, 3:]
           data = np.concatenate([
-             np.nanmax(data, axis=0),
-             np.nanmin(data, axis=0),
+              np.nanmax(data, axis=0),
+              np.nanmin(data, axis=0),
           ])
           data = pd.Series(data, index=
                            "t_max v_mag2_max a_mag2_max dv_mag2_max cw_max j_mag2_max"
@@ -49,7 +49,7 @@ def get_loaders():
   #assert(features.index.difference(labels.index).empty), (features.index, labels.index)
   labels = labels.Diagnosis[labels.Diagnosis.isin(["Healthy Control", "Dementia-AD senile onset"])] == "Dementia-AD senile onset"
   labels = labels.reset_index()
-  split = labels.index.astype(str).map(lambda x: int(sha1(bytes(x, 'utf8')).hexdigest(),  16) % 5)
+  split = labels.index.astype(str).map(lambda x: int(sha1(bytes(x, 'utf8')).hexdigest(), 16) % 5)
   labels["split"] = np.where(split == 0, 'test', np.where(split == 1, 'validation', 'train'))
   labels = labels.set_index("split")
   train_data = SeqDataset(labels.loc["train"])

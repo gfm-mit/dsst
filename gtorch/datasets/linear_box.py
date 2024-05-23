@@ -13,8 +13,8 @@ def combiner(logits, targets, groups):
 
 def get_minmax(data):
   return pd.Series(np.concatenate([
-     np.nanmax(data.values[:, 3:], axis=0),
-     np.nanmin(data.values[:, 3:], axis=0),
+      np.nanmax(data.values[:, 3:], axis=0),
+      np.nanmin(data.values[:, 3:], axis=0),
   ]))
 
 class SeqDataset(torch.utils.data.Dataset):
@@ -74,7 +74,7 @@ def get_loaders():
   #assert(features.index.difference(labels.index).empty), (features.index, labels.index)
   labels = labels.Diagnosis[labels.Diagnosis.isin(["Healthy Control", "Dementia-AD senile onset"])] == "Dementia-AD senile onset"
   labels = labels.reset_index()
-  split = labels.index.astype(str).map(lambda x: int(sha1(bytes(x, 'utf8')).hexdigest(),  16) % 5)
+  split = labels.index.astype(str).map(lambda x: int(sha1(bytes(x, 'utf8')).hexdigest(), 16) % 5)
   labels["split"] = np.where(split == 0, 'test', np.where(split == 1, 'validation', 'train'))
   labels = labels.set_index("split")
   train_data = SeqDataset(labels.loc["train"])

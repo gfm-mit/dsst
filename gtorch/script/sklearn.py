@@ -1,8 +1,6 @@
-import pandas as pd
 import numpy as np
 import sys
-import torch
-from hashlib import sha1
+#from hashlib import sha1
 import matplotlib.pyplot as plt
 import argparse
 
@@ -22,7 +20,7 @@ def main(train_loader, val_loader, test_loader, axs=None, random_state=None, sol
   x = x[:, :, 0]
   y = y[:, 0]
 
-  hash = int(sha1(bytes(str(y), 'utf8')).hexdigest(), 16) & ((1<<16) - 1)
+  #hash = int(sha1(bytes(str(y), 'utf8')).hexdigest(), 16) & ((1 << 16) - 1)
   #print(f"{hash:0b}", y[:4])
   model = LogisticRegression(random_state=random_state, solver=solver, max_iter=1 << 9, multi_class='multinomial')
   model.fit(x, y)
@@ -47,6 +45,7 @@ def measure_conditioning(x, y, model):
     print("cond", np.linalg.cond(x @ x.T))
     base = np.array(model.coef_)
     basis = 1e-2 * np.eye(base.shape[1])
+
     def score(delta):
       model.coef_ = base + delta
       score = model.score(x, y)

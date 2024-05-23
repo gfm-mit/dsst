@@ -1,10 +1,5 @@
-import pandas as pd
-import numpy as np
-import torch
-import matplotlib.pyplot as plt
 import argparse
 import sys
-import cProfile
 
 from plot.palette import plot_3_types, get_3_axes, draw_3_legends
 import gtorch.datasets.synthetic
@@ -46,10 +41,10 @@ if __name__ == "__main__":
     builder = gtorch.models.linear.Linear(n_classes=2, device=args.device)
     #torch.manual_seed(42)
     base_params = builder.get_parameters()
-    if True: # just a placeholder for indentation
     #with cProfile.Profile() as pr:
+    if True:  # just a placeholder for indentation
       retval, model = gtorch.hyper.params.setup_training_run(base_params, model_factory_fn=builder,
-                                                            train_loader=train_loader, val_loader=val_loader)
+                                                             train_loader=train_loader, val_loader=val_loader)
     #pr.dump_stats('results/output_file.prof')
     model.eval()
     logits, targets = gtorch.optimize.metrics.get_combined_roc(model, test_loader, combine_fn=None)
@@ -60,9 +55,9 @@ if __name__ == "__main__":
       builder = gtorch.models.linear.Linear(n_classes=2, device=args.device)
       #torch.manual_seed(42)
       base_params = builder.get_parameters()
-      base_params["max_epochs"] *= 100 # because less data
+      base_params["max_epochs"] *= 100  # because less data
       retval, model = gtorch.hyper.params.setup_training_run(base_params, model_factory_fn=builder,
-                                                              train_loader=train_loader, val_loader=val_loader)
+                                                             train_loader=train_loader, val_loader=val_loader)
 
       model.eval()
       logits, targets = gtorch.optimize.metrics.get_combined_roc(model, test_loader, combine_fn=gtorch.datasets.linear_box.combiner)
