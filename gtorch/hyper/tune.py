@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 
 import gtorch.datasets.linear_patient
 import gtorch.datasets.linear_box
-import gtorch.models.linear
 import gtorch.optimize.optimize
 import gtorch.hyper.params
 
