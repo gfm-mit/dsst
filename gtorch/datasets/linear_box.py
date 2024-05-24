@@ -58,6 +58,7 @@ class SeqDataset(torch.utils.data.Dataset):
            return x, y
 
     def __getitem__(self, index):
+        assert False, "Code should call __getitems__ instead."
         coarse = self.labels[[index]]
         nda = self.features[[index], :].T
         x = torch.Tensor(nda)
