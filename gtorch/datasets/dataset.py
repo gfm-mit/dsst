@@ -1,80 +1,82 @@
+import pathlib
+from hashlib import sha1
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import torch
-from pathlib import Path
-import einops
-import pathlib
+
+
+def combiner(logits, targets, groups):
+  df = pd.DataFrame(dict(logits=logits, targets=targets, groups=groups))
+  df = df.groupby("groups").mean()
+  logits, targets = df.logits, df.targets
+  return logits, targets
+
+def get_trunc_minmax(trunc):
+  def get_minmax(data):
+    return np.concatenate([
+      data.values[:trunc, 3:],
+      -data.values[:trunc, 3:],
+    ], axis=1)
+  return get_minmax
 
 class SeqDataset(torch.utils.data.Dataset):
-    def __init__(self, metadata, trunc=512):
+    def __init__(self, metadata, test_split=False):
+        self.test_split = test_split
         uniq_splits = np.unique(metadata.index)
         assert uniq_splits.shape[0] == 1, uniq_splits
         self.md = metadata.copy()
-        self.md.coarse = self.md.coarse.cat.codes
-        self.trunc = trunc
-        rows = []
+        features = []
+        labels = []
+        groups = []
         for _, (pkey, coarse) in self.md.iterrows():
-          for npy in (Path('TS/') / pkey).glob('**/*.npy'):
-            rows += [[*npy.parts, npy, coarse]]
-        assert len(rows)
-        self.files = pd.DataFrame(rows)
-        self.files.columns = "folder pkey symbol task iteration path coarse".split()
-        self.files = self.files.drop(columns="folder iteration".split())
-        self.files = self.files.set_index("symbol pkey task".split())
+          csv = Path('/Users/abe/Desktop/NP/') / f"{pkey}.npy"
+          data = np.load(csv)
+          data = pd.DataFrame(data, columns="symbol task box t v_mag2 a_mag2 dv_mag2 cw j_mag2".split())
+          data = data.groupby("symbol task box".split()).apply(get_trunc_minmax(128))
+          features += [data.values]
+          labels += [coarse] * data.shape[0]
+          groups += [pkey] * data.shape[0]
+        assert len(features)
+        self.features = np.concatenate(features)
+        self.labels = np.array(labels)
+        self.groups = np.array(groups)
 
-    def __getitem__(self, index):
-        path, coarse = self.files.iloc[index]
-        nda = np.load(str(path))
-        x = torch.Tensor(nda[:self.trunc, :])
-        y = torch.LongTensor([coarse])
-        return x, y
+    def __getitems__(self, indices):
+        coarse = self.labels[indices, np.newaxis]
+        nda = self.features[indices]
+
+        max_len = max([x.shape[0] for x in nda])
+        padded = np.zeros([len(indices), max_len, 12])
+        for i in range(len(indices)):
+          jagged = nda[i]
+          padded[i, :jagged.shape[0]] = jagged
+        np.nan_to_num(padded, copy=False)
+
+        x = torch.Tensor(padded)
+        y = torch.LongTensor(coarse)
+        if self.test_split:
+          g = self.groups[indices]
+          return x, y, g
+        else:
+           return x, y
 
     def __len__(self):
-        return self.files.shape[0]
-
-def collate_fn_padd(batch):
-    features, targets = zip(*batch)
-
-    max_l = np.max([nda.shape[0] for nda in features])
-
-    # TODO: silly to go to numpy and back to tensors
-    def pad_to(seq, pad_l):
-      dl = pad_l - seq.shape[0]
-      return np.pad(seq, [(0, dl), (0, 0)])
-    features = np.stack([
-        pad_to(x, max_l)
-        for x in features
-    ])
-    features = np.nan_to_num(features, 0)
-    features = einops.rearrange(features, 'b l c -> b c l')
-    return torch.Tensor(features), torch.Tensor(targets).long()
+        return self.labels.shape[0]
 
 def get_loaders():
   labels = pd.read_csv(pathlib.Path("/Users/abe/Desktop/meta.csv")).set_index("AnonymizedID")
   #assert(features.index.difference(labels.index).empty), (features.index, labels.index)
   labels = labels.Diagnosis[labels.Diagnosis.isin(["Healthy Control", "Dementia-AD senile onset"])] == "Dementia-AD senile onset"
-  train = labels[labels.index.astype(str).map(hash).astype(np.uint64) % 5 > 1]
-  #validation = labels[labels.index.astype(str).map(hash).astype(np.uint64) % 5 == 1]
-  print(train.head())
-  #train_data = SeqDataset(metadata.loc["train"])
-  #val_data = SeqDataset(metadata.loc["val"])
-  #test_data = SeqDataset(metadata.loc["test"])
-  #train_loader = torch.utils.data.DataLoader(
-  #    train_data, batch_size=64, shuffle=True, collate_fn=collate_fn_padd)
-  #val_loader = torch.utils.data.DataLoader(
-  #    val_data, batch_size=1000, shuffle=True, collate_fn=collate_fn_padd)
-  #test_loader = torch.utils.data.DataLoader(
-  #    test_data, batch_size=1000, shuffle=True, collate_fn=collate_fn_padd)
-
-  #z = next(iter(train_loader))
-  #z[0].shape, z[1].shape, z[0].sum(), z[1].sum()
-
-  ##q = ModelWrapper(512)
-  #q.reset()
-  #train(0, q, FakeOptimizer(q.parameters()), 'cuda')
-  ##tgt, pred, _ = test(q)
-  #qq = pd.DataFrame(dict(target=tgt, predicted=pred))
-  #qq = qq.target.groupby([qq.target, qq.predicted]).count().unstack()
-  #qq.index = train_loader.dataset.translate(qq.index)
-  #qq.columns = train_loader.dataset.translate(qq.columns)
-  #np.diag(qq).sum() / qq.sum().sum()
+  labels = labels.reset_index()
+  split = labels.index.astype(str).map(lambda x: int(sha1(bytes(x, 'utf8')).hexdigest(), 16) % 5)
+  labels["split"] = np.where(split == 0, 'test', np.where(split == 1, 'validation', 'train'))
+  labels = labels.set_index("split")
+  train_data = SeqDataset(labels.loc["train"])
+  val_data = SeqDataset(labels.loc["train"])
+  test_data = SeqDataset(labels.loc["train"], test_split=True)
+  train_loader = torch.utils.data.DataLoader(train_data, batch_size=1000, shuffle=False, collate_fn=lambda x: x)
+  val_loader = torch.utils.data.DataLoader(val_data, batch_size=1000, shuffle=False, collate_fn=lambda x: x)
+  test_loader = torch.utils.data.DataLoader(test_data, batch_size=1000, shuffle=False, collate_fn=lambda x: x)
+  return train_loader, val_loader, test_loader
