@@ -79,12 +79,12 @@ class Cnn(gtorch.models.base.Base):
   def get_coefficients(self, model):
     if self.classes == 2:
       return pd.Series(
-          np.concatenate([
-              [model.state_dict()['2.bias'].numpy()[1]
-               - model.state_dict()['2.bias'].numpy()[0]],
-              model.state_dict()['2.weight'].numpy()[1]
-              - model.state_dict()['2.weight'].numpy()[0]
-          ])
+        np.concatenate([
+          [model.state_dict()['2.bias'].numpy()[1]
+          - model.state_dict()['2.bias'].numpy()[0]],
+          model.state_dict()['2.weight'].numpy()[1]
+          - model.state_dict()['2.weight'].numpy()[0]
+        ])
       )
     return pd.Series(
       np.concatenate([
