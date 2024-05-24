@@ -35,12 +35,12 @@ class SeqDataset(torch.utils.data.Dataset):
           #   "t_max v_mag2_max a_mag2_max dv_mag2_max cw_max j_mag2_max"
           #   " t_min v_mag2_min a_mag2_min dv_mag2_min cw_min j_mag2_min"
           #).split()
-          data = data.reset_index(drop=True)
+          data = data.reset_index(drop=True).values
           features += [data]
           labels += [coarse] * data.shape[0]
           groups += [pkey] * data.shape[0]
         assert len(features)
-        self.features = pd.concat(features).values
+        self.features = np.concatenate(features)
         self.labels = np.array(labels)
         self.groups = np.array(groups)
 
