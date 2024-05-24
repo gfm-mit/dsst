@@ -9,9 +9,6 @@ from sklearn.linear_model import LogisticRegression
 import gtorch.datasets.synthetic
 import gtorch.datasets.linear_patient
 import gtorch.datasets.linear_box
-import gtorch.models.linear
-import gtorch.optimize.optimize
-import gtorch.hyper.params
 import util.excepthook
 
 
