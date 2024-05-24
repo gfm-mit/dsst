@@ -1,17 +1,18 @@
 import argparse
 import sys
 
-from plot.palette import plot_3_types, get_3_axes, draw_3_legends
-import gtorch.datasets.synthetic
-import gtorch.datasets.linear_patient
+import gtorch.datasets.dataset
 import gtorch.datasets.linear_box
-import gtorch.models.linear
-import gtorch.optimize.optimize
-import gtorch.optimize.metrics
+import gtorch.datasets.linear_patient
+import gtorch.hyper.coef
 import gtorch.hyper.params
 import gtorch.hyper.tune
-import gtorch.hyper.coef
+import gtorch.models.linear_bc
+import gtorch.models.linear_bnc
+import gtorch.optimize.metrics
+import gtorch.optimize.optimize
 import util.excepthook
+from plot.palette import draw_3_legends, get_3_axes, plot_3_types
 
 if __name__ == "__main__":
   # Set the custom excepthook
