@@ -1,9 +1,11 @@
+import pathlib
+from hashlib import sha1
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import torch
-from pathlib import Path
-import pathlib
-from hashlib import sha1
+
 
 def combiner(logits, targets, groups):
   df = pd.DataFrame(dict(logits=logits, targets=targets, groups=groups))

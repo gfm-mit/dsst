@@ -1,14 +1,14 @@
 import argparse
-import sys
 import cProfile
+import sys
 
-from plot.palette import plot_3_types, get_3_axes, draw_3_legends
 import gtorch.datasets.bitmap
-import gtorch.models.cnn
-import gtorch.optimize.optimize
 import gtorch.hyper.params
 import gtorch.hyper.tune
+import gtorch.models.cnn
+import gtorch.optimize.optimize
 import util.excepthook
+from plot.palette import draw_3_legends, get_3_axes, plot_3_types
 
 if __name__ == "__main__":
   # Set the custom excepthook

@@ -1,7 +1,7 @@
-import pandas as pd
-from scipy.stats import gaussian_kde
-from scipy.spatial import ConvexHull
 import numpy as np
+import pandas as pd
+from scipy.spatial import ConvexHull
+
 
 def get_roc(predicted, labels):
   points = pd.DataFrame(dict(predicted=predicted, labels=labels)).sort_values(by="predicted")

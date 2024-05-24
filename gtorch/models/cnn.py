@@ -5,6 +5,7 @@ from einops.layers.torch import Rearrange
 
 import gtorch.models.base
 
+
 class PrintCat(torch.nn.Module):
   def forward(self, input):
     print("shape", input.shape)

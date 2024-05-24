@@ -1,6 +1,7 @@
-from pytorch_optimizer import DAdaptLion, Prodigy
-import torch
 from pathlib import Path
+
+import torch
+from pytorch_optimizer import DAdaptLion, Prodigy
 
 Path('./results/').mkdir(parents=True, exist_ok=True)
 

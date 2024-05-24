@@ -1,7 +1,9 @@
+import pathlib
+
 import numpy as np
 import pandas as pd
-import pathlib
 from sklearn.linear_model import LogisticRegression
+
 
 def get_predictions(path, weight_ratio=1):
   features = pd.read_csv(path).set_index("Unnamed: 0")

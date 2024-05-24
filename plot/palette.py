@@ -1,14 +1,15 @@
-import numpy as np
-import pandas as pd
+
 import matplotlib.pyplot as plt
 from matplotlib.scale import register_scale
-from plot.probit import ProbitScale
+from sklearn.metrics import roc_auc_score
+
 from plot.log_one_minus import LogOneMinusXScale
-from plot.roc import get_roc, get_roc_convex_hull, get_roc_interpolated_convex_hull, get_slopes
-from plot.plot_library import plot_eta_percent, plot_precision_at_k, plot_roc_swets, plot_precision_recall, plot_supply_demand
-from sklearn.metrics import roc_auc_score, average_precision_score
-import pathlib
-from sklearn.linear_model import LogisticRegression
+from plot.plot_library import (plot_eta_percent, plot_precision_at_k,
+                               plot_roc_swets, plot_supply_demand)
+from plot.probit import ProbitScale
+from plot.roc import (get_roc, get_roc_convex_hull,
+                      get_roc_interpolated_convex_hull, get_slopes)
+
 
 def get_3_axes():
   fig, axs = plt.subplots(2, 2, figsize=(8, 8))#(8, 4), width_ratios=[1,2,1])

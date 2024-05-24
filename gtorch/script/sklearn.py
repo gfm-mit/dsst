@@ -1,15 +1,16 @@
-import numpy as np
+import argparse
 import sys
+
 #from hashlib import sha1
 import matplotlib.pyplot as plt
-import argparse
-
-from plot.palette import get_3_axes, plot_3_types, draw_3_legends
+import numpy as np
 from sklearn.linear_model import LogisticRegression
-import gtorch.datasets.synthetic
-import gtorch.datasets.linear_patient
+
 import gtorch.datasets.linear_box
+import gtorch.datasets.linear_patient
+import gtorch.datasets.synthetic
 import util.excepthook
+from plot.palette import draw_3_legends, get_3_axes, plot_3_types
 
 
 def main(train_loader, val_loader, test_loader, axs=None, random_state=None, solver=None, combine_fn=None):

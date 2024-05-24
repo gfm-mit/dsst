@@ -1,8 +1,9 @@
-import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 import gtorch.optimize.metrics
+
 
 def get_coef_dist(builder, train_loader, val_loader, test_loader):
   results = []

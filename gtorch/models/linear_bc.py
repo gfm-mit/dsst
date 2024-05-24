@@ -6,6 +6,7 @@ from einops.layers.torch import Rearrange
 
 import gtorch.models.base
 
+
 class OneCat(torch.nn.Module):
   def forward(self, input):
     return torch.cat([torch.zeros([input.shape[0], 1]), input], axis=1)

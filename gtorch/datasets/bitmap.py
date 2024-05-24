@@ -1,9 +1,11 @@
+import pathlib
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-import torch
-from pathlib import Path
 import scipy
-import pathlib
+import torch
+
 
 class SeqDataset(torch.utils.data.Dataset):
     def __init__(self, metadata, test_split=False):

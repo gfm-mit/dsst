@@ -1,13 +1,14 @@
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import torch
 from tqdm import tqdm
-import numpy as np
-import matplotlib.pyplot as plt
 
-import gtorch.datasets.linear_patient
 import gtorch.datasets.linear_box
-import gtorch.optimize.optimize
+import gtorch.datasets.linear_patient
 import gtorch.hyper.params
+import gtorch.optimize.optimize
+
 
 def get_spaces(**kwargs):
   print("spaces.kwargs", kwargs)

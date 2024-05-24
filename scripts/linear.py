@@ -1,8 +1,10 @@
-import pandas as pd
 import pathlib
 
+import pandas as pd
+
+from plot.palette import draw_3_legends, get_3_axes, plot_3_types
 from regression.linear_aggregate import get_predictions
-from plot.palette import get_3_axes, plot_3_types, draw_3_legends
+
 
 def read_dynamics(kind="graph"):
   dynamics_path = pathlib.Path("/Users/abe/Desktop/DYNAMICS/")

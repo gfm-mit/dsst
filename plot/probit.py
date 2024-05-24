@@ -1,8 +1,9 @@
 import numpy as np
 from matplotlib.scale import ScaleBase
+from matplotlib.ticker import LogitFormatter, LogitLocator, NullFormatter
 from matplotlib.transforms import Transform
 from scipy.stats import norm
-from matplotlib.ticker import NullFormatter, LogitLocator, LogitFormatter
+
 
 class ProbitTransform(Transform):
     input_dims = output_dims = 1

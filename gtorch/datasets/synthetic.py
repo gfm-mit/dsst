@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-import torch
 import scipy.special
+import torch
 
 LINEAR_AGG_COV = np.array([
  [877.460, -0.543, 0.228, -0.116, 1.000, -0.845, -455.043, -2.534, 0.000, 0.318, -1.197, -2.950],

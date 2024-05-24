@@ -1,6 +1,7 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy.stats import norm
+
 
 def get_log_weighted_average(x, y):
   return np.trapz(y, np.log(x)) / np.trapz(1 + 0 * y, np.log(x))
