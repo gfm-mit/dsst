@@ -37,6 +37,7 @@ def optimize(epoch, model, optimizer, train_loader):
     #class_weights = balance_class_weights(target)
     #loss = torch.nn.functional.nll_loss(
     #    output, target.to(DEVICE), weight=class_weights.to(DEVICE))
+    # TODO: if you change this, stop reporting loss as a perplexity
     loss = torch.nn.functional.nll_loss(output, target[:, 0].to(DEVICE))
     loss.backward()
     #print("target", target[0])
@@ -48,8 +49,6 @@ def optimize(epoch, model, optimizer, train_loader):
     optimizer.step()
   assert loader_has_batches
   torch.save(model.state_dict(), './results/model.pth')
-  if epoch % 10 == 0:
-    print('Train Epoch: {} \tLoss: {:.6f}'.format(epoch, loss.item()))
   return loss.item()
 
 class FakeOptimizer():

@@ -36,6 +36,8 @@ def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_
       break
     max_loss = 1.5 * next_loss
     torch.cuda.empty_cache()
+    if x % 10 == 0 or x == max_epochs - 1:
+      print('Train Epoch: {} \tPerplexity: {:.2f}'.format(x, np.exp(next_loss)))
   resdict = metrics(model, val_loader)
   return resdict, model
 
