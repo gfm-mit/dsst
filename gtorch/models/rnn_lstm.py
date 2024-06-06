@@ -2,7 +2,6 @@
 import numpy as np
 import pandas as pd
 import torch
-from einops.layers.torch import Rearrange
 from einops import rearrange
 
 import gtorch.models.base
@@ -50,8 +49,8 @@ class Rnn(gtorch.models.base.Base):
       solver='adam',
       schedule='onecycle',
       weight_decay=0,
-      momentum=1-1e-3,
-      beta2=1-3e-2,
+      momentum=1 - 1e-3,
+      beta2=1 - 3e-2,
       pct_start=0.0,
 
       max_epochs=10,
