@@ -12,7 +12,7 @@ from plot.roc import (get_roc, get_roc_convex_hull,
 
 
 def get_3_axes():
-  fig, axs = plt.subplots(2, 2, figsize=(8, 8))#(8, 4), width_ratios=[1,2,1])
+  fig, axs = plt.subplots(2, 2, figsize=(8, 8))# (8, 4), width_ratios=[1,2,1])
   axs = axs.flatten()
   return axs
 

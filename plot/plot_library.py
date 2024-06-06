@@ -120,22 +120,22 @@ def plot_eta_accuracy(eta_density, eta, idx, roc, convex, interpolated_smooth, a
   plt.ylabel('Percent of Value')
   plt.yticks([0, .25, .5, 0.75, 1], "Guessing 25% 50% 75% Oracle".split())
 
-def plot_eta_tpr_tnr(eta_density, eta, idx, roc, convex, interpolated_smooth, axs, color):
-  plt.title('pure TPR or TNR\n(equivalent)')
-  flat_idx = tpr_equiv == np.roll(tpr_equiv, 1)
-  plt.plot(eta[flat_idx], tpr_equiv[flat_idx], linestyle='--', color=color)
-  plt.plot(eta[~flat_idx], tpr_equiv[~flat_idx], color=color)
-  flat_idx = tnr_equiv == np.roll(tnr_equiv, -1)
-  plt.plot(eta[flat_idx], tnr_equiv[flat_idx], linestyle='--', color=color, alpha=0.4)
-  plt.plot(eta[~flat_idx], tnr_equiv[~flat_idx], color=color, alpha=0.4)
-  plt.xlabel('Likelihood Ratio')
-  plt.xscale('log')
-  plt.ylabel('TPR')
-  plt.ylim([0, 1])
-  ax2 = plt.gca().twinx()
-  ax2.set_ylabel('TNR', color="lightgray")
-  ax2.tick_params(axis='y', color="lightgray", labelcolor="lightgray")
-  return color
+#def plot_eta_tpr_tnr(eta_density, eta, idx, roc, convex, interpolated_smooth, axs, color):
+#  plt.title('pure TPR or TNR\n(equivalent)')
+#  flat_idx = tpr_equiv == np.roll(tpr_equiv, 1)
+#  plt.plot(eta[flat_idx], tpr_equiv[flat_idx], linestyle='--', color=color)
+#  plt.plot(eta[~flat_idx], tpr_equiv[~flat_idx], color=color)
+#  flat_idx = tnr_equiv == np.roll(tnr_equiv, -1)
+#  plt.plot(eta[flat_idx], tnr_equiv[flat_idx], linestyle='--', color=color, alpha=0.4)
+#  plt.plot(eta[~flat_idx], tnr_equiv[~flat_idx], color=color, alpha=0.4)
+#  plt.xlabel('Likelihood Ratio')
+#  plt.xscale('log')
+#  plt.ylabel('TPR')
+#  plt.ylim([0, 1])
+#  ax2 = plt.gca().twinx()
+#  ax2.set_ylabel('TNR', color="lightgray")
+#  ax2.tick_params(axis='y', color="lightgray", labelcolor="lightgray")
+#  return color
 
 def plot_eta_density(eta_density, eta, idx, roc, convex, interpolated_smooth, axs, color):
   window = (1e-1 < eta) & (eta < 1e1)
