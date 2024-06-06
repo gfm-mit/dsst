@@ -5,7 +5,7 @@ import sys
 import gtorch.datasets.bitmap
 import gtorch.hyper.params
 import gtorch.hyper.tune
-import gtorch.models.cnn
+import gtorch.models.cnn_2d
 import gtorch.optimize.optimize
 import util.excepthook
 from plot.palette import draw_3_legends, get_3_axes, plot_3_types
@@ -24,9 +24,9 @@ if __name__ == "__main__":
   train_loader, val_loader, test_loader = gtorch.datasets.bitmap.get_loaders()
   if args.tune:
     # tune parameters
-    axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader, test_loader, axs=axs, builder=gtorch.models.cnn.Cnn(n_classes=2, device=args.device, n_features=12))
+    axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader, test_loader, axs=axs, builder=gtorch.models.cnn_2d.Cnn(n_classes=2, device=args.device, n_features=12))
   else:
-    builder = gtorch.models.cnn.Cnn(n_classes=2, device=args.device, n_features=12)
+    builder = gtorch.models.cnn_2d.Cnn(n_classes=2, device=args.device, n_features=12)
     #torch.manual_seed(42)
     base_params = builder.get_parameters()
     with cProfile.Profile() as pr:
