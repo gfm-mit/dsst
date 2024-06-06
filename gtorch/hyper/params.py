@@ -46,7 +46,7 @@ def setup_training_run(params, model_factory_fn, pretrained=False, train_loader=
   model = model_factory_fn.get_architecture(**{
       k: params[k]
       for k in "hidden_width".split()
-      })
+  })
 
   if pretrained:
     network_state_dict = torch.load('sequence_pretrain.pth')
