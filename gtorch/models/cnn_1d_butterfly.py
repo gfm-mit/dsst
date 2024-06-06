@@ -6,9 +6,14 @@ from einops.layers.torch import Rearrange
 
 import gtorch.models.base
 
-class OneCat(torch.nn.Module):
+class PadCat(torch.nn.Module):
+  def __init__(self, width=8):
+    super().__init__()
+    self.width = width
+
   def forward(self, input):
-    return torch.cat([torch.zeros([input.shape[0], 1]), input], axis=1)
+    n_h = int(np.ceil(input.shape[2] / self.width)) * self.width
+    return torch.nn.functional.pad(input, (0, n_h - input.shape[2]))
 
 class PrintCat(torch.nn.Module):
   def forward(self, input):
@@ -16,7 +21,7 @@ class PrintCat(torch.nn.Module):
     return input
 
 class Cnn(gtorch.models.base.Base):
-  def __init__(self, n_features=12, n_classes=2, device='cpu'):
+  def __init__(self, n_features=128, n_classes=2, device='cpu'):
     self.classes = n_classes
     self.features = n_features
     self.device = device
@@ -26,27 +31,37 @@ class Cnn(gtorch.models.base.Base):
     model = torch.nn.Sequential(
         # b n c
         Rearrange('b n c -> b c n'),
-        torch.nn.Conv1d(
+        PadCat(8),
+        Rearrange('b c (h w) -> b c h w', h=8),
+        # separable 5x5: slow on CPU, might be fast on GPU
+        torch.nn.Conv2d(
           12,
           self.features,
-          kernel_size=5,
-          stride=5),
-        torch.nn.BatchNorm1d(num_features=self.features),
-        torch.nn.Conv1d(
+          kernel_size=(1, 5),
+          stride=(1, 5)),
+        torch.nn.BatchNorm2d(num_features=self.features),
+        torch.nn.Conv2d(
           self.features,
           self.features,
-          kernel_size=5,
-          dilation=4),
-        torch.nn.BatchNorm1d(num_features=self.features),
-        torch.nn.Conv1d(
+          kernel_size=(5, 1),
+          stride=(5, 1)),
+        torch.nn.BatchNorm2d(num_features=self.features),
+        torch.nn.AdaptiveMaxPool2d((8, 8)),
+        # separable 5x5: slow on CPU, might be fast on GPU
+        torch.nn.Conv2d(
           self.features,
           self.features,
-          kernel_size=5,
-          padding=32,
-          dilation=16),
-        torch.nn.BatchNorm1d(num_features=self.features),
-        torch.nn.AdaptiveMaxPool1d(1),
-        Rearrange('b c 1 -> b c'),
+          kernel_size=(1, 5),
+          stride=(1, 5)),
+        torch.nn.BatchNorm2d(num_features=self.features),
+        torch.nn.Conv2d(
+          self.features,
+          self.features,
+          kernel_size=(5, 1),
+          stride=(5, 1)),
+        torch.nn.BatchNorm2d(num_features=self.features),
+        torch.nn.AdaptiveMaxPool2d((1, 1)),
+        Rearrange('b c 1 1 -> b c'),
         torch.nn.BatchNorm1d(num_features=self.features),
         torch.nn.Linear(self.features, self.classes),
         torch.nn.LogSoftmax(dim=-1),
