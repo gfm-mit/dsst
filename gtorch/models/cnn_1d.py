@@ -47,7 +47,7 @@ class Cnn(gtorch.models.base.Base):
         torch.nn.BatchNorm1d(num_features=self.features),
         torch.nn.AdaptiveMaxPool1d(1),
         Rearrange('b c 1 -> b c'),
-        torch.nn.BatchNorm1d(num_features=12),
+        torch.nn.BatchNorm1d(num_features=self.features),
         torch.nn.Linear(self.features, self.classes),
         torch.nn.LogSoftmax(dim=-1),
     )
