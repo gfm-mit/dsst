@@ -9,6 +9,7 @@ import gtorch.hyper.params
 import gtorch.hyper.tune
 import gtorch.models.linear_bc
 import gtorch.models.linear_bnc
+import gtorch.models.cnn_1d
 import gtorch.optimize.metrics
 import gtorch.optimize.optimize
 import util.excepthook
@@ -27,36 +28,36 @@ if __name__ == "__main__":
 
   axs = None
   lines = []
-  train_loader, val_loader, test_loader = gtorch.datasets.linear_patient.get_loaders()
+  train_loader, val_loader, test_loader = gtorch.datasets.dataset.get_loaders()
   if args.coef:
     # check coefficients
     gtorch.hyper.coef.get_coef_dist(
-      builder=gtorch.models.linear.Linear(n_classes=2, device=args.device),
+      builder=gtorch.models.cnn_1d.Cnn(n_classes=2, device=args.device),
       train_loader=train_loader,
       val_loader=val_loader,
       test_loader=test_loader)
   elif args.tune:
     # tune parameters
-    axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader, test_loader, axs=axs, device=args.device, builder=gtorch.models.linear.Linear(n_classes=2, device=args.device))
+    axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader, test_loader, axs=axs, device=args.device, builder=gtorch.models.cnn_1d.Cnn(n_classes=2, device=args.device))
   else:
-    builder = gtorch.models.linear.Linear(n_classes=2, device=args.device)
+    builder = gtorch.models.cnn_1d.Cnn(n_classes=2, device=args.device)
     #torch.manual_seed(42)
     base_params = builder.get_parameters()
     #with cProfile.Profile() as pr:
     if True:  # just a placeholder for indentation
       retval, model = gtorch.hyper.params.setup_training_run(base_params, model_factory_fn=builder,
-                                                             train_loader=train_loader, val_loader=val_loader)
+                                                            train_loader=train_loader, val_loader=val_loader)
     #pr.dump_stats('results/output_file.prof')
     model.eval()
-    logits, targets = gtorch.optimize.metrics.get_combined_roc(model, test_loader, combine_fn=None)
+    logits, targets = gtorch.optimize.metrics.get_combined_roc(model, test_loader, combine_fn=gtorch.datasets.linear_box.combiner)
     axs = get_3_axes() if axs is None else axs
     lines += [plot_3_types(logits, targets, axs)]
     if args.compare:
-      train_loader, val_loader, test_loader = gtorch.datasets.linear_box.get_loaders()
-      builder = gtorch.models.linear.Linear(n_classes=2, device=args.device)
+      train_loader, val_loader, test_loader = gtorch.datasets.dataset.get_loaders()
+      builder = gtorch.models.linear_bnc.Linear(n_classes=2, device=args.device)
       #torch.manual_seed(42)
       base_params = builder.get_parameters()
-      base_params["max_epochs"] *= 100  # because less data
+      #base_params["max_epochs"] *= 100 # because less data
       retval, model = gtorch.hyper.params.setup_training_run(base_params, model_factory_fn=builder,
                                                              train_loader=train_loader, val_loader=val_loader)
 
