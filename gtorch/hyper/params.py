@@ -5,8 +5,9 @@ import numpy as np
 import torch
 
 import gtorch.models.base
+from gtorch.optimize.loss import optimize
 from gtorch.optimize.metrics import metrics
-from gtorch.optimize.optimize import get_optimizer, optimize
+from gtorch.optimize.optimizer import get_optimizer
 
 Path('./results').mkdir(parents=True, exist_ok=True)
 def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_loader, val_loader):

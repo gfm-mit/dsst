@@ -16,7 +16,7 @@ import gtorch.models.rnn_lstm
 import gtorch.models.transformer
 import gtorch.models.transformer_fft
 import gtorch.optimize.metrics
-import gtorch.optimize.optimize
+import gtorch.optimize.optimizer
 import util.excepthook
 from plot.palette import draw_3_legends, get_3_axes, plot_3_types
 

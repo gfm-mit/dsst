@@ -7,7 +7,7 @@ from tqdm import tqdm
 import gtorch.datasets.linear_box
 import gtorch.datasets.linear_patient
 import gtorch.hyper.params
-import gtorch.optimize.optimize
+import gtorch.optimize.optimizer
 
 
 def get_spaces(**kwargs):

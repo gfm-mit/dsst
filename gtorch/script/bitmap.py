@@ -6,7 +6,7 @@ import gtorch.datasets.bitmap
 import gtorch.hyper.params
 import gtorch.hyper.tune
 import gtorch.models.cnn_2d
-import gtorch.optimize.optimize
+import gtorch.optimize.optimizer
 import util.excepthook
 from plot.palette import draw_3_legends, get_3_axes, plot_3_types
 
