@@ -4,7 +4,7 @@ import torch
 from einops.layers.torch import Rearrange
 
 import gtorch.models.base
-from gtorch.models.util import OneCat, PrintCat
+#from gtorch.models.util import OneCat, PrintCat
 
 
 class Cnn(gtorch.models.base.Base):

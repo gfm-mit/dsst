@@ -1,11 +1,10 @@
-#@title def get_jank_model(Linear):
 import numpy as np
 import pandas as pd
 import torch
 from einops.layers.torch import Rearrange
 
 import gtorch.models.base
-from gtorch.models.util import OneCat, PrintCat
+#from gtorch.models.util import OneCat, PrintCat
 
 
 class Cnn(gtorch.models.base.Base):

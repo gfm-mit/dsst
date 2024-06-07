@@ -1,4 +1,3 @@
-#@title def get_jank_model(Linear):
 import numpy as np
 import torch
 

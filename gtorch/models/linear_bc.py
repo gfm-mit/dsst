@@ -1,11 +1,11 @@
-#@title def get_jank_model(Linear):
 import numpy as np
 import pandas as pd
 import torch
 from einops.layers.torch import Rearrange
 
 import gtorch.models.base
-from gtorch.models.util import OneCat, PrintCat
+from gtorch.models.util import OneCat
+
 
 class Linear(gtorch.models.base.Base):
   def __init__(self, n_features=12, n_classes=2, device='cpu'):

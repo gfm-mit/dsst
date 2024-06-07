@@ -5,7 +5,7 @@ import torch
 from einops import rearrange
 
 import gtorch.models.base
-from gtorch.models.util import OneCat, PrintCat, NoopAttention
+from gtorch.models.util import NoopAttention
 
 
 class Decoder(torch.nn.Module):

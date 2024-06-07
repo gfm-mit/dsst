@@ -1,11 +1,10 @@
-#@title def get_jank_model(Linear):
 import numpy as np
 import pandas as pd
 import torch
 from einops import rearrange
 
 import gtorch.models.base
-from gtorch.models.util import OneCat, PrintCat, FourierAttention, NoopAttention
+from gtorch.models.util import FourierAttention, NoopAttention
 
 class Decoder(torch.nn.Module):
   def __init__(self, n_features):
