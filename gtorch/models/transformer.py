@@ -10,6 +10,14 @@ class OneCat(torch.nn.Module):
   def forward(self, input):
     return torch.cat([torch.zeros([input.shape[0], 1]), input], axis=1)
 
+class NoopAttention(torch.nn.Module):
+    def forward(self, query, key, value,
+                attn_mask=None,
+                key_padding_mask=None,
+                is_causal=None,
+                need_weights=False):
+        return query
+
 class Decoder(torch.nn.Module):
   def __init__(self, n_features):
       super(Decoder, self).__init__()
@@ -24,6 +32,7 @@ class Decoder(torch.nn.Module):
         dropout=0.1,
         batch_first=False,
         bias=True)
+      decoder_layer.multihead_attn = NoopAttention() # this is used on the memory
       self.decoder = torch.nn.TransformerDecoder(decoder_layer=decoder_layer, num_layers=2)
 
   def forward(self, input):
