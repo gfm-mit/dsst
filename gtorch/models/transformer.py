@@ -18,6 +18,12 @@ class Decoder(torch.nn.Module):
         nhead=2,
         dim_feedforward=n_features,
       )
+      decoder_layer.self_attn = torch.nn.MultiheadAttention(
+        embed_dim=12,
+        num_heads=2,
+        dropout=0.1,
+        batch_first=False,
+        bias=True)
       self.decoder = torch.nn.TransformerDecoder(decoder_layer=decoder_layer, num_layers=2)
 
   def forward(self, input):
@@ -72,8 +78,8 @@ class Transformer(gtorch.models.base.Base):
         #weight_decay=np.geomspace(1e-8, 1e-4, 15),
         #pct_start=np.geomspace(0.01, .95, 15),
         #max_epochs=np.geomspace(5, 100, 15).astype(int),
-        momentum=1-np.geomspace(.1, 1e-5, 15),
-        beta2=1-np.geomspace(.5, .0001, 15),
+        #momentum=1-np.geomspace(.1, 1e-5, 15),
+        #beta2=1-np.geomspace(.5, .0001, 15),
     )
 
   def get_coefficients(self, model):
