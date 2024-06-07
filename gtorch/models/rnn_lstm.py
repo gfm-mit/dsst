@@ -11,22 +11,25 @@ class GetHidden(torch.nn.Module):
     output, (hidden, gating) = input
     return rearrange(hidden, 'd b c -> b (d c)')
 
-class Rnn(gtorch.models.base.Base):
+class Rnn(gtorch.models.base.SequenceBase):
   def __init__(self, n_layers=2, n_features=12, n_classes=2, device='cpu'):
     self.classes = n_classes
     self.features = n_features
     self.layers = n_layers
     self.device = device
     super().__init__()
+  
+  def get_lstm(self):
+    return torch.nn.LSTM(
+      input_size=12,
+      hidden_size=self.features,
+      num_layers=2,
+      batch_first=True)
 
-  def get_architecture(self, hidden_width='unused'):
+  def get_classifier_architecture(self, hidden_width='unused'):
     model = torch.nn.Sequential(
         # b n c
-        torch.nn.LSTM(
-          input_size=12,
-          hidden_size=self.features,
-          num_layers=2,
-          batch_first=True),
+        self.get_lstm(),
         GetHidden(),
         torch.nn.BatchNorm1d(num_features=self.layers * self.features),
         torch.nn.Linear(self.layers * self.features, self.classes),
