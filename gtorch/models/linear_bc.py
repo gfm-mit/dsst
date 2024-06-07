@@ -14,7 +14,7 @@ class Linear(gtorch.models.base.Base):
     self.device = device
     super().__init__()
 
-  def get_architecture(self, hidden_width='unused'):
+  def get_classifier_architecture(self, hidden_width='unused'):
     if self.classes == 1:
       model = torch.nn.Sequential(
           Rearrange('b c 1 -> b c'),

@@ -6,7 +6,7 @@ class Base(ABC):
     self.device = device
 
   @abstractmethod
-  def get_architecture(self):
+  def get_classifier_architecture(self):
     pass
 
   @abstractmethod
@@ -19,4 +19,10 @@ class Base(ABC):
 
   @abstractmethod
   def get_coefficients(self, model):
+    pass
+
+
+class SequenceBase(Base):
+  @abstractmethod
+  def get_next_token_architecture(self):
     pass
