@@ -5,10 +5,7 @@ import torch
 from einops import rearrange
 
 import gtorch.models.base
-
-class OneCat(torch.nn.Module):
-  def forward(self, input):
-    return torch.cat([torch.zeros([input.shape[0], 1]), input], axis=1)
+from gtorch.models.util import OneCat, PrintCat
 
 class FourierAttention(torch.nn.Module):
     batch_first = False
@@ -44,11 +41,6 @@ class Decoder(torch.nn.Module):
     bnc_in = rearrange(input, 'b n c -> n b c')
     bnc_out = self.decoder(bnc_in, None)
     return bnc_out[-1, :, :] # b c
-
-class PrintCat(torch.nn.Module):
-  def forward(self, input):
-    print(input.shape)
-    return input
 
 class Transformer(gtorch.models.base.Base):
   def __init__(self, n_layers=2, n_features=12, n_classes=2, device='cpu'):

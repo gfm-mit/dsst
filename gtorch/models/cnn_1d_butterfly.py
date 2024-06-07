@@ -5,6 +5,7 @@ import torch
 from einops.layers.torch import Rearrange
 
 import gtorch.models.base
+from gtorch.models.util import OneCat, PrintCat
 
 class PadCat(torch.nn.Module):
   def __init__(self, width=8):
@@ -14,11 +15,6 @@ class PadCat(torch.nn.Module):
   def forward(self, input):
     n_h = int(np.ceil(input.shape[2] / self.width)) * self.width
     return torch.nn.functional.pad(input, (0, n_h - input.shape[2]))
-
-class PrintCat(torch.nn.Module):
-  def forward(self, input):
-    print(input.shape)
-    return input
 
 class Cnn(gtorch.models.base.Base):
   def __init__(self, n_features=128, n_classes=2, device='cpu'):

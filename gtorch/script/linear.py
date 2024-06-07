@@ -14,6 +14,7 @@ import gtorch.models.cnn_1d_atrous
 import gtorch.models.cnn_1d_butterfly
 import gtorch.models.rnn_lstm
 import gtorch.models.transformer
+import gtorch.models.transformer_fft
 import gtorch.optimize.metrics
 import gtorch.optimize.optimize
 import util.excepthook
@@ -28,13 +29,32 @@ if __name__ == "__main__":
   parser.add_argument('--tune', action='store_true', help='Tune parameters')
   parser.add_argument('--compare', action='store_true', help='Run on both linear_agg and linear')
   parser.add_argument('--device', default='cpu', help='torch device')
+  parser.add_argument('--test', action='store_true', help='Train one batch on each model class')
   args = parser.parse_args()
 
   axs = None
   lines = []
   train_loader, val_loader, test_loader = gtorch.datasets.dataset.get_loaders()
-  BUILDER = gtorch.models.transformer.Transformer
-  if args.coef:
+  BUILDER = gtorch.models.transformer_fft.Transformer
+  if args.test:
+    for model_class, train_batch, val_batch in zip([
+      gtorch.models.linear_bnc.Linear,
+      gtorch.models.cnn_1d.Cnn,
+      gtorch.models.cnn_1d_atrous.Cnn,
+      gtorch.models.cnn_1d_butterfly.Cnn,
+      gtorch.models.rnn_lstm.Rnn,
+      gtorch.models.transformer.Transformer,
+      gtorch.models.transformer_fft.Transformer,
+    ], train_loader, val_loader):
+      builder = model_class(n_classes=2, device=args.device)
+      base_params = builder.get_parameters()
+      base_params['min_epochs'] = 0
+      base_params['max_epochs'] = 1
+      retval, model = gtorch.hyper.params.setup_training_run(base_params, model_factory_fn=builder,
+                                                             train_loader=[train_batch],
+                                                             val_loader=[val_batch])
+      print(model_class, retval)
+  elif args.coef:
     # check coefficients
     gtorch.hyper.coef.get_coef_dist(
       builder=BUILDER(n_classes=2, device=args.device),

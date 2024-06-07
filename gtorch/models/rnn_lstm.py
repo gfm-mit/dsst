@@ -5,20 +5,12 @@ import torch
 from einops import rearrange
 
 import gtorch.models.base
-
-class OneCat(torch.nn.Module):
-  def forward(self, input):
-    return torch.cat([torch.zeros([input.shape[0], 1]), input], axis=1)
+from gtorch.models.util import OneCat, PrintCat
 
 class GetHidden(torch.nn.Module):
   def forward(self, input):
     output, (hidden, gating) = input
     return rearrange(hidden, 'd b c -> b (d c)')
-
-class PrintCat(torch.nn.Module):
-  def forward(self, input):
-    print(input.shape)
-    return input
 
 class Rnn(gtorch.models.base.Base):
   def __init__(self, n_layers=2, n_features=12, n_classes=2, device='cpu'):

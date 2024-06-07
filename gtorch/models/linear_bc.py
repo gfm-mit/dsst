@@ -5,16 +5,7 @@ import torch
 from einops.layers.torch import Rearrange
 
 import gtorch.models.base
-
-
-class OneCat(torch.nn.Module):
-  def forward(self, input):
-    return torch.cat([torch.zeros([input.shape[0], 1]), input], axis=1)
-
-class PrintCat(torch.nn.Module):
-  def forward(self, input):
-    print(input.shape)
-    return input
+from gtorch.models.util import OneCat, PrintCat
 
 class Linear(gtorch.models.base.Base):
   def __init__(self, n_features=12, n_classes=2, device='cpu'):
