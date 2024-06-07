@@ -5,15 +5,8 @@ import torch
 from einops import rearrange
 
 import gtorch.models.base
-from gtorch.models.util import OneCat, PrintCat
+from gtorch.models.util import OneCat, PrintCat, NoopAttention
 
-class NoopAttention(torch.nn.Module):
-    def forward(self, query, key, value,
-                attn_mask=None,
-                key_padding_mask=None,
-                is_causal=None,
-                need_weights=False):
-        return query
 
 class Decoder(torch.nn.Module):
   def __init__(self, n_features):

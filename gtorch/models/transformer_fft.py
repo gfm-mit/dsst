@@ -5,25 +5,7 @@ import torch
 from einops import rearrange
 
 import gtorch.models.base
-from gtorch.models.util import OneCat, PrintCat
-
-class FourierAttention(torch.nn.Module):
-    batch_first = False
-
-    def forward(self, query, key, value,
-                attn_mask=None,
-                key_padding_mask=None,
-                is_causal=None,
-                need_weights=False):
-        return torch.fft.fft(torch.fft.fft(query, axis=0), axis=2).real
-
-class NoopAttention(torch.nn.Module):
-    def forward(self, query, key, value,
-                attn_mask=None,
-                key_padding_mask=None,
-                is_causal=None,
-                need_weights=False):
-        return query
+from gtorch.models.util import OneCat, PrintCat, FourierAttention, NoopAttention
 
 class Decoder(torch.nn.Module):
   def __init__(self, n_features):
