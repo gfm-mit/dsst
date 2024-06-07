@@ -37,7 +37,7 @@ class Decoder(torch.nn.Module):
 
   def forward(self, input):
     bnc_in = rearrange(input, 'b n c -> n b c')
-    bnc_out = self.decoder(bnc_in, torch.zeros_like(bnc_in))
+    bnc_out = self.decoder(bnc_in, None)
     return bnc_out[-1, :, :] # b c
 
 class PrintCat(torch.nn.Module):
