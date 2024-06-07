@@ -30,7 +30,7 @@ class PrintCat(torch.nn.Module):
     print(input.shape)
     return input
 
-class Rnn(gtorch.models.base.Base):
+class Transformer(gtorch.models.base.Base):
   def __init__(self, n_layers=2, n_features=12, n_classes=2, device='cpu'):
     self.classes = n_classes
     self.features = n_features
@@ -68,12 +68,12 @@ class Rnn(gtorch.models.base.Base):
   def get_tuning_ranges(self):
     return dict(
         #nonce=np.arange(5),
-        learning_rate=np.geomspace(1e-5, 1e-0, 15),
+        #learning_rate=np.geomspace(1e-5, 1e-0, 15),
         #weight_decay=np.geomspace(1e-8, 1e-4, 15),
         #pct_start=np.geomspace(0.01, .95, 15),
         #max_epochs=np.geomspace(5, 100, 15).astype(int),
-        #momentum=1-np.geomspace(.1, 1e-5, 35),
-        #beta2=1-np.geomspace(.5, .0001, 15),
+        momentum=1-np.geomspace(.1, 1e-5, 15),
+        beta2=1-np.geomspace(.5, .0001, 15),
     )
 
   def get_coefficients(self, model):

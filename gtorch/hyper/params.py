@@ -41,7 +41,7 @@ def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_
     if x % 10 == 0 or x == max_epochs - 1 or time.time() - last_print_time > 15:
       print('Train Epoch: {} \tPerplexity: {:.2f}'.format(x, np.exp(next_loss)))
       last_print_time = time.time()
-  print("Train time per epoch", (time.time() - start_time) / x)
+  print("Train time per epoch", np.round((time.time() - start_time) / x, 2))
   resdict = metrics(model, val_loader)
   return resdict, model
 

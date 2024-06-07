@@ -10,6 +10,10 @@ import gtorch.hyper.tune
 import gtorch.models.linear_bc
 import gtorch.models.linear_bnc
 import gtorch.models.cnn_1d
+import gtorch.models.cnn_1d_atrous
+import gtorch.models.cnn_1d_butterfly
+import gtorch.models.rnn_lstm
+import gtorch.models.transformer
 import gtorch.optimize.metrics
 import gtorch.optimize.optimize
 import util.excepthook
@@ -29,18 +33,19 @@ if __name__ == "__main__":
   axs = None
   lines = []
   train_loader, val_loader, test_loader = gtorch.datasets.dataset.get_loaders()
+  BUILDER = gtorch.models.transformer.Transformer
   if args.coef:
     # check coefficients
     gtorch.hyper.coef.get_coef_dist(
-      builder=gtorch.models.cnn_1d.Cnn(n_classes=2, device=args.device),
+      builder=BUILDER(n_classes=2, device=args.device),
       train_loader=train_loader,
       val_loader=val_loader,
       test_loader=test_loader)
   elif args.tune:
     # tune parameters
-    axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader, test_loader, axs=axs, device=args.device, builder=gtorch.models.cnn_1d.Cnn(n_classes=2, device=args.device))
+    axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader, test_loader, axs=axs, device=args.device, builder=BUILDER(n_classes=2, device=args.device))
   else:
-    builder = gtorch.models.cnn_1d.Cnn(n_classes=2, device=args.device)
+    builder = BUILDER(n_classes=2, device=args.device)
     #torch.manual_seed(42)
     base_params = builder.get_parameters()
     #with cProfile.Profile() as pr:
