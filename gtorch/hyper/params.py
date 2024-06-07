@@ -1,4 +1,5 @@
 from pathlib import Path
+import time
 
 import numpy as np
 import torch
@@ -11,6 +12,7 @@ Path('./results').mkdir(parents=True, exist_ok=True)
 def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_loader, val_loader):
   max_loss = 3
   resdict = dict(loss=np.nan, accuracy=np.nan)
+  start_time, last_print_time = time.time(), time.time()
   for x in range(max_epochs):
     #train_data = ContrastiveDataset('./TRAIN/', seed=str(np.random.randint(10)))
     #val_data = ContrastiveDataset('./TEST/', seed=str(np.random.randint(10)))
@@ -36,8 +38,10 @@ def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_
       break
     max_loss = 1.5 * next_loss
     torch.cuda.empty_cache()
-    if x % 10 == 0 or x == max_epochs - 1:
+    if x % 10 == 0 or x == max_epochs - 1 or time.time() - last_print_time > 15:
       print('Train Epoch: {} \tPerplexity: {:.2f}'.format(x, np.exp(next_loss)))
+      last_print_time = time.time()
+  print("Train time per epoch", (time.time() - start_time) / x)
   resdict = metrics(model, val_loader)
   return resdict, model
 
