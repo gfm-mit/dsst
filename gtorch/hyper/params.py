@@ -65,7 +65,7 @@ def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=N
     })
 
   if pretraining == "load":
-    network_state_dict = torch.load('sequence_pretrain.pth')
+    network_state_dict = torch.load('./results/model.pth')
     model.load_state_dict(network_state_dict, strict=False)
   else:
     for layer in model.children():
@@ -81,6 +81,7 @@ def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=N
                            train_loader=train_loader,
                            loss_fn=loss_fn)
   if pretraining == "save":
+    torch.save(model.state_dict(), './results/model.pth')
     resdict = next_token_metrics(model, val_loader)
     return resdict, model
   else:
