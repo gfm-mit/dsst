@@ -10,7 +10,7 @@ class Base(ABC):
     pass
 
   @abstractmethod
-  def get_parameters(self):
+  def get_parameters(self, **kwargs):
     pass
 
   @abstractmethod

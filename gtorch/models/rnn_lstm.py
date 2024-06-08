@@ -52,7 +52,7 @@ class Rnn(gtorch.models.base.SequenceBase):
     model = model.to(self.device)
     return model
 
-  def get_parameters(self):
+  def get_parameters(self, **kwargs):
     return dict(
       #optimizer='adam',
       schedule='onecycle',
@@ -61,10 +61,10 @@ class Rnn(gtorch.models.base.SequenceBase):
       beta2=1 - 3e-2,
       pct_start=0.0,
 
-      max_epochs=10,
+      max_epochs=1,
       min_epochs=0,
 
-      learning_rate=1e+1, # wtf pretrain
+      learning_rate=1e+1, # pretrain.  normal is 1e-1
       hidden_width=2,
     )
 

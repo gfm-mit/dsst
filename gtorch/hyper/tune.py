@@ -20,7 +20,7 @@ def get_spaces(**kwargs):
 def main(train_loader, val_loader, builder=None, pretraining=None):
   torch.manual_seed(42)
   assert isinstance(builder, gtorch.models.base.Base)
-  base_params = builder.get_parameters()
+  base_params = builder.get_parameters(pretraining=pretraining)
   assert builder.get_tuning_ranges(), "no parameters to tune"
   spaces = get_spaces(**builder.get_tuning_ranges())
   results = []

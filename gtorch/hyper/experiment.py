@@ -16,7 +16,7 @@ class Experiment:
   def train(self, **kwargs):
     #torch.manual_seed(42)
     builder = self.model_class(n_classes=2, device=self.args.device)
-    base_params = builder.get_parameters() | kwargs
+    base_params = builder.get_parameters(pretraining=self.args.pretraining) | kwargs
     retval, self.model = gtorch.hyper.params.setup_training_run(
         base_params, model_factory_fn=builder,
         train_loader=self.train_loader,

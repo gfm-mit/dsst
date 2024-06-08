@@ -48,7 +48,7 @@ class Transformer(gtorch.models.base.Base):
     model = model.to(self.device)
     return model
 
-  def get_parameters(self):
+  def get_parameters(self, **kwargs):
     return dict(
       #optimizer='adam',
       schedule='onecycle',
