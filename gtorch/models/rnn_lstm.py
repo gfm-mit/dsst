@@ -46,6 +46,7 @@ class Rnn(gtorch.models.base.SequenceBase):
         self.get_lstm(),
         GetHidden(),
         torch.nn.BatchNorm1d(num_features=self.layers * self.features),
+        # TODO: one linear layer should not be enough to parse the internal state of the RNN
         torch.nn.Linear(self.layers * self.features, self.classes),
         torch.nn.LogSoftmax(dim=-1),
     )
