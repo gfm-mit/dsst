@@ -60,7 +60,7 @@ def get_optimizer(params, model):
     if "optimizer" not in params:
       print("no optimizer specified, defaulting to sgd")
     elif params["optimizer"] != "sgd":
-      print(f"unknown optimizer {optimizer}, defaulting to sgd")
+      print(f"unknown optimizer {params['optimizer']}, defaulting to sgd")
     optimizer = torch.optim.SGD(model.parameters(),
                                 lr=params["learning_rate"],
                                 momentum=params["momentum"],

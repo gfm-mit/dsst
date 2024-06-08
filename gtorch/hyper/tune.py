@@ -47,6 +47,7 @@ def main(train_loader, val_loader, builder=None, pretraining=None):
   for e, k in enumerate(spaces.columns):
     plt.sca(axs[e])
     plt.scatter(results[k], results[metric])
+    plt.ylabel(metric)
     plt.xlabel(k)
     if results[k].dtype == str:
       plt.xticks(rotation=45)
