@@ -44,7 +44,7 @@ class Transformer(gtorch.models.base.Base):
 
   def get_parameters(self):
     return dict(
-      #solver='adam',
+      #optimizer='adam',
       schedule='onecycle',
       weight_decay=0,
       momentum=1 - 1e-3,
