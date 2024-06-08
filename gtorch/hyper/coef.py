@@ -5,7 +5,7 @@ import pandas as pd
 import gtorch.optimize.metrics
 
 
-def get_coef_dist(builder, train_loader, val_loader, test_loader):
+def get_coef_dist(builder, train_loader, val_loader):
   results = []
   for _ in range(10):
     #torch.manual_seed(42)

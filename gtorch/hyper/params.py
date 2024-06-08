@@ -50,7 +50,7 @@ def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_
 
 def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=None, pretraining=None):
   assert isinstance(model_factory_fn, gtorch.models.base.Base)
-  assert pretraining in [None, "load", "save"]
+  assert pretraining in [None, "none", "load", "save"]
   if pretraining == "save":
     loss_fn = next_token
     assert isinstance(model_factory_fn, gtorch.models.base.SequenceBase)
@@ -76,11 +76,11 @@ def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=N
   optimizer, scheduler = get_optimizer(params, model)
 
   torch.cuda.empty_cache()
-  #model = one_training_run(model, optimizer, scheduler,
-  #                         min_epochs=params["min_epochs"],
-  #                         max_epochs=params["max_epochs"],
-  #                         train_loader=train_loader,
-  #                         loss_fn=loss_fn)
+  model = one_training_run(model, optimizer, scheduler,
+                           min_epochs=params["min_epochs"],
+                           max_epochs=params["max_epochs"],
+                           train_loader=train_loader,
+                           loss_fn=loss_fn)
   if pretraining == "save":
     resdict = next_token_metrics(model, val_loader)
     return resdict, model

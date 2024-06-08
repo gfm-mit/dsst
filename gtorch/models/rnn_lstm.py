@@ -11,6 +11,11 @@ class GetHidden(torch.nn.Module):
     output, (hidden, gating) = input
     return rearrange(hidden, 'd b c -> b (d c)')
 
+class GetOutput(torch.nn.Module):
+  def forward(self, input):
+    output, (hidden, gating) = input
+    return output
+
 class Rnn(gtorch.models.base.SequenceBase):
   def __init__(self, n_layers=2, n_features=12, n_classes=2, device='cpu'):
     self.classes = n_classes
@@ -25,6 +30,15 @@ class Rnn(gtorch.models.base.SequenceBase):
       hidden_size=self.features,
       num_layers=2,
       batch_first=True)
+
+  def get_next_token_architecture(self, hidden_width='unused'):
+    model = torch.nn.Sequential(
+        # b n c
+        self.get_lstm(),
+        GetOutput(),
+    )
+    model = model.to(self.device)
+    return model
 
   def get_classifier_architecture(self, hidden_width='unused'):
     model = torch.nn.Sequential(
@@ -47,7 +61,7 @@ class Rnn(gtorch.models.base.SequenceBase):
       beta2=1 - 3e-2,
       pct_start=0.0,
 
-      max_epochs=10,
+      max_epochs=1,
       min_epochs=0,
 
       learning_rate=1e-1, # stupid edge of stability!!
@@ -57,7 +71,7 @@ class Rnn(gtorch.models.base.SequenceBase):
   def get_tuning_ranges(self):
     return dict(
         #nonce=np.arange(5),
-        #learning_rate=np.geomspace(1e-2, 1e-0, 15),
+        learning_rate=np.geomspace(1e-5, 1e-0, 3),
         #weight_decay=np.geomspace(1e-8, 1e-4, 15),
         #pct_start=np.geomspace(0.01, .95, 15),
         #max_epochs=np.geomspace(5, 100, 15).astype(int),

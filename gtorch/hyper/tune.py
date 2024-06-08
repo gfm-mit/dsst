@@ -17,7 +17,7 @@ def get_spaces(**kwargs):
     spaces[col] = np.random.permutation(spaces[col].values)
   return spaces
 
-def main(train_loader, val_loader, test_loader, axs=None, device='cpu', classes=2, builder=None):
+def main(train_loader, val_loader, builder=None, pretraining=None):
   torch.manual_seed(42)
   assert isinstance(builder, gtorch.models.base.Base)
   base_params = builder.get_parameters()
@@ -30,18 +30,21 @@ def main(train_loader, val_loader, test_loader, axs=None, device='cpu', classes=
       params[k] = spaces.loc[i, k]
     print("tune:", spaces.loc[i].to_dict())
     retval, model = gtorch.hyper.params.setup_training_run(params, model_factory_fn=builder,
-                                                           train_loader=train_loader, val_loader=val_loader)
+                                                           train_loader=train_loader, val_loader=val_loader,
+                                                           pretraining=pretraining)
     results += [dict(**params, **retval)]
   results = pd.DataFrame(results)
+  print(results)
   N = int(np.ceil(np.sqrt(spaces.shape[1])))
   fig, axs = plt.subplots(N, N)
   if not isinstance(axs, np.ndarray):
     axs = [axs]
   else:
     axs = axs.flatten()
+  metric = "mse" if pretraining == "save" else "roc"
   for e, k in enumerate(spaces.columns):
     plt.sca(axs[e])
-    plt.scatter(results[k], results.roc)
+    plt.scatter(results[k], results[metric])
     plt.xlabel(k)
     if results[k].max() < 1:
       plt.xscale('logit')

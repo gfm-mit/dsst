@@ -46,7 +46,7 @@ class Linear(gtorch.models.base.Base):
   def get_tuning_ranges(self):
     return dict(
         #nonce=np.arange(5),
-        #learning_rate=np.geomspace(1e-1, 5e-1, 15),
+        learning_rate=np.geomspace(1e-1, 5e-1, 15),
         #weight_decay=np.geomspace(1e-8, 1e-4, 15),
         #pct_start=np.geomspace(0.01, .95, 15),
         #max_epochs=np.geomspace(5, 100, 15).astype(int),
@@ -58,15 +58,15 @@ class Linear(gtorch.models.base.Base):
     if self.classes == 2:
       return pd.Series(
         np.concatenate([
-          [model.state_dict()['2.bias'].numpy()[1]
-          - model.state_dict()['2.bias'].numpy()[0]],
-          model.state_dict()['2.weight'].numpy()[1]
-          - model.state_dict()['2.weight'].numpy()[0]
+          [model.state_dict()['4.bias'].numpy()[1]
+          - model.state_dict()['4.bias'].numpy()[0]],
+          model.state_dict()['4.weight'].numpy()[1]
+          - model.state_dict()['4.weight'].numpy()[0]
         ])
       )
     return pd.Series(
       np.concatenate([
-        model.state_dict()['1.bias'].numpy(),
-        model.state_dict()['1.weight'].numpy().flatten(),
+        model.state_dict()['4.bias'].numpy(),
+        model.state_dict()['4.weight'].numpy().flatten(),
       ])
     )

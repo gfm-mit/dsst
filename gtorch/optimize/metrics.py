@@ -28,7 +28,7 @@ def next_token_metrics(model, val_loader, verbose=True):
                       name="Verbose MSE components"
                       ))
   mse = np.sqrt(np.mean((predicted - data)**2))
-  return dict(roc=mse)
+  return dict(mse=mse)
 
 def binary_classifier_metrics(model, val_loader):
   DEVICE = next(model.parameters()).device
