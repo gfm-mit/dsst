@@ -19,15 +19,15 @@ def next_token_metrics(model, val_loader, verbose=True):
   data = np.concatenate(data)
 
   if verbose:
-    std = np.sqrt(np.mean((data)**2, axis=(0, 1)))
-    mse = np.sqrt(np.mean((predicted - data)**2, axis=(0, 1)))
-    r2 = np.mean(np.reshape(mse / std, [6, 2]), axis=1)
+    var = np.mean((data)**2, axis=(0, 1))
+    mse = np.mean((predicted - data)**2, axis=(0, 1))
+    r2 = np.mean(np.reshape(mse / var, [6, 2]), axis=1)
     with pd.option_context('display.float_format', '{:.1f}%'.format):
       print(pd.Series(100 * r2,
                       index="t v_mag2 a_mag2 dv_mag2 cw j_mag2".split(),
                       name="Verbose MSE components"
                       ))
-  mse = np.sqrt(np.mean((predicted - data)**2))
+  mse = np.mean((predicted - data)**2)
   return dict(mse=mse)
 
 def binary_classifier_metrics(model, val_loader):

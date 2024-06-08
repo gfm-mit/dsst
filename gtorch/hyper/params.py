@@ -40,9 +40,9 @@ def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_
     torch.cuda.empty_cache()
     if x % 10 == 0 or x == max_epochs - 1 or time.time() - last_print_time > 15:
       if loss_fn == classify:
-        print('Train Epoch: {} \tPerplexity: {:.2f}'.format(x, np.exp(next_loss)))
+        print('Train Epoch: {} \tLast Batch Perplexity: {:.2f}'.format(x, np.exp(next_loss)))
       else:
-        print('Train Epoch: {} \tMSE: {:.2f}'.format(x, next_loss))
+        print('Train Epoch: {} \tLast Batch MSE: {:.2f}'.format(x, next_loss))
       last_print_time = time.time()
   print("Train time per epoch", np.round((time.time() - start_time) / (x + 1), 2))
   return model
