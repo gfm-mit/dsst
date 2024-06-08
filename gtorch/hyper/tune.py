@@ -11,7 +11,9 @@ import gtorch.optimize.optimizer
 
 
 def get_spaces(**kwargs):
-  print("spaces.kwargs", kwargs)
+  print("spaces.kwargs:")
+  for k, v in kwargs.items():
+    print(f"  {k}: {v}")
   spaces = pd.DataFrame(kwargs)
   for col in spaces.columns:
     spaces[col] = np.random.permutation(spaces[col].values)
@@ -46,7 +48,9 @@ def main(train_loader, val_loader, builder=None, pretraining=None):
     plt.sca(axs[e])
     plt.scatter(results[k], results[metric])
     plt.xlabel(k)
-    if results[k].max() < 1:
+    if results[k].dtype == str:
+      plt.xticks(rotation=45)
+    elif 0 < results[k].min() < results[k].max() < 1:
       plt.xscale('logit')
     elif 0 < results[k].min() < 1:
       plt.xscale('log')
