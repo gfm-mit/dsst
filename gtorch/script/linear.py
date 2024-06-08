@@ -21,7 +21,7 @@ import gtorch.optimize.optimizer
 import gtorch.optimize.loss
 import util.excepthook
 import cProfile
-from plot.palette import draw_3_legends, get_3_axes, plot_3_types
+from plot.palette import draw_3_legends
 
 if __name__ == "__main__":
   # Set the custom excepthook

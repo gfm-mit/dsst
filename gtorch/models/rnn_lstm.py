@@ -23,7 +23,7 @@ class Rnn(gtorch.models.base.SequenceBase):
     self.layers = n_layers
     self.device = device
     super().__init__()
-  
+
   def get_lstm(self):
     return torch.nn.LSTM(
       input_size=12,

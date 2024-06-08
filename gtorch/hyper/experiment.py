@@ -12,7 +12,7 @@ class Experiment:
     self.test_loader = test_loader
     self.args = args
     self.model = None
-  
+
   def train(self, **kwargs):
     #torch.manual_seed(42)
     builder = self.model_class(n_classes=2, device=self.args.device)

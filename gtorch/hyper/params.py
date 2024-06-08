@@ -12,7 +12,6 @@ from gtorch.optimize.optimizer import get_optimizer
 Path('./results').mkdir(parents=True, exist_ok=True)
 def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_loader, loss_fn=None):
   max_loss = 3
-  resdict = dict(loss=np.nan, accuracy=np.nan)
   start_time, last_print_time = time.time(), time.time()
   for x in range(max_epochs):
     #train_data = ContrastiveDataset('./TRAIN/', seed=str(np.random.randint(10)))
