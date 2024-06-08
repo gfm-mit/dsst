@@ -26,7 +26,6 @@ import gtorch.optimize.optimizer
 from plot.palette import draw_3_legends
 
 if __name__ == "__main__":
-  # Set the custom excepthook
   sys.excepthook = util.excepthook.custom_excepthook
 
   parser = argparse.ArgumentParser(description='Run a linear pytorch model')
@@ -35,6 +34,7 @@ if __name__ == "__main__":
   parser.add_argument('--profile', action='store_true', help='Profile training')
   parser.add_argument('--bitmap', action='store_true', help='Use bitmap data')
   parser.add_argument('--compare', action='store_true', help='Run on both linear_agg and linear')
+  parser.add_argument('--box_level', action='store_true', help='Plot ROC at box level')
   parser.add_argument('--device', default='cpu', help='torch device')
   parser.add_argument('--pretraining', default='none', help='whether to pretrain')
   parser.add_argument('--test', action='store_true', help='Train one batch on each model class')
@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
   axs = None
   train_loader, val_loader, test_loader = gtorch.datasets.dataset.get_loaders()
-  BUILDER = gtorch.models.linear_bnc.Linear
+  BUILDER = gtorch.models.rnn_lstm.Rnn
   if args.bitmap:
     BUILDER = gtorch.models.cnn_2d.Cnn
     train_loader, val_loader, test_loader = gtorch.datasets.bitmap.get_loaders()
@@ -80,14 +80,15 @@ if __name__ == "__main__":
     if args.tune:
       # tune parameters
       experiment.tune()
-    if args.profile:
+    elif args.profile:
       with cProfile.Profile() as pr:
         experiment.train()
       pr.dump_stats('results/output_file.prof')
     else:
       axs, lines = None, None
       experiment.train()
-      axs, lines = experiment.plot_trained(axs, lines)
+      if args.pretraining != "save":
+        axs, lines = experiment.plot_trained(axs, lines)
 
       if args.compare:
         experiment = gtorch.hyper.experiment.Experiment(
@@ -98,4 +99,6 @@ if __name__ == "__main__":
           args=args)
         experiment.train()
         axs, lines = experiment.plot_trained(axs, lines)
-      draw_3_legends(axs, lines)
+      if axs is not None:
+        suptitle = "Aggregated at the Box Level, not Patient" if args.box_level else "Aggregated at Patient Level, not Box"
+        draw_3_legends(axs, lines, suptitle=suptitle)

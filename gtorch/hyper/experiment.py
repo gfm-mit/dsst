@@ -29,7 +29,7 @@ class Experiment:
     self.model.eval()
     logits, targets = gtorch.optimize.metrics.get_combined_roc(
       self.model, self.test_loader,
-      combine_fn=gtorch.datasets.linear_box.combiner)
+      combine_fn=None if self.args.box_level else gtorch.datasets.linear_box.combiner)
     axs = get_3_axes() if axs is None else axs
     lines = [] if lines is None else lines
     lines += [plot_3_types(logits, targets, axs)]

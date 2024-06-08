@@ -57,6 +57,7 @@ def main(train_loader, val_loader, builder=None, pretraining=None):
       plt.xscale('log')
     else:
       pass
+  plt.suptitle("Aggregated at Box Level, not Patient Level")
   plt.show()
   print(results)
   return axs, None
