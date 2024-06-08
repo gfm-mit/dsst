@@ -1,26 +1,28 @@
 import argparse
 import sys
+import cProfile
+import util.excepthook
 
+import gtorch.datasets.bitmap
 import gtorch.datasets.dataset
 import gtorch.datasets.linear_box
 import gtorch.datasets.linear_patient
 import gtorch.hyper.coef
+import gtorch.hyper.experiment
 import gtorch.hyper.params
 import gtorch.hyper.tune
-import gtorch.hyper.experiment
-import gtorch.models.linear_bc
-import gtorch.models.linear_bnc
 import gtorch.models.cnn_1d
 import gtorch.models.cnn_1d_atrous
 import gtorch.models.cnn_1d_butterfly
+import gtorch.models.cnn_2d
+import gtorch.models.linear_bc
+import gtorch.models.linear_bnc
 import gtorch.models.rnn_lstm
 import gtorch.models.transformer
 import gtorch.models.transformer_fft
+import gtorch.optimize.loss
 import gtorch.optimize.metrics
 import gtorch.optimize.optimizer
-import gtorch.optimize.loss
-import util.excepthook
-import cProfile
 from plot.palette import draw_3_legends
 
 if __name__ == "__main__":
@@ -31,6 +33,7 @@ if __name__ == "__main__":
   parser.add_argument('--coef', action='store_true', help='Plot coefficients')
   parser.add_argument('--tune', action='store_true', help='Tune parameters')
   parser.add_argument('--profile', action='store_true', help='Profile training')
+  parser.add_argument('--bitmap', action='store_true', help='Use bitmap data')
   parser.add_argument('--compare', action='store_true', help='Run on both linear_agg and linear')
   parser.add_argument('--device', default='cpu', help='torch device')
   parser.add_argument('--pretraining', default='none', help='whether to pretrain')
@@ -40,6 +43,9 @@ if __name__ == "__main__":
   axs = None
   train_loader, val_loader, test_loader = gtorch.datasets.dataset.get_loaders()
   BUILDER = gtorch.models.linear_bnc.Linear
+  if args.bitmap:
+    BUILDER = gtorch.models.cnn_2d.Cnn
+    train_loader, val_loader, test_loader = gtorch.datasets.bitmap.get_loaders()
   if args.test:
     for model_class, train_batch, val_batch in zip([
       gtorch.models.linear_bnc.Linear,
