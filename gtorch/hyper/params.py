@@ -14,15 +14,6 @@ def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_
   max_loss = 3
   start_time, last_print_time = time.time(), time.time()
   for x in range(max_epochs):
-    #train_data = ContrastiveDataset('./TRAIN/', seed=str(np.random.randint(10)))
-    #val_data = ContrastiveDataset('./TEST/', seed=str(np.random.randint(10)))
-    # TODO: reshuffle data after each epoch, of course
-    #train_loader = torch.utils.data.DataLoader(
-    #    train_data, batch_size=batch_size_train, shuffle=False, collate_fn=collate_fn_padd)
-    #val_loader = torch.utils.data.DataLoader(
-    #    val_data, batch_size=batch_size_test, shuffle=False, collate_fn=collate_fn_padd)
-
-    #torch.save(model, './results/model.pth')
     state_dict = dict(**model.state_dict())
     next_loss = loss_fn(x, model, optimizer, train_loader)
     scheduler.step()
