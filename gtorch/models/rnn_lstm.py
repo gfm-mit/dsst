@@ -76,7 +76,7 @@ class Rnn(gtorch.models.base.SequenceBase):
       beta2=1 - 3e-2,
       pct_start=0.0,
 
-      max_epochs=1,
+      max_epochs=10,
       min_epochs=0,
 
       learning_rate=1e-1,
