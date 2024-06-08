@@ -20,12 +20,12 @@ def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_
     if next_loss > max_loss and x > min_epochs:
       print(f"next_loss too big: {next_loss} > {max_loss}")
       model.load_state_dict(state_dict)
-      return dict(roc=0), model
+      return model
       break
     if np.isnan(next_loss):
       print("next_loss isnan")
       model.load_state_dict(state_dict)
-      return dict(roc=0), model
+      return model
       break
     max_loss = 1.5 * next_loss
     torch.cuda.empty_cache()
