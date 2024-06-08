@@ -54,24 +54,25 @@ class Rnn(gtorch.models.base.SequenceBase):
 
   def get_parameters(self):
     return dict(
-      solver='adam',
+      #solver='adam',
       schedule='onecycle',
       weight_decay=0,
       momentum=1 - 1e-3,
       beta2=1 - 3e-2,
       pct_start=0.0,
 
-      max_epochs=1,
+      max_epochs=10,
       min_epochs=0,
 
-      learning_rate=1e-1, # stupid edge of stability!!
+      learning_rate=1e+1, # wtf pretrain
       hidden_width=2,
     )
 
   def get_tuning_ranges(self):
     return dict(
         #nonce=np.arange(5),
-        learning_rate=np.geomspace(1e-5, 1e-0, 3),
+        #solver=['adam'] * 8 + ['sgd'] * 7,
+        #learning_rate=np.geomspace(1e-1, 1e+2, 15),
         #weight_decay=np.geomspace(1e-8, 1e-4, 15),
         #pct_start=np.geomspace(0.01, .95, 15),
         #max_epochs=np.geomspace(5, 100, 15).astype(int),

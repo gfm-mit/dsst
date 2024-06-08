@@ -1,6 +1,9 @@
 import torch
 from pytorch_optimizer import DAdaptLion, Prodigy
 
+def optimize(epoch, model, optimizer, train_loader):
+  pass
+
 class FakeOptimizer():
   def __init__(self, model):
     super(FakeOptimizer, self).__init__()
@@ -54,6 +57,10 @@ def get_optimizer(params, model):
                         weight_decouple=True,
                         weight_decay=params["weight_decay"])
   else:
+    if "optimizer" not in params:
+      print("no optimizer specified, defaulting to sgd")
+    elif params["optimizer"] != "sgd":
+      print(f"unknown optimizer {optimizer}, defaulting to sgd")
     optimizer = torch.optim.SGD(model.parameters(),
                                 lr=params["learning_rate"],
                                 momentum=params["momentum"],
