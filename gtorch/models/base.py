@@ -26,3 +26,16 @@ class SequenceBase(Base):
   @abstractmethod
   def get_next_token_architecture(self):
     pass
+
+  @abstractmethod
+  def get_classifier_parameters(self):
+    pass
+
+  @abstractmethod
+  def get_next_token_parameters(self):
+    pass
+
+  def get_parameters(self, **kwargs):
+    if "pretraining" in kwargs and kwargs["pretraining"] == "save":
+      return self.get_classifier_parameters() | self.get_next_token_parameters() 
+    return self.get_next_token_parameters() | self.get_classifier_parameters()
