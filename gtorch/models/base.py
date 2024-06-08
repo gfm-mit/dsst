@@ -38,4 +38,4 @@ class SequenceBase(Base):
   def get_parameters(self, **kwargs):
     if "pretraining" in kwargs and kwargs["pretraining"] == "save":
       return self.get_classifier_parameters() | self.get_next_token_parameters() 
-    return self.get_next_token_parameters() | self.get_classifier_parameters()
+    return self.get_classifier_parameters()
