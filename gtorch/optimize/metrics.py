@@ -1,8 +1,9 @@
 import numpy as np
+import pandas as pd
 import torch
 from sklearn.metrics import roc_auc_score
 
-def next_token_metrics(model, val_loader):
+def next_token_metrics(model, val_loader, verbose=True):
   DEVICE = next(model.parameters()).device
   results = []
   model.eval()
@@ -11,14 +12,23 @@ def next_token_metrics(model, val_loader):
       output = model(data.to(DEVICE)).to('cpu')
       results += [(
           output.detach().numpy()[:, :-1, :],
-          target.detach().to('cpu').numpy()[:, 1:, :],
+          data.detach().to('cpu').numpy()[:, 1:, :],
       )]
-  logits, targets = zip(*results)
-  logits = np.concatenate(logits)
-  # only needed for accuracy
-  #predictions = np.argmax(logits, axis=1)
-  targets = np.concatenate(targets)
-  return dict(roc=roc_auc_score(targets, logits[:, 1]))
+  predicted, data = zip(*results)
+  predicted = np.concatenate(predicted)
+  data = np.concatenate(data)
+
+  if verbose:
+    std = np.sqrt(np.mean((data)**2, axis=(0, 1)))
+    mse = np.sqrt(np.mean((predicted - data)**2, axis=(0, 1)))
+    r2 = np.mean(np.reshape(mse / std, [6, 2]), axis=1)
+    with pd.option_context('display.float_format', '{:.1f}%'.format):
+      print(pd.Series(100 * r2,
+                      index="t v_mag2 a_mag2 dv_mag2 cw j_mag2".split(),
+                      name="Verbose MSE components"
+                      ))
+  mse = np.sqrt(np.mean((predicted - data)**2))
+  return dict(roc=mse)
 
 def binary_classifier_metrics(model, val_loader):
   DEVICE = next(model.parameters()).device
