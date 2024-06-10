@@ -72,6 +72,10 @@ def get_optimizer(params, model):
         steps_per_epoch=1,
         pct_start=params["pct_start"],
         epochs=int(params["max_epochs"]))
+  elif "schedule" in params and params["schedule"] == "exponential":
+    scheduler = torch.optim.lr_scheduler.ExponentialLR(
+        optimizer,
+        gamma=params["schedule_gamma"])
   else:
     scheduler = FakeOptimizer(model)
   return optimizer, scheduler
