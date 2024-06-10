@@ -1,8 +1,4 @@
-from pathlib import Path
-
 import torch
-
-Path('./results/').mkdir(parents=True, exist_ok=True)
 
 def balance_class_weights(target):
     w = torch.nn.functional.one_hot(target).float().mean(axis=0)
@@ -27,7 +23,6 @@ def classify(epoch, model, optimizer, train_loader):
     loss.backward()
     optimizer.step()
   assert loader_has_batches
-  torch.save(model.state_dict(), './results/model.pth')
   return loss.item()
 
 def next_token(epoch, model, optimizer, train_loader):
@@ -42,5 +37,4 @@ def next_token(epoch, model, optimizer, train_loader):
     loss.backward()
     optimizer.step()
   assert loader_has_batches
-  torch.save(model.state_dict(), './results/model.pth')
   return loss.item()
