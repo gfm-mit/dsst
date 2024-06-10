@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import torch
-from einops import rearrange
 
 import gtorch.models.base
 from gtorch.models.util import NoopAttention
@@ -14,22 +13,25 @@ class Decoder(torch.nn.Module):
         d_model=12,
         nhead=2,
         dim_feedforward=n_features,
+        batch_first=True,
       )
       decoder_layer.self_attn = torch.nn.MultiheadAttention(
         embed_dim=12,
         num_heads=2,
         dropout=0.1,
-        batch_first=False,
+        batch_first=True,
         bias=True)
       decoder_layer.multihead_attn = NoopAttention() # this is used on the memory
       self.decoder = torch.nn.TransformerDecoder(decoder_layer=decoder_layer, num_layers=2)
 
   def forward(self, input):
-    bnc_in = rearrange(input, 'b n c -> n b c')
-    bnc_out = self.decoder(bnc_in, None)
-    return bnc_out[-1, :, :] # b c
+    return self.decoder(input, None)
 
-class Transformer(gtorch.models.base.Base):
+class LastCat(torch.nn.Module):
+  def forward(self, input):
+    return input[:, -1, :]
+
+class Transformer(gtorch.models.base.SequenceBase):
   def __init__(self, n_layers=2, n_features=12, n_classes=2, device='cpu'):
     self.classes = n_classes
     self.features = n_features
@@ -37,10 +39,19 @@ class Transformer(gtorch.models.base.Base):
     self.device = device
     super().__init__()
 
+  def get_next_token_architecture(self, hidden_width='unused'):
+    model = torch.nn.Sequential(
+        # b n c
+        Decoder(n_features=12),
+    )
+    model = model.to(self.device)
+    return model
+
   def get_classifier_architecture(self, hidden_width='unused'):
     model = torch.nn.Sequential(
         # b n c
         Decoder(n_features=12),
+        LastCat(),
         torch.nn.BatchNorm1d(num_features=self.features),
         torch.nn.Linear(self.features, self.classes),
         torch.nn.LogSoftmax(dim=-1),
@@ -48,7 +59,13 @@ class Transformer(gtorch.models.base.Base):
     model = model.to(self.device)
     return model
 
-  def get_parameters(self, **kwargs):
+  def get_next_token_parameters(self, **kwargs):
+    return dict(
+      learning_rate=3e-1, # who knows?
+      max_epochs=10,
+    )
+
+  def get_classifier_parameters(self, **kwargs):
     return dict(
       #optimizer='adam',
       schedule='onecycle',
@@ -57,17 +74,17 @@ class Transformer(gtorch.models.base.Base):
       beta2=1 - 3e-2,
       pct_start=0.0,
 
-      max_epochs=2,
+      max_epochs=10,
       min_epochs=0,
 
-      learning_rate=1e-1, # stupid edge of stability!!
+      learning_rate=1e0, # stupid edge of stability!!
       hidden_width=2,
     )
 
   def get_tuning_ranges(self):
     return dict(
         #nonce=np.arange(5),
-        #learning_rate=np.geomspace(1e-5, 1e-0, 15),
+        learning_rate=np.geomspace(1e-3, 1e1, 10),
         #weight_decay=np.geomspace(1e-8, 1e-4, 15),
         #pct_start=np.geomspace(0.01, .95, 15),
         #max_epochs=np.geomspace(5, 100, 15).astype(int),
