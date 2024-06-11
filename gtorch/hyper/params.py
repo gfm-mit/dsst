@@ -3,6 +3,7 @@ import time
 
 import numpy as np
 import torch
+from tqdm import tqdm
 
 import gtorch.models.base
 import gtorch.optimize
@@ -14,7 +15,7 @@ Path('./results').mkdir(parents=True, exist_ok=True)
 def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_loader, loss_fn=None):
   max_loss = 3
   start_time, last_print_time = time.time(), time.time()
-  for x in range(max_epochs):
+  for x in (progress := tqdm(range(max_epochs))):
     state_dict = dict(**model.state_dict())
     next_loss = loss_fn(x, model, optimizer, train_loader)
     scheduler.step()
@@ -30,12 +31,12 @@ def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_
       break
     max_loss = 1.5 * next_loss
     torch.cuda.empty_cache()
-    if x % 10 == 0 or x == max_epochs - 1 or time.time() - last_print_time > 15:
-      if loss_fn == classify:
-        print('Train Epoch: {} \tLast Batch Perplexity: {:.2f}'.format(x, np.exp(next_loss)))
-      else:
-        print('Train Epoch: {} \tLast Batch MSE: {:.2f}'.format(x, next_loss))
-      last_print_time = time.time()
+    #if x % 10 == 0 or x == max_epochs - 1 or time.time() - last_print_time > 15:
+    if loss_fn == classify:
+      progress.set_description('Train Epoch: {} \tLast Batch Perplexity: {:.2f}'.format(x, np.exp(next_loss)))
+    else:
+      progress.set_description('Train Epoch: {} \tLast Batch MSE: {:.2f}'.format(x, next_loss))
+    last_print_time = time.time()
   print("Train time per epoch", np.round((time.time() - start_time) / (x + 1), 2))
   return model
 
