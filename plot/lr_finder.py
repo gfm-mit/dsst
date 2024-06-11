@@ -11,5 +11,5 @@ def plot_lr(lrs, losses, smooth=3):
   pd.Series(deltas, index=lrs[1:]).plot()
   plt.yscale('symlog', linthresh=thresh)
   plt.xscale('log')
-  plt.axhline(0, color='gray', zorder=-10)
+  plt.axhline(0, color='lightgray', zorder=-10, linestyle='--')
   plt.show()
