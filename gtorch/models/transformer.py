@@ -35,6 +35,7 @@ class Decoder(torch.nn.Module):
 
 class LastCat(torch.nn.Module):
   def forward(self, input):
+    return torch.amax(input, dim=1)
     return input[:, -1, :]
 
 class Transformer(gtorch.models.base.SequenceBase):
@@ -76,7 +77,7 @@ class Transformer(gtorch.models.base.SequenceBase):
 
   def get_classifier_parameters(self, **kwargs):
     return dict(
-      #optimizer='adam',
+      optimizer='adam',
       schedule='onecycle',
       weight_decay=0,
       momentum=1 - 1e-3,
@@ -86,7 +87,7 @@ class Transformer(gtorch.models.base.SequenceBase):
       max_epochs=10,
       min_epochs=0,
 
-      learning_rate=1e0, # stupid edge of stability!!
+      learning_rate=1e-2, # stupid edge of stability!!
       hidden_width=2,
     )
 
