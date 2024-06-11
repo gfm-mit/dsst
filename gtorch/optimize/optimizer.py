@@ -7,12 +7,22 @@ class LogRampScheduler():
     super(LogRampScheduler, self).__init__()
     self.lrs = np.geomspace(min_lr, max_lr, epochs)
     self.optimizer = optimizer
+    self.momenta = []
+    for pg in optimizer.param_groups:
+      self.momenta += [pg["momentum"]]
+      pg["momentum"] = 0.01
     self.step_count = 0
 
   def zero_grad(self):
     pass
 
   def step(self):
+    if self.step_count == 0:
+      for pg in self.optimizer.param_groups:
+        pg["momentum"] = 0.5
+    elif self.step_count == 1:
+      for pg, momentum in zip(self.optimizer.param_groups, self.momenta):
+        pg["momentum"] = momentum
     for pg in self.optimizer.param_groups:
       pg["lr"] = self.lrs[self.step_count] * (1 - pg["momentum"])
     self.step_count += 1
