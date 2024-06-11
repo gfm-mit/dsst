@@ -1,5 +1,6 @@
 import gtorch.datasets.linear_box
 import gtorch.hyper.lr_finder
+import gtorch.hyper.lr_plots
 import gtorch.hyper.params
 import gtorch.hyper.tune
 import gtorch.optimize.metrics
@@ -52,12 +53,13 @@ class Experiment:
         train_loader=self.train_loader,
         task=self.args.task,
         disk=self.args.disk)
-    losses, ax = gtorch.hyper.lr_plots.plot_lr(lrs, losses, smooth=len(self.train_loader))
-    losses = losses.rename(str(kwargs))
+    losses, ax = gtorch.hyper.lr_plots.plot_lr(lrs, losses, smooth=len(self.train_loader), label=str(kwargs), ax=ax)
     return losses, ax
 
   def find_momentum(self):
     ax = None
     loss1, ax = self.find_lr(ax, momentum=0)
     loss2, ax = self.find_lr(ax, momentum=0.5)
+    loss2, ax = self.find_lr(ax, momentum=0.9)
+    loss2, ax = self.find_lr(ax, momentum=0.99)
     gtorch.hyper.lr_plots.show_lr(ax, [loss1, loss2])
