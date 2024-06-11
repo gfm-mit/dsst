@@ -79,17 +79,20 @@ if __name__ == "__main__":
       experiment.tune()
     elif args.find_lr:
       if args.disk == "save":
+        experiment.train(
+          scheduler=None,
+          optimizer="sgd",
+          momentum=0.5,
+          lr=1e-5,
+          max_epochs=10,
+        )
+      else:
         experiment.find_momentum(dict(
-          min_lr=1e-5,
-          max_lr=1e3,
+          optimizer='sgd',
+          min_lr=1e-6,
+          max_lr=1e+3,
           max_epochs=30,
-        ), momentum=[0])
-      elif args.disk == "load":
-        experiment.find_momentum(dict(
-          min_lr=1e-1,
-          max_lr=1e2,
-          max_epochs=20,
-        ), momentum=[0, 0.5, 0.9, 0.99])
+        ), momentum=[0, 0.9])
     elif args.profile:
       with cProfile.Profile() as pr:
         experiment.train()
