@@ -6,14 +6,18 @@ import gtorch.models.base
 import gtorch.hyper.params
 from gtorch.optimize.optimizer import get_optimizer
 
+def get_lr_params():
+  return dict(
+    schedule="ramp",
+    min_lr=1e-3,
+    max_lr=1e4,
+    epochs=20,
+  )
+
 def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="none"):
   model, loss_fn = gtorch.hyper.params.setup_model(params, model_factory_fn, task, disk)
 
-  new_params = dict(**params)
-  new_params["schedule"] = "ramp"
-  new_params["min_lr"] = 1e-4
-  new_params["max_lr"] = 1e4
-  new_params["epochs"] = 30
+  new_params = dict(**params) | get_lr_params()
   losses = []
   conds = []
   optimizer, scheduler = get_optimizer(new_params, model)
@@ -29,7 +33,10 @@ def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="
       minus /= np.linalg.norm(minus)
       plus2 = np.sum(plus * grads) - np.sum(plus * last_grads)
       minus2 = np.sum(minus * grads) - np.sum(minus * last_grads)
-      conds += [np.abs(minus2 / plus2)]
+      cond = np.abs(minus2 / plus2)
+      conds += [cond]
+    else:
+      conds = [np.nan]
     last_grads = grads
 
     if e > 0 and losses[-1] > losses[0] * 2:
