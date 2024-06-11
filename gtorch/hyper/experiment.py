@@ -42,9 +42,9 @@ class Experiment:
       self.train_loader, self.val_loader,
       builder=builder, pretraining=self.args.pretraining)
 
-  def find_lr(self):
+  def find_lr(self, **kwargs):
     builder = self.model_class(n_classes=2, device=self.args.device)
-    base_params = builder.get_parameters(pretraining=self.args.pretraining)
+    base_params = builder.get_parameters(pretraining=self.args.pretraining) | kwargs
     return gtorch.hyper.lr_finder.find_lr(
         base_params, model_factory_fn=builder,
         train_loader=self.train_loader,
