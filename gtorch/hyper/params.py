@@ -41,7 +41,7 @@ def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_
 
 def setup_model(params, model_factory_fn, task="classify", disk="none"):
   assert isinstance(model_factory_fn, gtorch.models.base.Base)
-  assert task in "classify next_token".split()
+  assert task in "classify classify_patient next_token".split()
   assert disk in "none load save".split()
   if task == "next_token":
     loss_fn = next_token
