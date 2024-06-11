@@ -19,7 +19,7 @@ def get_spaces(**kwargs):
     spaces[col] = np.random.permutation(spaces[col].values)
   return spaces
 
-def main(train_loader, val_loader, builder=None, task="classify"):
+def main(train_loader, val_loader, builder=None, task="classify", disk="none"):
   torch.manual_seed(42)
   assert isinstance(builder, gtorch.models.base.Base)
   base_params = builder.get_parameters(task=task)
@@ -33,7 +33,7 @@ def main(train_loader, val_loader, builder=None, task="classify"):
     print("tune:", spaces.loc[i].to_dict())
     retval, model = gtorch.hyper.params.setup_training_run(params, model_factory_fn=builder,
                                                            train_loader=train_loader, val_loader=val_loader,
-                                                           task=task)
+                                                           task=task, disk=disk)
     results += [dict(**params, **retval)]
   results = pd.DataFrame(results)
   print(results)

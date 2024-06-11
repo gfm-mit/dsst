@@ -97,6 +97,6 @@ def get_optimizer(params, model):
         max_lr=params["max_lr"],
         epochs=int(params["max_epochs"]))
   else:
-    assert "schedule" not in params
+    assert "schedule" not in params or params["schedule"] is None, params["schedule"]
     scheduler = FakeOptimizer(model, verbose=False)
   return optimizer, scheduler

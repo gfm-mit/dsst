@@ -35,7 +35,7 @@ def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="
 
     if disk == "save" and losses and np.argmin(losses) == len(losses) - 1:
       torch.save(model.state_dict(), './results/model.pth')
-      
+
     if e > 0 and losses[-1] > losses[0] * 2:
       break
   lrs = scheduler.state_dict()["lrs"]
