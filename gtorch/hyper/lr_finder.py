@@ -1,23 +1,17 @@
-import numpy as np
 import itertools
+import numpy as np
+import torch
 from tqdm import tqdm
 
 import gtorch.models.base
 import gtorch.hyper.params
 from gtorch.optimize.optimizer import get_optimizer
 
-def get_lr_params():
-  return dict(
-    schedule="ramp",
-    min_lr=1e-8,
-    max_lr=1e0,
-    max_epochs=50,
-  )
 
 def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="none"):
   model, loss_fn = gtorch.hyper.params.setup_model(params, model_factory_fn, task, disk)
 
-  new_params = dict(**params) | get_lr_params()
+  new_params = dict(**params)
   losses = []
   conds = []
   optimizer, scheduler = get_optimizer(new_params, model)
@@ -39,6 +33,9 @@ def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="
       conds = [np.nan]
     last_grads = grads
 
+    if disk == "save" and losses and np.argmin(losses) == len(losses) - 1:
+      torch.save(model.state_dict(), './results/model.pth')
+      
     if e > 0 and losses[-1] > losses[0] * 2:
       break
   lrs = scheduler.state_dict()["lrs"]

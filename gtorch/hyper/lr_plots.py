@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import scipy
 
-import gtorch.hyper.lr_finder
 
 def plot_lr(lrs, losses, conds=None, smooth=None, label=None, axs=None):
   losses = pd.Series(losses, index=lrs, name=label)
@@ -21,12 +20,11 @@ def plot_lr(lrs, losses, conds=None, smooth=None, label=None, axs=None):
   axs[1].scatter(conds.index, conds, label=conds.name)
   return losses, conds
 
-def get_axes():
+def get_axes(params):
   fig, axs = plt.subplots(1, 2)
   plt.sca(axs[0])
   plt.xlabel("Learning Rate")
   plt.xscale('log')
-  params = gtorch.hyper.lr_finder.get_lr_params()
   plt.xlim([params["min_lr"], params["max_lr"]])
 
   plt.ylabel("Loss")

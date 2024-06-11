@@ -45,23 +45,28 @@ class Experiment:
       self.train_loader, self.val_loader,
       builder=builder, task=self.args.task, disk=self.args.disk)
 
-  def find_lr(self, axs=None, **kwargs):
+  def find_lr(self, axs=None, lr_params=None, label=None):
     builder = self.model_class(n_classes=2, device=self.args.device)
-    base_params = builder.get_parameters(task=self.args.task) | kwargs
-    print(base_params)
+    lr_params = dict(
+        schedule="ramp",
+        min_lr=1e-5,
+        max_lr=1e3,
+        max_epochs=30,
+    ) | (lr_params if lr_params is not None else {})
+    base_params = builder.get_parameters(task=self.args.task) | lr_params
     lrs, losses, conds = gtorch.hyper.lr_finder.find_lr(
         base_params, model_factory_fn=builder,
         train_loader=self.train_loader,
         task=self.args.task,
         disk=self.args.disk)
-    losses, conds = gtorch.hyper.lr_plots.plot_lr(lrs, losses, conds=conds, smooth=len(self.train_loader), label=str(kwargs), axs=axs)
+    losses, conds = gtorch.hyper.lr_plots.plot_lr(lrs, losses, conds=conds, smooth=len(self.train_loader), label=label, axs=axs)
     return losses, conds
 
-  def find_momentum(self, momentum=None):
+  def find_momentum(self, lr_params, momentum=None):
     assert momentum is not None
-    axs = gtorch.hyper.lr_plots.get_axes()
+    axs = gtorch.hyper.lr_plots.get_axes(lr_params)
     loss, cond = zip(*[
-      self.find_lr(axs, momentum=m)
+      self.find_lr(axs, lr_params=lr_params | {"momentum": m}, label=f"momentum={m}")
       for m in momentum
     ])
     gtorch.hyper.lr_plots.show_axes(axs, loss, cond)
