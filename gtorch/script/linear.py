@@ -78,7 +78,7 @@ if __name__ == "__main__":
       # tune parameters
       experiment.tune()
     elif args.find_lr:
-      experiment.find_momentum()
+      experiment.find_momentum([0])
     elif args.profile:
       with cProfile.Profile() as pr:
         experiment.train()

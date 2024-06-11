@@ -57,13 +57,11 @@ class Experiment:
     losses, conds = gtorch.hyper.lr_plots.plot_lr(lrs, losses, conds=conds, smooth=len(self.train_loader), label=str(kwargs), axs=axs)
     return losses, conds
 
-  def find_momentum(self):
-    import matplotlib.pyplot as plt
-    fig, axs = plt.subplots(2, 1)
+  def find_momentum(self, momentum=None):
+    assert momentum is not None
+    axs = gtorch.hyper.lr_plots.get_axes()
     loss, cond = zip(*[
-      self.find_lr(axs, momentum=0),
-      self.find_lr(axs, momentum=0.5),
-      self.find_lr(axs, momentum=0.9),
-      self.find_lr(axs, momentum=0.9),
+      self.find_lr(axs, momentum=m)
+      for m in momentum
     ])
-    gtorch.hyper.lr_plots.show_lr(axs, loss, cond)
+    gtorch.hyper.lr_plots.show_axes(axs, loss, cond)
