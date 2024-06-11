@@ -21,7 +21,7 @@ def plot_lr(lrs, losses, conds=None, smooth=None, label=None, axs=None):
   return losses, conds
 
 def get_axes(params):
-  fig, axs = plt.subplots(1, 2)
+  fig, axs = plt.subplots(2, 1)
   plt.sca(axs[0])
   plt.xlabel("Learning Rate")
   plt.xscale('log')
@@ -42,10 +42,21 @@ def show_axes(axs, losses, conds):
   losses = pd.DataFrame(losses).transpose()
   conds = pd.DataFrame(conds).transpose()
   print(pd.concat([losses, conds], axis=1))
+  maxes = []
+  for c in losses:
+    monotonic_tail_length = (losses[c].diff() < 0).iloc[::-1].argmax()
+    if monotonic_tail_length:
+      interior_max = np.nanmax(losses[c].iloc[:-monotonic_tail_length])
+    else:
+      interior_max = np.nanmax(losses[c])
+    print(monotonic_tail_length)
+    maxes += [interior_max]
+  low = losses.min().min()
+  high = np.nanmax(maxes)
+  print(low, high)
 
   plt.sca(axs[0])
-  low, high = losses.min().min(), losses.iloc[0].max()
-  plt.ylim(low, 2 * high - low)
+  plt.ylim([1.1 * low - .1 * high, 1.1 * high - .1 * low])
   plt.legend()
   plt.tight_layout()
   plt.show()
