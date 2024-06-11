@@ -5,8 +5,10 @@ def optimize(epoch, model, optimizer, train_loader):
   pass
 
 class FakeOptimizer():
-  def __init__(self, model):
+  def __init__(self, model, verbose=True):
     super(FakeOptimizer, self).__init__()
+    if not verbose:
+      return
     layer_lookup = {
         k: str(v)
         for k, v in model.named_modules()
@@ -56,6 +58,13 @@ def get_optimizer(params, model):
                         ],
                         weight_decouple=True,
                         weight_decay=params["weight_decay"])
+  elif "optimizer" in params and params["optimizer"] == "eos":
+    lr = params["learning_rate"]
+    mu = params["momentum"]
+    optimizer = torch.optim.SGD(model.parameters(),
+                                lr=lr * (1 - mu),
+                                momentum=mu,
+                                weight_decay=params["weight_decay"])
   else:
     if "optimizer" not in params:
       print("no optimizer specified, defaulting to sgd")
@@ -72,10 +81,6 @@ def get_optimizer(params, model):
         steps_per_epoch=1,
         pct_start=params["pct_start"],
         epochs=int(params["max_epochs"]))
-  elif "schedule" in params and params["schedule"] == "exponential":
-    scheduler = torch.optim.lr_scheduler.ExponentialLR(
-        optimizer,
-        gamma=params["schedule_gamma"])
   else:
-    scheduler = FakeOptimizer(model)
+    scheduler = FakeOptimizer(model, verbose=False)
   return optimizer, scheduler
