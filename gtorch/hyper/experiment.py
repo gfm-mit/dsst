@@ -45,21 +45,25 @@ class Experiment:
       self.train_loader, self.val_loader,
       builder=builder, task=self.args.task, disk=self.args.disk)
 
-  def find_lr(self, ax=None, **kwargs):
+  def find_lr(self, axs=None, **kwargs):
     builder = self.model_class(n_classes=2, device=self.args.device)
     base_params = builder.get_parameters(task=self.args.task) | kwargs
-    lrs, losses = gtorch.hyper.lr_finder.find_lr(
+    print(base_params)
+    lrs, losses, conds = gtorch.hyper.lr_finder.find_lr(
         base_params, model_factory_fn=builder,
         train_loader=self.train_loader,
         task=self.args.task,
         disk=self.args.disk)
-    losses, ax = gtorch.hyper.lr_plots.plot_lr(lrs, losses, smooth=len(self.train_loader), label=str(kwargs), ax=ax)
-    return losses, ax
+    losses, conds = gtorch.hyper.lr_plots.plot_lr(lrs, losses, conds=conds, smooth=len(self.train_loader), label=str(kwargs), axs=axs)
+    return losses, conds
 
   def find_momentum(self):
-    ax = None
-    loss1, ax = self.find_lr(ax, momentum=0)
-    loss2, ax = self.find_lr(ax, momentum=0.5)
-    loss2, ax = self.find_lr(ax, momentum=0.9)
-    loss2, ax = self.find_lr(ax, momentum=0.99)
-    gtorch.hyper.lr_plots.show_lr(ax, [loss1, loss2])
+    import matplotlib.pyplot as plt
+    fig, axs = plt.subplots(2, 1)
+    loss, cond = zip(*[
+      self.find_lr(axs, momentum=0),
+      self.find_lr(axs, momentum=0.5),
+      self.find_lr(axs, momentum=0.9),
+      self.find_lr(axs, momentum=0.9),
+    ])
+    gtorch.hyper.lr_plots.show_lr(axs, loss, cond)

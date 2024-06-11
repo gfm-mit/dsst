@@ -1,8 +1,24 @@
 import torch
+import numpy as np
 from pytorch_optimizer import DAdaptLion, Prodigy
 
-def optimize(epoch, model, optimizer, train_loader):
-  pass
+class LogRampScheduler():
+  def __init__(self, optimizer, min_lr=1e-4, max_lr=1e4, epochs=30):
+    super(LogRampScheduler, self).__init__()
+    self.lrs = np.geomspace(min_lr, max_lr, epochs)
+    self.optimizer = optimizer
+    self.step_count = 0
+
+  def zero_grad(self):
+    pass
+
+  def step(self):
+    for pg in self.optimizer.param_groups:
+      pg["lr"] = self.lrs[self.step_count] * (1 - pg["momentum"])
+    self.step_count += 1
+
+  def state_dict(self):
+    return {"lrs": self.lrs[:self.step_count]}
 
 class FakeOptimizer():
   def __init__(self, model, verbose=True):
@@ -58,13 +74,6 @@ def get_optimizer(params, model):
                         ],
                         weight_decouple=True,
                         weight_decay=params["weight_decay"])
-  elif "optimizer" in params and params["optimizer"] == "eos":
-    lr = params["learning_rate"]
-    mu = params["momentum"]
-    optimizer = torch.optim.SGD(model.parameters(),
-                                lr=lr * (1 - mu),
-                                momentum=mu,
-                                weight_decay=params["weight_decay"])
   else:
     if "optimizer" not in params:
       print("no optimizer specified, defaulting to sgd")
@@ -81,6 +90,13 @@ def get_optimizer(params, model):
         steps_per_epoch=1,
         pct_start=params["pct_start"],
         epochs=int(params["max_epochs"]))
+  elif "schedule" in params and params["schedule"] == "ramp":
+    scheduler = LogRampScheduler(
+        optimizer,
+        min_lr=1e-4,
+        max_lr=1e4,
+        epochs=30)
   else:
+    assert "schedule" not in params
     scheduler = FakeOptimizer(model, verbose=False)
   return optimizer, scheduler

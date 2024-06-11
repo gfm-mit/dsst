@@ -10,13 +10,29 @@ def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="
   model, loss_fn = gtorch.hyper.params.setup_model(params, model_factory_fn, task, disk)
 
   new_params = dict(**params)
-  low, high, N = 3e-2, 3e0, 20
-  lrs = []
+  new_params["schedule"] = "ramp"
+  new_params["min_lr"] = 1e-4
+  new_params["max_lr"] = 1e4
+  new_params["epochs"] = 30
   losses = []
-  for e, batch in zip(tqdm(range(N)), itertools.cycle(train_loader)):
-    lr = low * np.power(high / low, float(e) / N)
-    new_params["learning_rate"] = lr
-    lrs += [lr]
-    optimizer, scheduler = get_optimizer(new_params, model)
+  conds = []
+  optimizer, scheduler = get_optimizer(new_params, model)
+  last_grads = None
+  for e, batch in zip(tqdm(range(new_params["epochs"])), itertools.cycle(train_loader)):
     losses += [loss_fn(0, model, optimizer, [batch])]
-  return lrs, losses
+    scheduler.step()
+    grads = np.concatenate([t.detach().numpy().flatten() for t in model.parameters()])
+    if last_grads is not None:
+      plus = grads + last_grads
+      plus /= np.linalg.norm(plus)
+      minus = grads - last_grads
+      minus /= np.linalg.norm(minus)
+      plus2 = np.sum(plus * grads) - np.sum(plus * last_grads)
+      minus2 = np.sum(minus * grads) - np.sum(minus * last_grads)
+      conds += [np.abs(minus2 / plus2)]
+    last_grads = grads
+
+    if e > 0 and losses[-1] > losses[0] * 2:
+      break
+  lrs = scheduler.state_dict()["lrs"]
+  return lrs, losses, conds
