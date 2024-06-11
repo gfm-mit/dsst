@@ -4,7 +4,7 @@ import torch
 from sklearn.metrics import roc_auc_score
 
 def evaluate(model, val_loader, task):
-  if task == "classfiy":
+  if task == "next_token":
     resdict = next_token_metrics(model, val_loader)
     return resdict, model
   else:
