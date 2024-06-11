@@ -93,9 +93,9 @@ def get_optimizer(params, model):
   elif "schedule" in params and params["schedule"] == "ramp":
     scheduler = LogRampScheduler(
         optimizer,
-        min_lr=1e-4,
-        max_lr=1e4,
-        epochs=30)
+        min_lr=params["min_lr"],
+        max_lr=params["max_lr"],
+        epochs=int(params["max_epochs"]))
   else:
     assert "schedule" not in params
     scheduler = FakeOptimizer(model, verbose=False)

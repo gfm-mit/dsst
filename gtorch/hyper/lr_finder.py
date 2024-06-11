@@ -9,9 +9,9 @@ from gtorch.optimize.optimizer import get_optimizer
 def get_lr_params():
   return dict(
     schedule="ramp",
-    min_lr=1e-3,
-    max_lr=1e4,
-    epochs=20,
+    min_lr=1e-8,
+    max_lr=1e0,
+    max_epochs=50,
   )
 
 def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="none"):
@@ -22,7 +22,7 @@ def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="
   conds = []
   optimizer, scheduler = get_optimizer(new_params, model)
   last_grads = None
-  for e, batch in zip(tqdm(range(new_params["epochs"])), itertools.cycle(train_loader)):
+  for e, batch in zip(tqdm(range(new_params["max_epochs"])), itertools.cycle(train_loader)):
     losses += [loss_fn(0, model, optimizer, [batch])]
     scheduler.step()
     grads = np.concatenate([t.detach().numpy().flatten() for t in model.parameters()])

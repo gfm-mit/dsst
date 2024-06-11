@@ -42,11 +42,12 @@ def get_axes():
 
 def show_axes(axs, losses, conds):
   losses = pd.DataFrame(losses).transpose()
-  print(losses)
   conds = pd.DataFrame(conds).transpose()
-  print(conds)
+  print(pd.concat([losses, conds], axis=1))
 
   plt.sca(axs[0])
-  plt.ylim(losses.min().min(), losses.iloc[0].max())
+  low, high = losses.min().min(), losses.iloc[0].max()
+  plt.ylim(low, 2 * high - low)
   plt.legend()
+  plt.tight_layout()
   plt.show()
