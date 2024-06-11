@@ -5,11 +5,9 @@ from sklearn.metrics import roc_auc_score
 
 def evaluate(model, val_loader, task):
   if task == "next_token":
-    resdict = next_token_metrics(model, val_loader)
-    return resdict, model
+    return next_token_metrics(model, val_loader)
   else:
-    resdict = binary_classifier_metrics(model, val_loader)
-    return resdict, model
+    return binary_classifier_metrics(model, val_loader)
 
 def next_token_metrics(model, val_loader, verbose=True):
   DEVICE = next(model.parameters()).device

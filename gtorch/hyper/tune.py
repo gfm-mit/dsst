@@ -29,7 +29,7 @@ def main(train_loader, val_loader, builder=None, task="classify", disk="none"):
     params = dict(**base_params)
     for k in spaces.columns:
       params[k] = spaces.loc[i, k]
-    retval, model = gtorch.hyper.params.setup_training_run(params, model_factory_fn=builder,
+    retval, train_loss, model = gtorch.hyper.params.setup_training_run(params, model_factory_fn=builder,
                                                            train_loader=train_loader, val_loader=val_loader,
                                                            task=task, disk=disk, tqdm_prefix=f"Tuning Case {i} {spaces.loc[i].to_dict()}")
     results += [dict(**params, **retval)]

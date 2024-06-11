@@ -30,7 +30,7 @@ if __name__ == "__main__":
     #torch.manual_seed(42)
     base_params = builder.get_parameters()
     with cProfile.Profile() as pr:
-      retval, model = gtorch.hyper.params.setup_training_run(base_params, model_factory_fn=builder,
+      retval, train_loss, model = gtorch.hyper.params.setup_training_run(base_params, model_factory_fn=builder,
                                                              train_loader=train_loader, val_loader=val_loader)
     pr.dump_stats('results/output_file.prof')
     model.eval()

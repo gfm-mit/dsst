@@ -2,6 +2,7 @@ import argparse
 import sys
 import cProfile
 import util.excepthook
+import matplotlib.pyplot as plt
 
 import gtorch.datasets.bitmap
 import gtorch.datasets.dataset
@@ -36,6 +37,7 @@ if __name__ == "__main__":
   parser.add_argument('--bitmap', action='store_true', help='Use bitmap data')
   parser.add_argument('--compare', action='store_true', help='Run on both linear_agg and linear')
   parser.add_argument('--find_lr', action='store_true', help='Use CLR method to find learning rate')
+  parser.add_argument('--history', action='store_true', help='Plot history of training loss')
   parser.add_argument('--device', default='cpu', help='torch device')
   parser.add_argument('--test', action='store_true', help='Train one batch on each model class')
   parser.add_argument('--model', default='lstm', help='which model class to use')
@@ -59,8 +61,8 @@ if __name__ == "__main__":
         val_loader=[val_batch],
         test_loader=None,
         args=args)
-      retval = experiment.train(min_epochs=0, max_epochs=1)
-      print(model_class, retval)
+      resdict, losses = experiment.train(min_epochs=0, max_epochs=1)
+      print(model_class, resdict)
   elif args.coef:
     # check coefficients
     gtorch.hyper.coef.get_coef_dist(
@@ -88,19 +90,24 @@ if __name__ == "__main__":
         )
       else:
         experiment.find_momentum(dict(
-          optimizer='sgd',
-          min_lr=1e-6,
-          max_lr=1e+3,
+          optimizer='adam',
+          min_lr=1e-2,
+          max_lr=1e-1,
           max_epochs=30,
-        ), momentum=[0, 0.9])
+        ), momentum=[0.9])
     elif args.profile:
       with cProfile.Profile() as pr:
         experiment.train()
       pr.dump_stats('results/output_file.prof')
     else:
       axs, lines = None, None
-      experiment.train()
-      if args.task in 'classify classify_patient'.split():
+      resdict, losses = experiment.train()
+      if args.history:
+        plt.plot(losses)
+        plt.xlabel('epoch')
+        plt.ylabel('loss')
+        plt.show()
+      elif args.task in 'classify classify_patient'.split():
         axs, lines = experiment.plot_trained(axs, lines)
 
       if args.compare:
