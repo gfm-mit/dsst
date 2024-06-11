@@ -44,11 +44,20 @@ class Experiment:
       self.train_loader, self.val_loader,
       builder=builder, task=self.args.task, disk=self.args.disk)
 
-  def find_lr(self, **kwargs):
+  def find_lr(self, ax=None, **kwargs):
     builder = self.model_class(n_classes=2, device=self.args.device)
     base_params = builder.get_parameters(task=self.args.task) | kwargs
-    return gtorch.hyper.lr_finder.find_lr(
+    lrs, losses = gtorch.hyper.lr_finder.find_lr(
         base_params, model_factory_fn=builder,
         train_loader=self.train_loader,
         task=self.args.task,
         disk=self.args.disk)
+    losses, ax = gtorch.hyper.lr_plots.plot_lr(lrs, losses, smooth=len(self.train_loader))
+    losses = losses.rename(str(kwargs))
+    return losses, ax
+
+  def find_momentum(self):
+    ax = None
+    loss1, ax = self.find_lr(ax, momentum=0)
+    loss2, ax = self.find_lr(ax, momentum=0.5)
+    gtorch.hyper.lr_plots.show_lr(ax, [loss1, loss2])

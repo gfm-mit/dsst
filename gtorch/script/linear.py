@@ -25,7 +25,6 @@ import gtorch.optimize.loss
 import gtorch.optimize.metrics
 import gtorch.optimize.optimizer
 from plot.palette import draw_3_legends
-from plot.lr_finder import plot_lr
 
 if __name__ == "__main__":
   sys.excepthook = util.excepthook.custom_excepthook
@@ -52,8 +51,8 @@ if __name__ == "__main__":
     train_loader, val_loader, test_loader = gtorch.datasets.bitmap.get_loaders()
   if args.test:
     for model_class, train_batch, val_batch in zip(
-        gtorch.models.registry.get_all_1d_models(),
-        train_loader, val_loader):
+      gtorch.models.registry.get_all_1d_models(),
+      train_loader, val_loader):
       experiment = gtorch.hyper.experiment.Experiment(
         model_class=model_class,
         train_loader=[train_batch],
@@ -79,7 +78,7 @@ if __name__ == "__main__":
       # tune parameters
       experiment.tune()
     elif args.find_lr:
-      assert "args.find_lr not implemented, yet"
+      experiment.find_momentum()
     elif args.profile:
       with cProfile.Profile() as pr:
         experiment.train()
