@@ -36,6 +36,6 @@ class SequenceBase(Base):
     pass
 
   def get_parameters(self, **kwargs):
-    if "pretraining" in kwargs and kwargs["pretraining"] == "save":
+    if "task" in kwargs and kwargs["task"] == "next_token":
       return self.get_classifier_parameters() | self.get_next_token_parameters() 
     return self.get_classifier_parameters()

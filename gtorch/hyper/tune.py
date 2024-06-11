@@ -19,10 +19,10 @@ def get_spaces(**kwargs):
     spaces[col] = np.random.permutation(spaces[col].values)
   return spaces
 
-def main(train_loader, val_loader, builder=None, pretraining=None):
+def main(train_loader, val_loader, builder=None, task="classify"):
   torch.manual_seed(42)
   assert isinstance(builder, gtorch.models.base.Base)
-  base_params = builder.get_parameters(pretraining=pretraining)
+  base_params = builder.get_parameters(task=task)
   assert builder.get_tuning_ranges(), "no parameters to tune"
   spaces = get_spaces(**builder.get_tuning_ranges())
   results = []
@@ -33,7 +33,7 @@ def main(train_loader, val_loader, builder=None, pretraining=None):
     print("tune:", spaces.loc[i].to_dict())
     retval, model = gtorch.hyper.params.setup_training_run(params, model_factory_fn=builder,
                                                            train_loader=train_loader, val_loader=val_loader,
-                                                           pretraining=pretraining)
+                                                           task=task)
     results += [dict(**params, **retval)]
   results = pd.DataFrame(results)
   print(results)
@@ -43,7 +43,7 @@ def main(train_loader, val_loader, builder=None, pretraining=None):
     axs = [axs]
   else:
     axs = axs.flatten()
-  metric = "mse" if pretraining == "save" else "roc"
+  metric = "mse" if task == "next_token" else "roc"
   for e, k in enumerate(spaces.columns):
     plt.sca(axs[e])
     plt.scatter(results[k], results[metric])

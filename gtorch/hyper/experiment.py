@@ -17,12 +17,13 @@ class Experiment:
   def train(self, **kwargs):
     #torch.manual_seed(42)
     builder = self.model_class(n_classes=2, device=self.args.device)
-    base_params = builder.get_parameters(pretraining=self.args.pretraining) | kwargs
+    base_params = builder.get_parameters(task=self.args.task) | kwargs
     retval, self.model = gtorch.hyper.params.setup_training_run(
         base_params, model_factory_fn=builder,
         train_loader=self.train_loader,
         val_loader=self.val_loader,
-        pretraining=self.args.pretraining)
+        task=self.args.task,
+        disk=self.args.disk)
     return retval
 
   def plot_trained(self, axs, lines):
@@ -40,12 +41,13 @@ class Experiment:
     builder = self.model_class(n_classes=2, device=self.args.device)
     gtorch.hyper.tune.main(
       self.train_loader, self.val_loader,
-      builder=builder, pretraining=self.args.pretraining)
+      builder=builder, task=self.args.task, disk=self.args.disk)
 
   def find_lr(self, **kwargs):
     builder = self.model_class(n_classes=2, device=self.args.device)
-    base_params = builder.get_parameters(pretraining=self.args.pretraining) | kwargs
+    base_params = builder.get_parameters(task=self.args.task) | kwargs
     return gtorch.hyper.lr_finder.find_lr(
         base_params, model_factory_fn=builder,
         train_loader=self.train_loader,
-        pretraining=self.args.pretraining)
+        task=self.args.task,
+        disk=self.args.disk)

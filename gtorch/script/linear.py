@@ -36,8 +36,9 @@ if __name__ == "__main__":
   parser.add_argument('--compare', action='store_true', help='Run on both linear_agg and linear')
   parser.add_argument('--box_level', action='store_true', help='Plot ROC at box level')
   parser.add_argument('--device', default='cpu', help='torch device')
-  parser.add_argument('--pretraining', default='none', help='whether to pretrain')
   parser.add_argument('--test', action='store_true', help='Train one batch on each model class')
+  parser.add_argument('--task', default='classify', choices=set("next_token classify".split()), help='training target / loss')
+  parser.add_argument('--disk', default='none', choices=set("none load save".split()), help='whether to persist the model (or use persisted)')
   args = parser.parse_args()
 
   axs = None
@@ -87,7 +88,7 @@ if __name__ == "__main__":
     else:
       axs, lines = None, None
       experiment.train()
-      if args.pretraining != "save":
+      if args.task == 'classify':
         axs, lines = experiment.plot_trained(axs, lines)
 
       if args.compare:

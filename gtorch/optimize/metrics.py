@@ -3,6 +3,14 @@ import pandas as pd
 import torch
 from sklearn.metrics import roc_auc_score
 
+def evaluate(model, val_loader, task):
+  if task == "classfiy":
+    resdict = next_token_metrics(model, val_loader)
+    return resdict, model
+  else:
+    resdict = binary_classifier_metrics(model, val_loader)
+    return resdict, model
+
 def next_token_metrics(model, val_loader, verbose=True):
   DEVICE = next(model.parameters()).device
   results = []

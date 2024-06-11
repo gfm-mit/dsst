@@ -5,8 +5,9 @@ import numpy as np
 import torch
 
 import gtorch.models.base
+import gtorch.optimize
 from gtorch.optimize.loss import classify, next_token
-from gtorch.optimize.metrics import binary_classifier_metrics, next_token_metrics
+import gtorch.optimize.metrics
 from gtorch.optimize.optimizer import get_optimizer
 
 Path('./results').mkdir(parents=True, exist_ok=True)
@@ -38,10 +39,11 @@ def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_
   print("Train time per epoch", np.round((time.time() - start_time) / (x + 1), 2))
   return model
 
-def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=None, pretraining=None):
+def setup_model(params, model_factory_fn, task="classify", disk="none"):
   assert isinstance(model_factory_fn, gtorch.models.base.Base)
-  assert pretraining in [None, "none", "load", "save"]
-  if pretraining == "save":
+  assert task in "classify next_token".split()
+  assert disk in "none load save".split()
+  if task == "next_token":
     loss_fn = next_token
     assert isinstance(model_factory_fn, gtorch.models.base.SequenceBase)
     model = model_factory_fn.get_next_token_architecture(**{
@@ -55,14 +57,17 @@ def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=N
         for k in "".split()
     })
 
-  if pretraining == "load":
+  if disk == "load":
     network_state_dict = torch.load('./results/model.pth')
     model.load_state_dict(network_state_dict, strict=False)
   else:
     for layer in model.children():
       if hasattr(layer, 'reset_parameters'):
         layer.reset_parameters()
+  return model, loss_fn
 
+def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=None, task="classify", disk="none"):
+  model, loss_fn = setup_model(params, model_factory_fn, task, disk)
   optimizer, scheduler = get_optimizer(params, model)
 
   torch.cuda.empty_cache()
@@ -71,10 +76,6 @@ def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=N
                            max_epochs=params["max_epochs"],
                            train_loader=train_loader,
                            loss_fn=loss_fn)
-  if pretraining == "save":
+  if disk == "save":
     torch.save(model.state_dict(), './results/model.pth')
-    resdict = next_token_metrics(model, val_loader)
-    return resdict, model
-  else:
-    resdict = binary_classifier_metrics(model, val_loader)
-    return resdict, model
+  return gtorch.optimize.metrics.evaluate(model, val_loader, task)
