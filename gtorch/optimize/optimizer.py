@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from pytorch_optimizer import DAdaptLion, Prodigy
+from pytorch_optimizer import DAdaptLion, Prodigy, Lion
 
 class LogRampScheduler():
   def __init__(self, optimizer, min_lr=1e-4, max_lr=1e4, epochs=30):
@@ -81,6 +81,14 @@ def get_optimizer(params, model):
                                       params["beta2"],
                                   ],
                                   weight_decay=params["weight_decay"])
+  elif "optimizer" in params and params["optimizer"] == "lion":
+    optimizer = Lion(model.parameters(),
+                     betas=[
+                         params["momentum"],
+                         params["beta2"],
+                     ],
+                     weight_decouple=True,
+                     weight_decay=params["weight_decay"])
   elif "optimizer" in params and params["optimizer"] == "dadaptlion":
     optimizer = DAdaptLion(model.parameters(),
                            betas=[
