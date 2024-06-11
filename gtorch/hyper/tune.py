@@ -26,14 +26,13 @@ def main(train_loader, val_loader, builder=None, task="classify", disk="none"):
   assert builder.get_tuning_ranges(), "no parameters to tune"
   spaces = get_spaces(**builder.get_tuning_ranges())
   results = []
-  for i in tqdm(spaces.index):
+  for i in spaces.index:
     params = dict(**base_params)
     for k in spaces.columns:
       params[k] = spaces.loc[i, k]
-    print("tune:", spaces.loc[i].to_dict())
     retval, model = gtorch.hyper.params.setup_training_run(params, model_factory_fn=builder,
                                                            train_loader=train_loader, val_loader=val_loader,
-                                                           task=task, disk=disk)
+                                                           task=task, disk=disk, tqdm_prefix=f"Tuning Case {i} {spaces.loc[i].to_dict()}")
     results += [dict(**params, **retval)]
   results = pd.DataFrame(results)
   print(results)

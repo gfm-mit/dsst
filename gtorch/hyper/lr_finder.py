@@ -35,7 +35,7 @@ def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="
     last_grads = grads
 
     if np.argmin(losses) == len(losses) - 1:
-      progress.set_description(f"loss: {losses[-1]} @ step {e}")
+      progress.set_description(f"loss: {losses[-1]:.2E} @ step {e}")
     if e > 0 and losses[-1] > losses[0] * 2:
       break
   lrs = scheduler.state_dict()["lrs"]
