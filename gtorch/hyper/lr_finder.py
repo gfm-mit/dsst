@@ -1,7 +1,7 @@
 import itertools
 import numpy as np
 import torch
-from tqdm import tqdm
+from tqdm import tqdm, trange
 
 import gtorch.models.base
 import gtorch.hyper.params
@@ -16,7 +16,8 @@ def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="
   conds = []
   optimizer, scheduler = get_optimizer(new_params, model)
   last_grads = None
-  for e, batch in zip(tqdm(range(new_params["max_epochs"])), itertools.cycle(train_loader)):
+  progress = trange(new_params["max_epochs"])
+  for e, batch in zip(progress, itertools.cycle(train_loader)):
     losses += [loss_fn(0, model, optimizer, [batch])]
     scheduler.step()
     grads = np.concatenate([t.detach().numpy().flatten() for t in model.parameters()])
@@ -33,6 +34,8 @@ def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="
       conds = [np.nan]
     last_grads = grads
 
+    if np.argmin(losses) == len(losses) - 1:
+      progress.set_description(f"loss: {losses[-1]} @ step {e}")
     if e > 0 and losses[-1] > losses[0] * 2:
       break
   lrs = scheduler.state_dict()["lrs"]
