@@ -7,7 +7,7 @@ from gtorch.models.util import NoopAttention
 
 
 class Decoder(torch.nn.Module):
-  def __init__(self, n_features):
+  def __init__(self, n_features, causal=False):
       super(Decoder, self).__init__()
       decoder_layer = torch.nn.TransformerDecoderLayer(
         d_model=12,
@@ -23,9 +23,15 @@ class Decoder(torch.nn.Module):
         bias=True)
       decoder_layer.multihead_attn = NoopAttention() # this is used on the memory
       self.decoder = torch.nn.TransformerDecoder(decoder_layer=decoder_layer, num_layers=2)
+      self.causal = causal
 
   def forward(self, input):
-    return self.decoder(input, None)
+    mask = None
+    if self.causal:
+      seq_len = input.shape[1]
+      # tgt, src
+      mask = torch.Tensor(np.tril(np.ones((seq_len, seq_len)), k=-1).astype(bool))
+    return self.decoder(input, memory=None, tgt_mask=mask)
 
 class LastCat(torch.nn.Module):
   def forward(self, input):
@@ -42,7 +48,7 @@ class Transformer(gtorch.models.base.SequenceBase):
   def get_next_token_architecture(self, hidden_width='unused'):
     model = torch.nn.Sequential(
         # b n c
-        Decoder(n_features=12),
+        Decoder(n_features=12, causal=True),
     )
     model = model.to(self.device)
     return model
@@ -50,7 +56,7 @@ class Transformer(gtorch.models.base.SequenceBase):
   def get_classifier_architecture(self, hidden_width='unused'):
     model = torch.nn.Sequential(
         # b n c
-        Decoder(n_features=12),
+        Decoder(n_features=12, causal=True), # TODO: try False
         LastCat(),
         torch.nn.BatchNorm1d(num_features=self.features),
         torch.nn.Linear(self.features, self.classes),
@@ -61,7 +67,10 @@ class Transformer(gtorch.models.base.SequenceBase):
 
   def get_next_token_parameters(self, **kwargs):
     return dict(
-      learning_rate=3e-1, # who knows?
+      optimizer='eos',
+      schedule=None,
+      learning_rate=1e-2, # who knows?
+      momentum=0.5,
       max_epochs=10,
     )
 
