@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
-from tqdm import tqdm
 
 import gtorch.datasets.linear_box
 import gtorch.datasets.linear_patient

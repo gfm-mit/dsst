@@ -1,7 +1,6 @@
 import itertools
 import numpy as np
-import torch
-from tqdm import tqdm, trange
+from tqdm import trange
 
 import gtorch.models.base
 import gtorch.hyper.params
