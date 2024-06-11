@@ -1,11 +1,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import scipy
 
-def plot_lr(lrs, losses):
+def plot_lr(lrs, losses, smooth=3):
+  # pretty sure these two operators commute
+  losses = scipy.ndimage.gaussian_filter1d(losses, smooth / 2, mode='nearest')
   deltas = np.diff(losses)
-  min_delta = np.nanmin(np.abs(deltas))
+  thresh = np.nanmedian(deltas[deltas > 0]) - np.nanmedian(deltas[deltas < 0])
   pd.Series(deltas, index=lrs[1:]).plot()
-  plt.yscale('symlog', linthresh=min_delta)
+  plt.yscale('symlog', linthresh=thresh)
   plt.xscale('log')
+  plt.axhline(0, color='gray', zorder=-10)
   plt.show()
