@@ -37,5 +37,5 @@ class SequenceBase(Base):
 
   def get_parameters(self, **kwargs):
     if "task" in kwargs and kwargs["task"] == "next_token":
-      return self.get_classifier_parameters() | self.get_next_token_parameters() 
+      return self.get_classifier_parameters() | self.get_next_token_parameters()
     return self.get_classifier_parameters()
