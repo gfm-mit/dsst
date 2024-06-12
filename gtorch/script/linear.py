@@ -20,7 +20,6 @@ import gtorch.models.linear_bc
 import gtorch.models.linear_bnc
 import gtorch.models.rnn_lstm
 import gtorch.models.transformer
-import gtorch.models.transformer_fft
 import gtorch.models.registry
 import gtorch.optimize.loss
 import gtorch.optimize.metrics
@@ -29,6 +28,8 @@ from plot.palette import draw_3_legends
 
 if __name__ == "__main__":
   sys.excepthook = util.excepthook.custom_excepthook
+  # will save stack traces from creation in components, makes error messages less stupid
+  #torch.autograd.set_detect_anomaly(True)
 
   parser = argparse.ArgumentParser(description='Run a linear pytorch model')
   parser.add_argument('--coef', action='store_true', help='Plot coefficients')
@@ -83,26 +84,29 @@ if __name__ == "__main__":
       if args.disk == "save":
         metric, epoch_loss_history = experiment.train(
           scheduler=None,
-          optimizer="adam",
+          optimizer="sgd",
           momentum=0.9,
-          lr=1e-3,
-          max_epochs=10,
+          lr=1e-8,
+          max_epochs=2,
         )
         gtorch.hyper.lr_plots.plot_epoch_loss_history(args, epoch_loss_history)
       else:
         experiment.find_momentum(dict(
-          optimizer='adam',
+          scheduler=None,
+          optimizer="adam",
           min_lr=1e-8,
           max_lr=1e+8,
           max_epochs=50,
-        ), momentum=[0, 0.9])
+        ), momentum=[0, 0.5, 0.9, 0.99])
     elif args.profile:
       with cProfile.Profile() as pr:
         experiment.train()
       pr.dump_stats('results/output_file.prof')
     else:
       axs, lines = None, None
-      metric, epoch_loss_history = experiment.train()
+      metric, epoch_loss_history = experiment.train(
+        optimizer="samsgd"
+      )
       if args.history != "none":
         gtorch.hyper.lr_plots.plot_epoch_loss_history(args, epoch_loss_history)
       elif args.task in 'classify classify_patient'.split():
