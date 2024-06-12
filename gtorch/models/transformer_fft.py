@@ -21,9 +21,13 @@ class Decoder(torch.nn.Module):
   def forward(self, input):
     bnc_in = rearrange(input, 'b n c -> n b c')
     bnc_out = self.decoder(bnc_in, None)
-    return bnc_out[-1, :, :] # b c
+    return bnc_out
 
-class Transformer(gtorch.models.base.Base):
+class GetClassifierOutputs(torch.nn.Module):
+  def forward(self, input):
+    return input[-1, :, :]
+
+class Transformer(gtorch.models.base.SequenceBase):
   def __init__(self, n_layers=2, n_features=12, n_classes=2, device='cpu'):
     self.classes = n_classes
     self.features = n_features
@@ -31,10 +35,19 @@ class Transformer(gtorch.models.base.Base):
     self.device = device
     super().__init__()
 
+  def get_next_token_architecture(self, hidden_width='unused'):
+    model = torch.nn.Sequential(
+        # b n c
+        Decoder(n_features=12),
+    )
+    model = model.to(self.device)
+    return model
+
   def get_classifier_architecture(self, hidden_width='unused'):
     model = torch.nn.Sequential(
         # b n c
         Decoder(n_features=12),
+        GetClassifierOutputs(),
         torch.nn.BatchNorm1d(num_features=self.features),
         torch.nn.Linear(self.features, self.classes),
         torch.nn.LogSoftmax(dim=-1),
@@ -42,7 +55,11 @@ class Transformer(gtorch.models.base.Base):
     model = model.to(self.device)
     return model
 
-  def get_parameters(self, **kwargs):
+  def get_next_token_parameters(self, **kwargs):
+    return dict(
+    )
+
+  def get_classifier_parameters(self, **kwargs):
     return dict(
       #optimizer='adam',
       schedule='onecycle',

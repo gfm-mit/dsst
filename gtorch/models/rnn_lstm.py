@@ -6,12 +6,12 @@ from einops import rearrange
 import gtorch.models.base
 #from gtorch.models.util import OneCat, PrintCat
 
-class GetHidden(torch.nn.Module):
+class GetNextTokenOutputs(torch.nn.Module):
   def forward(self, input):
     output, (hidden, gating) = input
     return rearrange(hidden, 'd b c -> b (d c)')
 
-class GetOutput(torch.nn.Module):
+class GetClassifierOutputs(torch.nn.Module):
   def forward(self, input):
     output, (hidden, gating) = input
     return output
@@ -35,7 +35,7 @@ class Rnn(gtorch.models.base.SequenceBase):
     model = torch.nn.Sequential(
         # b n c
         self.get_lstm(),
-        GetOutput(),
+        GetClassifierOutputs(),
     )
     model = model.to(self.device)
     return model
@@ -44,7 +44,7 @@ class Rnn(gtorch.models.base.SequenceBase):
     model = torch.nn.Sequential(
         # b n c
         self.get_lstm(),
-        GetHidden(),
+        GetNextTokenOutputs(),
         torch.nn.BatchNorm1d(num_features=self.layers * self.features),
         # TODO: one linear layer should not be enough to parse the internal state of the RNN
         torch.nn.Linear(self.layers * self.features, self.classes),

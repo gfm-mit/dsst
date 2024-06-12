@@ -33,7 +33,7 @@ class Decoder(torch.nn.Module):
       mask = torch.Tensor(np.tril(np.ones((seq_len, seq_len)), k=-1).astype(bool))
     return self.decoder(input, memory=None, tgt_mask=mask)
 
-class LastCat(torch.nn.Module):
+class GetClassifierOutputs(torch.nn.Module):
   def forward(self, input):
     return torch.amax(input, dim=1)
     return input[:, -1, :]
@@ -58,7 +58,7 @@ class Transformer(gtorch.models.base.SequenceBase):
     model = torch.nn.Sequential(
         # b n c
         Decoder(n_features=12, causal=True), # TODO: try False
-        LastCat(),
+        GetClassifierOutputs(),
         torch.nn.BatchNorm1d(num_features=self.features),
         torch.nn.Linear(self.features, self.classes),
         torch.nn.LogSoftmax(dim=-1),
