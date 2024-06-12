@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from pytorch_optimizer import DAdaptLion, Prodigy, Lion
+import pytorch_optimizer
 
 class LogRampScheduler():
   def __init__(self, optimizer, min_lr=1e-4, max_lr=1e4, epochs=30):
@@ -82,29 +82,39 @@ def get_optimizer(params, model):
                                   ],
                                   weight_decay=params["weight_decay"])
   elif "optimizer" in params and params["optimizer"] == "lion":
-    optimizer = Lion(model.parameters(),
-                     betas=[
-                         params["momentum"],
-                         params["beta2"],
-                     ],
-                     weight_decouple=True,
-                     weight_decay=params["weight_decay"])
+    optimizer = pytorch_optimizer.Lion(model.parameters(),
+                                       betas=[
+                                           params["momentum"],
+                                           params["beta2"],
+                                       ],
+                                       weight_decouple=True,
+                                       weight_decay=params["weight_decay"])
   elif "optimizer" in params and params["optimizer"] == "dadaptlion":
-    optimizer = DAdaptLion(model.parameters(),
-                           betas=[
-                               params["momentum"],
-                               params["beta2"],
-                           ],
-                           weight_decouple=True,
-                           weight_decay=params["weight_decay"])
+    optimizer = pytorch_optimizer.DAdaptLion(model.parameters(),
+                                             betas=[
+                                                 params["momentum"],
+                                                 params["beta2"],
+                                             ],
+                                             weight_decouple=True,
+                                             weight_decay=params["weight_decay"])
   elif "optimizer" in params and params["optimizer"] == "prodigy":
-    optimizer = Prodigy(model.parameters(),
-                        betas=[
-                            params["momentum"],
-                            params["beta2"],
-                        ],
-                        weight_decouple=True,
-                        weight_decay=params["weight_decay"])
+    optimizer = pytorch_optimizer.Prodigy(model.parameters(),
+                                          betas=[
+                                              params["momentum"],
+                                              params["beta2"],
+                                          ],
+                                          weight_decouple=True,
+                                          weight_decay=params["weight_decay"])
+  elif "optimizer" in params and params["optimizer"] == "sfsgd":
+    optimizer = pytorch_optimizer.ScheduleFreeSGD(model.parameters(),
+                                                  lr=params["learning_rate"],
+                                                  momentum=params["momentum"],
+                                                  weight_decay=params["weight_decay"])
+  elif "optimizer" in params and params["optimizer"] == "sam":
+    optimizer = pytorch_optimizer.SAM(model.parameters(),
+                                      lr=params["learning_rate"],
+                                      momentum=params["momentum"],
+                                      weight_decay=params["weight_decay"])
   else:
     if "optimizer" not in params:
       print("no optimizer specified, defaulting to sgd")
