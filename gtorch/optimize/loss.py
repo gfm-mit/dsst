@@ -4,7 +4,7 @@ import numpy as np
 def get_task_loss(epoch, model, optimizer, train_loader, task):
   if task == "next_token":
     loss = next_token(epoch, model, optimizer, train_loader)
-    description = 'Train Epoch: {} \tLast Batch MSE: {:.2f}'.format(epoch, loss)
+    description = 'Train Epoch: {} \tLast Batch RMSE: {:.2f}'.format(epoch, np.sqrt(loss))
     return loss, description
   else:
     loss = classify(epoch, model, optimizer, train_loader)
