@@ -9,7 +9,7 @@ import gtorch.models.base
 import gtorch.optimize
 import gtorch.optimize.loss
 import gtorch.optimize.metrics
-from gtorch.optimize.optimizer import get_optimizer
+from gtorch.optimize.optimizer import get_optimizer_and_scheduler
 
 Path('./results').mkdir(parents=True, exist_ok=True)
 def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_loader, task=None, tqdm_prefix=None, loss_history_loader=None):
@@ -71,7 +71,7 @@ def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=N
                        task="classify", disk="none",
                        tqdm_prefix=None, history='none'):
   model = setup_model(params, model_factory_fn, task, disk)
-  optimizer, scheduler = get_optimizer(params, model)
+  optimizer, scheduler = get_optimizer_and_scheduler(params, model)
 
   torch.cuda.empty_cache()
   model, epoch_loss_history = one_training_run(model, optimizer, scheduler,

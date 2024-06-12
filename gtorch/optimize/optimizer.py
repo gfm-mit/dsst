@@ -4,11 +4,11 @@ import pytorch_optimizer
 import gtorch.optimize.scheduler
 
 
-def get_optimizer(params, model):
-  optimizer = get_optimizer_(params, model)
+def get_optimizer_and_scheduler(params, model):
+  optimizer = get_optimizer(params, model)
   return gtorch.optimize.scheduler.get_scheduler(params, model, optimizer)
 
-def get_optimizer_(params, model):
+def get_optimizer(params, model):
   if "optimizer" in params and params["optimizer"] == "adam":
     optimizer = torch.optim.AdamW(model.parameters(),
                                   lr=params["learning_rate"],
