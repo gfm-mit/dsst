@@ -18,7 +18,7 @@ def lookup_model(name):
     return gtorch.models.cnn_1d_butterfly.Cnn
   elif name == "2d":
     return gtorch.models.cnn_2d.Cnn
-  elif name == "linear_max":
+  elif name == "0d":
     return gtorch.models.linear_bc.Linear
   elif name == "linear":
     return gtorch.models.linear_bnc.Linear
@@ -26,7 +26,7 @@ def lookup_model(name):
     return gtorch.models.rnn_lstm.Rnn
   elif name == "transformer":
     return gtorch.models.transformer.Transformer
-  elif name == "transformer_fft":
+  elif name == "fft":
     return gtorch.models.transformer_fft.Transformer
   assert False
 

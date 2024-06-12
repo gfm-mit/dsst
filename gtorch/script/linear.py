@@ -106,7 +106,7 @@ if __name__ == "__main__":
         plt.plot(epoch_loss_history)
         plt.xlabel('epoch')
         plt.ylabel('training loss' if args.history == 'train' else 'validation metric')
-        plt.title(f"{args.train=}")
+        plt.title(f"{args.history=}")
         plt.show()
       elif args.task in 'classify classify_patient'.split():
         axs, lines = experiment.plot_trained(axs, lines)
