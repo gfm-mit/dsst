@@ -7,7 +7,6 @@ import gtorch.models.linear_bc
 import gtorch.models.linear_bnc
 import gtorch.models.rnn_lstm
 import gtorch.models.transformer
-import gtorch.models.transformer_fft
 
 def lookup_model(name):
   if name == "cnn":
@@ -26,8 +25,6 @@ def lookup_model(name):
     return gtorch.models.rnn_lstm.Rnn
   elif name == "transformer":
     return gtorch.models.transformer.Transformer
-  elif name == "fft":
-    return gtorch.models.transformer_fft.Transformer
   assert False
 
 def get_all_1d_models():
