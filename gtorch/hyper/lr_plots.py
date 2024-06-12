@@ -60,3 +60,10 @@ def show_axes(axs, losses, conds):
   plt.legend()
   plt.tight_layout()
   plt.show()
+
+def plot_epoch_loss_history(args, epoch_loss_history):
+    plt.plot(epoch_loss_history)
+    plt.xlabel('epoch')
+    plt.ylabel('validation metric' if args.history == "val" else 'training loss')
+    plt.title(f"{args.history=}")
+    plt.show()

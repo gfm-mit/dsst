@@ -2,7 +2,6 @@ import argparse
 import sys
 import cProfile
 import util.excepthook
-import matplotlib.pyplot as plt
 
 import gtorch.datasets.bitmap
 import gtorch.datasets.dataset
@@ -12,6 +11,7 @@ import gtorch.hyper.coef
 import gtorch.hyper.experiment
 import gtorch.hyper.params
 import gtorch.hyper.tune
+import gtorch.hyper.lr_plots
 import gtorch.models.cnn_1d
 import gtorch.models.cnn_1d_atrous
 import gtorch.models.cnn_1d_butterfly
@@ -81,20 +81,21 @@ if __name__ == "__main__":
       experiment.tune()
     elif args.find_lr:
       if args.disk == "save":
-        experiment.train(
+        metric, epoch_loss_history = experiment.train(
           scheduler=None,
-          optimizer="sgd",
-          momentum=0.5,
-          lr=1e-5,
+          optimizer="adam",
+          momentum=0.9,
+          lr=1e-3,
           max_epochs=10,
         )
+        gtorch.hyper.lr_plots.plot_epoch_loss_history(args, epoch_loss_history)
       else:
         experiment.find_momentum(dict(
           optimizer='adam',
-          min_lr=1e-2,
-          max_lr=1e-1,
-          max_epochs=30,
-        ), momentum=[0.9])
+          min_lr=1e-8,
+          max_lr=1e+8,
+          max_epochs=50,
+        ), momentum=[0, 0.9])
     elif args.profile:
       with cProfile.Profile() as pr:
         experiment.train()
@@ -103,11 +104,7 @@ if __name__ == "__main__":
       axs, lines = None, None
       metric, epoch_loss_history = experiment.train()
       if args.history != "none":
-        plt.plot(epoch_loss_history)
-        plt.xlabel('epoch')
-        plt.ylabel('training loss' if args.history == 'train' else 'validation metric')
-        plt.title(f"{args.history=}")
-        plt.show()
+        gtorch.hyper.lr_plots.plot_epoch_loss_history(args, epoch_loss_history)
       elif args.task in 'classify classify_patient'.split():
         axs, lines = experiment.plot_trained(axs, lines)
 
