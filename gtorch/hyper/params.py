@@ -7,12 +7,12 @@ from tqdm import tqdm
 
 import gtorch.models.base
 import gtorch.optimize
-from gtorch.optimize.loss import classify, next_token
+import gtorch.optimize.loss
 import gtorch.optimize.metrics
 from gtorch.optimize.optimizer import get_optimizer
 
 Path('./results').mkdir(parents=True, exist_ok=True)
-def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_loader, loss_fn=None, tqdm_prefix=None):
+def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_loader, task=None, tqdm_prefix=None, val_loader=None):
   max_loss = 8
   start_time = time.time()
   if tqdm_prefix is None:
@@ -21,7 +21,7 @@ def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_
   losses = []
   for x in progress:
     state_dict = dict(**model.state_dict())
-    next_loss = loss_fn(x, model, optimizer, train_loader)
+    next_loss, loss_description = gtorch.optimize.loss.get_task_loss(x, model, optimizer, train_loader, task=task)
     scheduler.step()
     if next_loss > max_loss and x > min_epochs:
       print(f"next_loss too big: {next_loss} > {max_loss}")
@@ -33,10 +33,7 @@ def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_
       return model, losses
     max_loss = 1.5 * next_loss
     torch.cuda.empty_cache()
-    if loss_fn == classify:
-      progress.set_description('{} Train Epoch: {} \tLast Batch Perplexity: {:.2f}'.format(tqdm_prefix, x, np.exp(next_loss)))
-    else:
-      progress.set_description('{} Train Epoch: {} \tLast Batch MSE: {:.2f}'.format(tqdm_prefix, x, next_loss))
+    progress.set_description(tqdm_prefix + loss_description)
     losses += [next_loss]
   print("Train time per epoch", np.round((time.time() - start_time) / (x + 1), 2))
   return model, losses
@@ -46,14 +43,12 @@ def setup_model(params, model_factory_fn, task="classify", disk="none"):
   assert task in "classify classify_patient next_token".split()
   assert disk in "none load save".split()
   if task == "next_token":
-    loss_fn = next_token
     assert isinstance(model_factory_fn, gtorch.models.base.SequenceBase)
     model = model_factory_fn.get_next_token_architecture(**{
         k: params[k]
         for k in "".split()
     })
   else:
-    loss_fn = classify
     model = model_factory_fn.get_classifier_architecture(**{
         k: params[k]
         for k in "".split()
@@ -66,10 +61,10 @@ def setup_model(params, model_factory_fn, task="classify", disk="none"):
     for layer in model.children():
       if hasattr(layer, 'reset_parameters'):
         layer.reset_parameters()
-  return model, loss_fn
+  return model
 
-def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=None, task="classify", disk="none", tqdm_prefix=None):
-  model, loss_fn = setup_model(params, model_factory_fn, task, disk)
+def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=None, task="classify", disk="none", tqdm_prefix=None, loss_history_on_validation=False):
+  model = setup_model(params, model_factory_fn, task, disk)
   optimizer, scheduler = get_optimizer(params, model)
 
   torch.cuda.empty_cache()
@@ -77,7 +72,7 @@ def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=N
                                    min_epochs=params["min_epochs"],
                                    max_epochs=params["max_epochs"],
                                    train_loader=train_loader,
-                                   loss_fn=loss_fn,
+                                   task=task,
                                    tqdm_prefix=tqdm_prefix)
   if disk == "save":
     torch.save(model.state_dict(), './results/model.pth')

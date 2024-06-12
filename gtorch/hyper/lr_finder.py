@@ -4,11 +4,12 @@ from tqdm import trange
 
 import gtorch.models.base
 import gtorch.hyper.params
+import gtorch.optimize.loss
 from gtorch.optimize.optimizer import get_optimizer
 
 
 def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="none"):
-  model, loss_fn = gtorch.hyper.params.setup_model(params, model_factory_fn, task, disk)
+  model = gtorch.hyper.params.setup_model(params, model_factory_fn, task, disk)
 
   new_params = dict(**params)
   losses = []
@@ -17,7 +18,7 @@ def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="
   last_grads = None
   progress = trange(new_params["max_epochs"])
   for e, batch in zip(progress, itertools.cycle(train_loader)):
-    losses += [loss_fn(0, model, optimizer, [batch])]
+    losses += [gtorch.optimize.loss.get_task_loss(0, model, optimizer, [batch], task)[0]]
     scheduler.step()
     grads = np.concatenate([t.detach().numpy().flatten() for t in model.parameters()])
     if last_grads is not None:
