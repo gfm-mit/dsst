@@ -34,7 +34,7 @@ def next_token_metrics(model, val_loader, verbose=True):
                       name="Verbose MSE components"
                       ))
   mse = np.mean((predicted - data)**2)
-  return dict(mse=mse)
+  return mse
 
 def binary_classifier_metrics(model, val_loader):
   DEVICE = next(model.parameters()).device
@@ -52,7 +52,7 @@ def binary_classifier_metrics(model, val_loader):
   # only needed for accuracy
   #predictions = np.argmax(logits, axis=1)
   targets = np.concatenate(targets)
-  return dict(roc=roc_auc_score(targets, logits[:, 1]))
+  return roc_auc_score(targets, logits[:, 1])
 
 def get_combined_roc(model, test_loader, combine_fn=None):
   logits = []

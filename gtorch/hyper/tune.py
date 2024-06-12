@@ -29,10 +29,11 @@ def main(train_loader, val_loader, builder=None, task="classify", disk="none"):
     params = dict(**base_params)
     for k in spaces.columns:
       params[k] = spaces.loc[i, k]
-    retval, train_loss, model = gtorch.hyper.params.setup_training_run(params, model_factory_fn=builder,
-                                                           train_loader=train_loader, val_loader=val_loader,
-                                                           task=task, disk=disk, tqdm_prefix=f"Tuning Case {i} {spaces.loc[i].to_dict()}")
-    results += [dict(**params, **retval)]
+    case_label = spaces.loc[i].to_dict()
+    metric, epoch_loss_history, model = gtorch.hyper.params.setup_training_run(
+      params, model_factory_fn=builder, train_loader=train_loader, val_loader=val_loader,
+      task=task, disk=disk, tqdm_prefix=f"Tuning Case {i} {case_label}")
+    results += [dict(**params, metric=metric)]
   results = pd.DataFrame(results)
   print(results)
   N = int(np.ceil(np.sqrt(spaces.shape[1])))
@@ -41,10 +42,10 @@ def main(train_loader, val_loader, builder=None, task="classify", disk="none"):
     axs = [axs]
   else:
     axs = axs.flatten()
-  metric = "mse" if task == "next_token" else "roc"
+  metric_name = "MSE" if task == "next_token" else "AUC-ROC"
   for e, k in enumerate(spaces.columns):
     plt.sca(axs[e])
-    plt.scatter(results[k], results[metric])
+    plt.scatter(results[k], results['metric'])
     plt.ylabel(metric)
     plt.xlabel(k)
     if results[k].dtype == str:

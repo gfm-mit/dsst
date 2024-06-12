@@ -19,13 +19,14 @@ class Experiment:
     #torch.manual_seed(42)
     builder = self.model_class(n_classes=2, device=self.args.device)
     base_params = builder.get_parameters(task=self.args.task) | kwargs
-    resdict, train_loss, self.model = gtorch.hyper.params.setup_training_run(
+    metric, epoch_loss_history, self.model = gtorch.hyper.params.setup_training_run(
         base_params, model_factory_fn=builder,
         train_loader=self.train_loader,
         val_loader=self.val_loader,
         task=self.args.task,
-        disk=self.args.disk)
-    return resdict, train_loss
+        disk=self.args.disk,
+        history=self.args.history)
+    return metric, epoch_loss_history
 
   def plot_trained(self, axs, lines):
     assert self.model is not None

@@ -37,7 +37,7 @@ if __name__ == "__main__":
   parser.add_argument('--bitmap', action='store_true', help='Use bitmap data')
   parser.add_argument('--compare', action='store_true', help='Run on both linear_agg and linear')
   parser.add_argument('--find_lr', action='store_true', help='Use CLR method to find learning rate')
-  parser.add_argument('--history', action='store_true', help='Plot history of training loss')
+  parser.add_argument('--history', default='none', choices=set("none train val".split()), help='Plot history of loss')
   parser.add_argument('--device', default='cpu', help='torch device')
   parser.add_argument('--test', action='store_true', help='Train one batch on each model class')
   parser.add_argument('--model', default='lstm', help='which model class to use')
@@ -61,8 +61,8 @@ if __name__ == "__main__":
         val_loader=[val_batch],
         test_loader=None,
         args=args)
-      resdict, losses = experiment.train(min_epochs=0, max_epochs=1)
-      print(model_class, resdict)
+      metric, epoch_loss_history = experiment.train(min_epochs=0, max_epochs=1)
+      print(model_class, metric)
   elif args.coef:
     # check coefficients
     gtorch.hyper.coef.get_coef_dist(
@@ -101,11 +101,12 @@ if __name__ == "__main__":
       pr.dump_stats('results/output_file.prof')
     else:
       axs, lines = None, None
-      resdict, losses = experiment.train()
-      if args.history:
-        plt.plot(losses)
+      metric, epoch_loss_history = experiment.train()
+      if args.history != "none":
+        plt.plot(epoch_loss_history)
         plt.xlabel('epoch')
-        plt.ylabel('loss')
+        plt.ylabel('training loss' if args.history == 'train' else 'validation metric')
+        plt.title(f"{args.train=}")
         plt.show()
       elif args.task in 'classify classify_patient'.split():
         axs, lines = experiment.plot_trained(axs, lines)
