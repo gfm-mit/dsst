@@ -42,11 +42,11 @@ def main(train_loader, val_loader, builder=None, task="classify", disk="none"):
     axs = [axs]
   else:
     axs = axs.flatten()
-  metric_name = "MSE" if task == "next_token" else "AUC-ROC"
+  metric_name = "MSE" if task == "next_token" else "AUC-ROC-C"
   for e, k in enumerate(spaces.columns):
     plt.sca(axs[e])
     plt.scatter(results[k], results['metric'])
-    plt.ylabel(metric)
+    plt.ylabel(metric_name)
     plt.xlabel(k)
     if results[k].dtype == str:
       plt.xticks(rotation=45)

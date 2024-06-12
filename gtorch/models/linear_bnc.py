@@ -49,7 +49,7 @@ class Linear(gtorch.models.base.Base):
         #learning_rate=np.geomspace(1e-1, 5e-1, 15),
         #weight_decay=np.geomspace(1e-8, 1e-4, 15),
         #pct_start=np.geomspace(0.01, .95, 15),
-        max_epochs=1+np.arange(10).astype(int),
+        #max_epochs=1 + np.arange(10).astype(int),
         #momentum=1-np.geomspace(.1, 1e-5, 15),
         #beta2=1-np.geomspace(.5, .0001, 15),
     )
