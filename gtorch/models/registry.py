@@ -35,5 +35,4 @@ def get_all_1d_models():
     gtorch.models.cnn_1d_butterfly.Cnn,
     gtorch.models.rnn_lstm.Rnn,
     gtorch.models.transformer.Transformer,
-    gtorch.models.transformer_fft.Transformer,
   ]
