@@ -1,4 +1,5 @@
 .venv
 .DS_Store
 results/*
+config/*
 scripts/local.py

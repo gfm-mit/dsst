@@ -2,7 +2,7 @@ import argparse
 import sys
 import cProfile
 import util.excepthook
-import yaml
+import tomli
 
 import gtorch.datasets.bitmap
 import gtorch.datasets.dataset
@@ -45,19 +45,19 @@ if __name__ == "__main__":
   parser.add_argument('--model', default='linear', help='which model class to use')
   parser.add_argument('--task', default='classify', choices=set("next_token classify classify_patient".split()), help='training target / loss')
   parser.add_argument('--disk', default='none', choices=set("none load save".split()), help='whether to persist the model (or use persisted)')
-  parser.add_argument('--yaml', help='read a config toml file')
+  parser.add_argument('--config', help='read a config toml file')
   args = parser.parse_args()
 
   axs = None
   train_loader, val_loader, test_loader = gtorch.datasets.dataset.get_loaders()
   BUILDER = gtorch.models.registry.lookup_model(args.model)
-  if args.yaml:
-    with open(args.yaml, 'r') as stream:
-      args.yaml = yaml.safe_load(stream)
-      assert isinstance(args.yaml, dict)
-      print(f"{args.yaml=}")
+  if args.config:
+    with open(args.config, 'rb') as stream:
+      args.config = tomli.load(stream)
+      assert isinstance(args.config, dict)
+      print(f"{args.config=}")
   else:
-    args.yaml = {}
+    args.config = {}
   if args.bitmap:
     BUILDER = gtorch.models.cnn_2d.Cnn
     train_loader, val_loader, test_loader = gtorch.datasets.bitmap.get_loaders()
@@ -94,12 +94,7 @@ if __name__ == "__main__":
         metric, epoch_loss_history = experiment.train(scheduler=None)
         gtorch.hyper.lr_plots.plot_epoch_loss_history(args, epoch_loss_history)
       else:
-        experiment.find_momentum(dict(
-          optimizer='adam',
-          min_lr=1e-8,
-          max_lr=1e+8,
-          max_epochs=50,
-        ), momentum=[0, 0.9])
+        experiment.find_momentum(momentum=[0, 0.9])
     elif args.profile:
       with cProfile.Profile() as pr:
         experiment.train()

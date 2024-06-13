@@ -3,10 +3,10 @@ lxml
 matplotlib
 pandas
 pytorch-optimizer
-scipy
-scikit-learn
 scikit-image
+scikit-learn
+scipy
+tomli
 torch
 torchvision
 tqdm
-pyyaml
