@@ -17,7 +17,7 @@ def get_optimizer(params, model):
                                       params["beta2"],
                                   ],
                                   weight_decay=params["weight_decay"])
-  elif "optimizer" in params and params["optimizer"] == "lion":
+  elif "optimizer" in params and params["optimizer"] == "signedmomentum":
     optimizer = pytorch_optimizer.Lion(model.parameters(),
                                        betas=[
                                            params["momentum"],
@@ -25,14 +25,6 @@ def get_optimizer(params, model):
                                        ],
                                        weight_decouple=True,
                                        weight_decay=params["weight_decay"])
-  elif "optimizer" in params and params["optimizer"] == "dadaptlion":
-    optimizer = pytorch_optimizer.DAdaptLion(model.parameters(),
-                                             betas=[
-                                                 params["momentum"],
-                                                 params["beta2"],
-                                             ],
-                                             weight_decouple=True,
-                                             weight_decay=params["weight_decay"])
   elif "optimizer" in params and params["optimizer"] == "prodigy":
     optimizer = pytorch_optimizer.Prodigy(model.parameters(),
                                           betas=[
