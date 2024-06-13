@@ -58,7 +58,7 @@ class Experiment:
         disk=self.args.disk)
     losses, conds = gtorch.hyper.lr_plots.plot_lr(lrs, losses, conds=conds, smooth=len(self.train_loader), label=label, axs=axs)
     return losses, conds
-  
+
   def get_lr_params(self, params=None):
     return dict(
         schedule="ramp",
