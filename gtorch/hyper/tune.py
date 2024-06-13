@@ -18,10 +18,9 @@ def get_spaces(**kwargs):
     spaces[col] = np.random.permutation(spaces[col].values)
   return spaces
 
-def main(train_loader, val_loader, builder=None, task="classify", disk="none"):
+def main(train_loader, val_loader, builder=None, base_params=None, task="classify", disk="none"):
   torch.manual_seed(42)
   assert isinstance(builder, gtorch.models.base.Base)
-  base_params = builder.get_parameters(task=task)
   assert builder.get_tuning_ranges(), "no parameters to tune"
   spaces = get_spaces(**builder.get_tuning_ranges())
   results = []

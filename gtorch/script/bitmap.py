@@ -24,7 +24,11 @@ if __name__ == "__main__":
   train_loader, val_loader, test_loader = gtorch.datasets.bitmap.get_loaders()
   if args.tune:
     # tune parameters
-    axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader, test_loader, axs=axs, builder=gtorch.models.cnn_2d.Cnn(n_classes=2, device=args.device, n_features=12))
+    BUILDER = gtorch.models.cnn_2d.Cnn(n_classes=2, device=args.device, n_features=12)
+    base_params = BUILDER.get_parameters()
+    axs, line1 = gtorch.hyper.tune.main(train_loader, val_loader,
+                                        base_params=base_params,
+                                        builder=BUILDER)
   else:
     builder = gtorch.models.cnn_2d.Cnn(n_classes=2, device=args.device, n_features=12)
     #torch.manual_seed(42)

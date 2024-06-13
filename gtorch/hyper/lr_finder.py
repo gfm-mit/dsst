@@ -5,6 +5,7 @@ from tqdm import trange
 import gtorch.models.base
 import gtorch.hyper.params
 import gtorch.optimize.loss
+import gtorch.optimize.scheduler
 from gtorch.optimize.optimizer import get_optimizer_and_scheduler
 
 
@@ -15,6 +16,7 @@ def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="
   losses = []
   conds = []
   optimizer, scheduler = get_optimizer_and_scheduler(new_params, model)
+  assert isinstance(scheduler, gtorch.optimize.scheduler.LogRampScheduler)
   last_grads = None
   progress = trange(new_params["max_epochs"])
   for e, batch in zip(progress, itertools.cycle(train_loader)):

@@ -2,6 +2,7 @@ import argparse
 import sys
 import cProfile
 import util.excepthook
+import yaml
 
 import gtorch.datasets.bitmap
 import gtorch.datasets.dataset
@@ -41,14 +42,22 @@ if __name__ == "__main__":
   parser.add_argument('--history', default='none', choices=set("none train val".split()), help='Plot history of loss')
   parser.add_argument('--device', default='cpu', help='torch device')
   parser.add_argument('--test', action='store_true', help='Train one batch on each model class')
-  parser.add_argument('--model', default='lstm', help='which model class to use')
+  parser.add_argument('--model', default='linear', help='which model class to use')
   parser.add_argument('--task', default='classify', choices=set("next_token classify classify_patient".split()), help='training target / loss')
   parser.add_argument('--disk', default='none', choices=set("none load save".split()), help='whether to persist the model (or use persisted)')
+  parser.add_argument('--yaml', help='read a config toml file')
   args = parser.parse_args()
 
   axs = None
   train_loader, val_loader, test_loader = gtorch.datasets.dataset.get_loaders()
   BUILDER = gtorch.models.registry.lookup_model(args.model)
+  if args.yaml:
+    with open(args.yaml, 'r') as stream:
+      args.yaml = yaml.safe_load(stream)
+      assert isinstance(args.yaml, dict)
+      print(f"{args.yaml=}")
+  else:
+    args.yaml = {}
   if args.bitmap:
     BUILDER = gtorch.models.cnn_2d.Cnn
     train_loader, val_loader, test_loader = gtorch.datasets.bitmap.get_loaders()
@@ -82,31 +91,22 @@ if __name__ == "__main__":
       experiment.tune()
     elif args.find_lr:
       if args.disk == "save":
-        metric, epoch_loss_history = experiment.train(
-          scheduler=None,
-          optimizer="sgd",
-          momentum=0.9,
-          lr=1e-8,
-          max_epochs=2,
-        )
+        metric, epoch_loss_history = experiment.train(scheduler=None)
         gtorch.hyper.lr_plots.plot_epoch_loss_history(args, epoch_loss_history)
       else:
         experiment.find_momentum(dict(
-          scheduler=None,
-          optimizer="adam",
+          optimizer='adam',
           min_lr=1e-8,
           max_lr=1e+8,
           max_epochs=50,
-        ), momentum=[0, 0.5, 0.9, 0.99])
+        ), momentum=[0, 0.9])
     elif args.profile:
       with cProfile.Profile() as pr:
         experiment.train()
       pr.dump_stats('results/output_file.prof')
     else:
       axs, lines = None, None
-      metric, epoch_loss_history = experiment.train(
-        optimizer="samsgd"
-      )
+      metric, epoch_loss_history = experiment.train()
       if args.history != "none":
         gtorch.hyper.lr_plots.plot_epoch_loss_history(args, epoch_loss_history)
       elif args.task in 'classify classify_patient'.split():

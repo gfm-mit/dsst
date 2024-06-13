@@ -9,3 +9,4 @@ scikit-image
 torch
 torchvision
 tqdm
+pyyaml

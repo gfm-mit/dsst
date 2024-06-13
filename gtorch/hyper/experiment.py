@@ -18,7 +18,7 @@ class Experiment:
   def train(self, **kwargs):
     #torch.manual_seed(42)
     builder = self.model_class(n_classes=2, device=self.args.device)
-    base_params = builder.get_parameters(task=self.args.task) | kwargs
+    base_params = builder.get_parameters(task=self.args.task) | self.args.yaml | kwargs
     metric, epoch_loss_history, self.model = gtorch.hyper.params.setup_training_run(
         base_params, model_factory_fn=builder,
         train_loader=self.train_loader,
@@ -40,21 +40,25 @@ class Experiment:
     lines += [plot_3_types(logits, targets, axs)]
     return axs, lines
 
-  def tune(self):
+  def tune(self, **kwargs):
     builder = self.model_class(n_classes=2, device=self.args.device)
+    base_params = builder.get_parameters(task=self.args.task) | self.args.yaml | kwargs
     gtorch.hyper.tune.main(
       self.train_loader, self.val_loader,
-      builder=builder, task=self.args.task, disk=self.args.disk)
+      builder=builder, base_params=base_params,
+      task=self.args.task, disk=self.args.disk)
 
-  def find_lr(self, axs=None, lr_params=None, label=None):
+  def find_lr(self, axs=None, params=None, label=None):
+    if params is None:
+      params = {}
     builder = self.model_class(n_classes=2, device=self.args.device)
     lr_params = dict(
         schedule="ramp",
         min_lr=1e-5,
         max_lr=1e3,
         max_epochs=30,
-    ) | (lr_params if lr_params is not None else {})
-    base_params = builder.get_parameters(task=self.args.task) | lr_params
+    )
+    base_params = builder.get_parameters(task=self.args.task) | lr_params | self.args.yaml | params
     lrs, losses, conds = gtorch.hyper.lr_finder.find_lr(
         base_params, model_factory_fn=builder,
         train_loader=self.train_loader,
@@ -63,11 +67,11 @@ class Experiment:
     losses, conds = gtorch.hyper.lr_plots.plot_lr(lrs, losses, conds=conds, smooth=len(self.train_loader), label=label, axs=axs)
     return losses, conds
 
-  def find_momentum(self, lr_params, momentum=None):
+  def find_momentum(self, params, momentum=None):
     assert momentum is not None
-    axs = gtorch.hyper.lr_plots.get_axes(lr_params)
+    axs = gtorch.hyper.lr_plots.get_axes(params)
     loss, cond = zip(*[
-      self.find_lr(axs, lr_params=lr_params | {"momentum": m}, label=f"momentum={m}")
+      self.find_lr(axs, params=params | {"momentum": m}, label=f"momentum={m}")
       for m in momentum
     ])
     gtorch.hyper.lr_plots.show_axes(axs, loss, cond)
