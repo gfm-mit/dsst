@@ -27,6 +27,13 @@ import gtorch.optimize.metrics
 import gtorch.optimize.optimizer
 from plot.palette import draw_3_legends
 
+class TomlAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+      assert isinstance(values, str)
+      with open(values, 'rb') as stream:
+        config = tomli.load(stream)
+      setattr(namespace, self.dest, config)
+
 if __name__ == "__main__":
   sys.excepthook = util.excepthook.custom_excepthook
   # will save stack traces from creation in components, makes error messages less stupid
@@ -45,19 +52,12 @@ if __name__ == "__main__":
   parser.add_argument('--model', default='linear', help='which model class to use')
   parser.add_argument('--task', default='classify', choices=set("next_token classify classify_patient".split()), help='training target / loss')
   parser.add_argument('--disk', default='none', choices=set("none load save".split()), help='whether to persist the model (or use persisted)')
-  parser.add_argument('--config', help='read a config toml file')
+  parser.add_argument('--config', action=TomlAction, default={}, help='read a config toml file')
   args = parser.parse_args()
 
   axs = None
   train_loader, val_loader, test_loader = gtorch.datasets.dataset.get_loaders()
   BUILDER = gtorch.models.registry.lookup_model(args.model)
-  if args.config:
-    with open(args.config, 'rb') as stream:
-      args.config = tomli.load(stream)
-      assert isinstance(args.config, dict)
-      print(f"{args.config=}")
-  else:
-    args.config = {}
   if args.bitmap:
     BUILDER = gtorch.models.cnn_2d.Cnn
     train_loader, val_loader, test_loader = gtorch.datasets.bitmap.get_loaders()
