@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib.scale import ScaleBase
-from matplotlib.ticker import LogitFormatter, LogitLocator, NullFormatter
+from matplotlib.ticker import LogitFormatter, LogitLocator, NullFormatter, PercentFormatter
 from matplotlib.transforms import Transform
 from scipy.stats import norm
 
@@ -41,5 +41,5 @@ class ProbitScale(ScaleBase):
         axis.set_minor_locator(LogitLocator())
 
         # The formatter takes the tick locations and formats them to the desired strings
-        axis.set_major_formatter(LogitFormatter())
+        axis.set_major_formatter(PercentFormatter(xmax=1))
         axis.set_minor_formatter(NullFormatter())  # No labels on the minor ticks
