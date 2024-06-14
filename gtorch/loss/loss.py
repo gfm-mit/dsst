@@ -2,19 +2,19 @@ import torch
 import numpy as np
 import pytorch_optimizer
 
-import gtorch.optimize.loss_sam
+import gtorch.loss.loss_sam
 
 def get_task_loss(epoch, model, optimizer, train_loader, task):
   if task == "next_token":
     if isinstance(optimizer, pytorch_optimizer.SAM):
-      loss = gtorch.optimize.loss_sam.next_token(epoch, model, optimizer, train_loader)
+      loss = gtorch.loss.loss_sam.next_token(epoch, model, optimizer, train_loader)
     else:
       loss = next_token(epoch, model, optimizer, train_loader)
     description = 'Train Epoch: {} \tLast Batch RMSE: {:.2f}'.format(epoch, np.sqrt(loss))
     return loss, description
   else:
     if isinstance(optimizer, pytorch_optimizer.SAM):
-      loss = gtorch.optimize.loss_sam.classify(epoch, model, optimizer, train_loader)
+      loss = gtorch.loss.loss_sam.classify(epoch, model, optimizer, train_loader)
     else:
       loss = classify(epoch, model, optimizer, train_loader)
     description = 'Train Epoch: {} \tLast Batch Perplexity: {:.2f}'.format(epoch, np.exp(loss))

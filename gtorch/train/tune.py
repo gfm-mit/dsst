@@ -5,8 +5,8 @@ import torch
 
 import gtorch.datasets.linear_box
 import gtorch.datasets.linear_patient
-import gtorch.hyper.params
-import gtorch.optimize.optimizer
+import gtorch.train.train
+import gtorch.loss.optimizer
 
 
 def get_spaces(**kwargs):
@@ -29,7 +29,7 @@ def main(train_loader, val_loader, builder=None, base_params=None, task="classif
     for k in spaces.columns:
       params[k] = spaces.loc[i, k]
     case_label = spaces.loc[i].to_dict()
-    metric, epoch_loss_history, model = gtorch.hyper.params.setup_training_run(
+    metric, epoch_loss_history, model = gtorch.train.train.setup_training_run(
       params, model_factory_fn=builder, train_loader=train_loader, val_loader=val_loader,
       task=task, disk=disk, tqdm_prefix=f"Tuning Case {i} {case_label}")
     results += [dict(**params, metric=metric)]

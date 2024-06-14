@@ -8,11 +8,11 @@ import gtorch.datasets.bitmap
 import gtorch.datasets.dataset
 import gtorch.datasets.linear_box
 import gtorch.datasets.linear_patient
-import gtorch.hyper.coef
-import gtorch.hyper.experiment
-import gtorch.hyper.params
-import gtorch.hyper.tune
-import gtorch.hyper.lr_plots
+import gtorch.train.coef
+import gtorch.train.experiment
+import gtorch.train.train
+import gtorch.train.tune
+import gtorch.train.lr_plots
 import gtorch.models.cnn_1d
 import gtorch.models.cnn_1d_atrous
 import gtorch.models.cnn_1d_butterfly
@@ -22,9 +22,9 @@ import gtorch.models.linear_bnc
 import gtorch.models.rnn_lstm
 import gtorch.models.transformer
 import gtorch.models.registry
-import gtorch.optimize.loss
-import gtorch.optimize.metrics
-import gtorch.optimize.optimizer
+import gtorch.loss.loss
+import gtorch.metrics.metrics
+import gtorch.loss.optimizer
 from plot.palette import draw_3_legends
 
 class TomlAction(argparse.Action):
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     for model_class, train_batch, val_batch in zip(
       gtorch.models.registry.get_all_1d_models(),
       train_loader, val_loader):
-      experiment = gtorch.hyper.experiment.Experiment(
+      experiment = gtorch.train.experiment.Experiment(
         model_class=model_class,
         train_loader=[train_batch],
         val_loader=[val_batch],
@@ -75,12 +75,12 @@ if __name__ == "__main__":
       print(model_class, metric)
   elif args.coef:
     # check coefficients
-    gtorch.hyper.coef.get_coef_dist(
+    gtorch.train.coef.get_coef_dist(
       builder=BUILDER(n_classes=2, device=args.device),
       train_loader=train_loader,
       val_loader=val_loader)
   else:
-    experiment = gtorch.hyper.experiment.Experiment(
+    experiment = gtorch.train.experiment.Experiment(
       model_class=BUILDER,
       train_loader=train_loader,
       val_loader=val_loader,
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     elif args.find_lr:
       if args.disk == "save":
         metric, epoch_loss_history = experiment.train(scheduler=None)
-        gtorch.hyper.lr_plots.plot_epoch_loss_history(args, epoch_loss_history)
+        gtorch.train.lr_plots.plot_epoch_loss_history(args, epoch_loss_history)
       else:
         experiment.find_momentum(momentum=[0, 0.9])
     elif args.profile:
@@ -103,12 +103,12 @@ if __name__ == "__main__":
       axs, lines = None, None
       metric, epoch_loss_history = experiment.train()
       if args.history != "none":
-        gtorch.hyper.lr_plots.plot_epoch_loss_history(args, epoch_loss_history)
+        gtorch.train.lr_plots.plot_epoch_loss_history(args, epoch_loss_history)
       elif args.task in 'classify classify_patient'.split():
         axs, lines = experiment.plot_trained(axs, lines)
 
       if args.compare:
-        experiment = gtorch.hyper.experiment.Experiment(
+        experiment = gtorch.train.experiment.Experiment(
           model_class=gtorch.models.linear_bnc.Linear,
           train_loader=train_loader,
           val_loader=val_loader,
