@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.scale import register_scale
 from matplotlib import ticker
 from scipy.stats import norm
+import scipy.special
 
 from plot.probit import ProbitScale
 
@@ -27,8 +28,7 @@ def plot_roc(roc, label_alternatives=False):
   plt.plot(roc.fpr_logistic, roc.tpr_logistic, alpha=0.25, linestyle="--", color=color, label=f"logistic: {100 * auc_logistic:.1f}%" if label_alternatives else None)
   #colors["hat"] = plt.plot(roc.fpr_hat, roc.tpr_hat, alpha=0.8, label=f"hat: {100 * auc_hat:.1f}%")[0].get_color()
 
-  low_z = norm.ppf(roc.tpr_empirical.iloc[1])
-  high_z = norm.ppf(roc.tpr_empirical.iloc[-2])
+  low_z, high_z = -4, 4
   fpr_z = np.linspace(low_z, high_z, 100)
 
   for i in range(5):
@@ -36,7 +36,7 @@ def plot_roc(roc, label_alternatives=False):
 
   skew = roc.targets.mean()
   for p in [0.1, 0.5]:
-    frac = norm.cdf(np.linspace(low_z, high_z, 10000))
+    frac = norm.cdf(np.linspace(low_z, high_z, 100))
     fpr = frac / (1 - skew) * p
     tpr = (1 - frac) / skew * p
     idx = (fpr < norm.cdf(high_z)) * (tpr < norm.cdf(high_z)) * (fpr > norm.cdf(low_z)) * (tpr > norm.cdf(low_z))
@@ -45,7 +45,7 @@ def plot_roc(roc, label_alternatives=False):
   plt.xlabel('fpr')
   plt.xscale('probit')
   plt.xlim([1e-2, 1 - 1e-2])
-  plt.gca().xaxis.set_label_position('top') 
+  plt.gca().xaxis.set_label_position('top')
   plt.gca().xaxis.tick_top()
 
   plt.ylabel('tpr')
@@ -70,6 +70,15 @@ def plot_brier(roc, color, label_alternatives=False):
   plt.plot(roc.y_logistic, roc.cost_logistic - base_rate_only, alpha=0.25, linestyle="--", color=color, label=f"logistic: {400 * brier_logistic - 100:.1f}%" if label_alternatives else None)
   #base_rate_only = np.minimum(roc.y_hat, 1 - roc.y_hat)
   #plt.plot(roc.y_hat, base_rate_only - roc.cost_hat, color=colors["convex"], label="convex")
+
+  low_z, high_z = -2, 3
+  z = np.linspace(low_z, high_z, 500)
+  for snr in [1, 2, 3]:
+    skew = (norm.cdf(z) + norm.cdf(z, loc=snr)) / 2
+    skew = scipy.special.expit(norm.logpdf(z, loc=snr) - norm.logpdf(z))
+    cost = skew * norm.sf(z) + (1 - skew) * norm.cdf(z, loc=snr)
+    base_rate_only = np.minimum(skew, 1 - skew)
+    plt.plot(skew, cost - base_rate_only, color="lightgray", linestyle=':', zorder=-10)
 
   plt.xlabel('skew')
   plt.xscale('logit')
