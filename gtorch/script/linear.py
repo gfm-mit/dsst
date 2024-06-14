@@ -118,4 +118,8 @@ if __name__ == "__main__":
         axs, lines = experiment.plot_trained(axs, lines)
       if axs is not None:
         suptitle = "Aggregated at the Box Level, not Patient" if args.task == "classify" else "Aggregated at Patient Level, not Box"
-        draw_3_legends(axs, lines, suptitle=suptitle)
+        #draw_3_legends(axs, lines, suptitle=suptitle)
+        import matplotlib.pyplot as plt
+        plt.suptitle(suptitle)
+        plt.tight_layout()
+        plt.show()

@@ -6,12 +6,14 @@ from scipy.stats import norm
 
 from plot.probit import ProbitScale
 
-def plot_palette(roc, label_alternatives=False):
-  fig, axs = plt.subplots(1, 2, figsize=(12, 5))
+def plot_palette(roc, axs=None, label_alternatives=False):
+  if axs is None:
+    fig, axs = plt.subplots(1, 2, figsize=(12, 5))
   plt.sca(axs[0])
   color = plot_roc(roc, label_alternatives=label_alternatives)
   plt.sca(axs[1])
   plot_brier(roc, color, label_alternatives=label_alternatives)
+  return axs
 
 def plot_roc(roc, label_alternatives=False):
   register_scale(ProbitScale)
@@ -20,8 +22,8 @@ def plot_roc(roc, label_alternatives=False):
   auc_logistic = np.trapz(roc.tpr_logistic, roc.fpr_logistic)
   auc_hat = np.trapz(roc.tpr_hat, roc.fpr_hat)
 
-  color = plt.plot(roc.fpr_empirical, roc.tpr_empirical, label=f"empirical: {100 * auc_empirical:.1f}%")[0].get_color()
-  plt.plot(roc.fpr_convex, roc.tpr_convex, alpha=0.5, color=color, label=f"convex: {100 * auc_convex:.1f}%" if label_alternatives else None)
+  color = plt.plot(roc.fpr_empirical, roc.tpr_empirical, label=f"empirical: {100 * auc_empirical:.1f}%" if label_alternatives else f"AUC: {100 * auc_empirical:.1f}%")[0].get_color()
+  plt.plot(roc.fpr_convex, roc.tpr_convex, alpha=0.5, color=color, linewidth=5, zorder=-5, label=f"convex: {100 * auc_convex:.1f}%" if label_alternatives else None)
   plt.plot(roc.fpr_logistic, roc.tpr_logistic, alpha=0.25, linestyle="--", color=color, label=f"logistic: {100 * auc_logistic:.1f}%" if label_alternatives else None)
   #colors["hat"] = plt.plot(roc.fpr_hat, roc.tpr_hat, alpha=0.8, label=f"hat: {100 * auc_hat:.1f}%")[0].get_color()
 
@@ -61,9 +63,9 @@ def plot_brier(roc, color, label_alternatives=False):
   brier_logistic = np.trapz(roc.cost_logistic, -roc.y_logistic)
 
   optimal = np.minimum(roc.y_hat, 1 - roc.y_hat)
-  plt.plot(roc.y_hat, roc.cost_empirical - optimal, color=color, label=f"empirical: {400 * brier_empirical - 100:.1f}%")
+  plt.plot(roc.y_hat, roc.cost_empirical - optimal, color=color, label=f"empirical: {400 * brier_empirical - 100:.1f}%" if label_alternatives else f"Brier(ish): {400 * brier_empirical - 100:.1f}%")
   optimal = np.minimum(roc.y_convex, 1 - roc.y_convex)
-  plt.plot(roc.y_convex, roc.cost_convex - optimal, alpha=0.5, color=color, label=f"convex: {400 * brier_convex - 100:.1f}%" if label_alternatives else None)
+  plt.plot(roc.y_convex, roc.cost_convex - optimal, alpha=0.5, color=color, linewidth=5, zorder=-5, label=f"convex: {400 * brier_convex - 100:.1f}%" if label_alternatives else None)
   optimal = np.minimum(roc.y_logistic, 1 - roc.y_logistic)
   plt.plot(roc.y_logistic, roc.cost_logistic - optimal, alpha=0.25, linestyle="--", color=color, label=f"logistic: {400 * brier_logistic - 100:.1f}%" if label_alternatives else None)
   #optimal = np.minimum(roc.y_hat, 1 - roc.y_hat)
@@ -73,6 +75,7 @@ def plot_brier(roc, color, label_alternatives=False):
   plt.xscale('logit')
   plt.gca().xaxis.set_major_formatter(ticker.PercentFormatter(xmax=1))
   plt.gca().xaxis.set_minor_formatter(lambda x, pos: "")
+  plt.xlim([1e-1, 1 - 1e-1])
 
   plt.ylabel('cost (delta from optimal)')
   plt.yscale('symlog', linthresh=1e-3)
