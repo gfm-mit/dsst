@@ -35,6 +35,8 @@ def get_costs(roc):
   roc["cost_logistic"] = roc.fpr_logistic * skew + (1 - skew) * (1 - roc.tpr_logistic)
   skew = roc.y_convex
   roc["cost_convex"] = roc.fpr_convex * skew + (1 - skew) * (1 - roc.tpr_convex)
+  skew = roc.y_hat
+  roc["cost_hat"] = roc.fpr_hat * skew + (1 - skew) * (1 - roc.tpr_hat)
   return roc
 
 def get_roc_table(roc):
