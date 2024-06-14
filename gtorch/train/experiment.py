@@ -4,6 +4,8 @@ import gtorch.train.lr_plots
 import gtorch.train.train
 import gtorch.train.tune
 import gtorch.metrics.metrics
+import gtorch.metrics.calibration
+import gtorch.metrics.plot
 from plot.palette import get_3_axes, plot_3_types
 
 class Experiment:
@@ -28,19 +30,16 @@ class Experiment:
         history=self.args.history)
     return metric, epoch_loss_history
 
-  def plot_trained(self, axs, lines):
+  def plot_trained(self, axs):
     assert self.model is not None
     assert self.args.task in 'classify classify_patient'.split()
     self.model.eval()
     logits, targets = gtorch.metrics.metrics.get_combined_roc(
       self.model, self.test_loader,
       combine_fn=None if self.args.task == "classify" else gtorch.datasets.linear_box.combiner)
-    axs = get_3_axes() if axs is None else axs
-    lines = [] if lines is None else lines
-    #import pandas as pd
-    #pd.DataFrame(dict(logits=logits, targets=targets)).to_csv("results/roc.csv")
-    lines += [plot_3_types(logits, targets, axs)]
-    return axs, lines
+    roc = gtorch.metrics.calibration.get_full_roc_table(logits, targets)
+    axs = gtorch.metrics.plot.plot_palette(roc, axs)
+    return axs
 
   def tune(self, **kwargs):
     builder = self.model_class(n_classes=2, device=self.args.device)

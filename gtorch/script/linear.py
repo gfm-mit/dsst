@@ -100,12 +100,12 @@ if __name__ == "__main__":
         experiment.train()
       pr.dump_stats('results/output_file.prof')
     else:
-      axs, lines = None, None
+      axs = None
       metric, epoch_loss_history = experiment.train()
       if args.history != "none":
         gtorch.train.lr_plots.plot_epoch_loss_history(args, epoch_loss_history)
       elif args.task in 'classify classify_patient'.split():
-        axs, lines = experiment.plot_trained(axs, lines)
+        axs = experiment.plot_trained(axs)
 
       if args.compare:
         experiment = gtorch.train.experiment.Experiment(
@@ -115,10 +115,9 @@ if __name__ == "__main__":
           test_loader=test_loader,
           args=args)
         experiment.train()
-        axs, lines = experiment.plot_trained(axs, lines)
+        axs = experiment.plot_trained(axs)
       if axs is not None:
         suptitle = "Aggregated at the Box Level, not Patient" if args.task == "classify" else "Aggregated at Patient Level, not Box"
-        #draw_3_legends(axs, lines, suptitle=suptitle)
         import matplotlib.pyplot as plt
         plt.suptitle(suptitle)
         plt.tight_layout()
