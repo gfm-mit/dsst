@@ -62,14 +62,14 @@ def plot_brier(roc, color, label_alternatives=False):
   brier_convex = np.trapz(roc.cost_convex, -roc.y_convex)
   brier_logistic = np.trapz(roc.cost_logistic, -roc.y_logistic)
 
-  optimal = np.minimum(roc.y_hat, 1 - roc.y_hat)
-  plt.plot(roc.y_hat, roc.cost_empirical - optimal, color=color, label=f"empirical: {400 * brier_empirical - 100:.1f}%" if label_alternatives else f"Brier(ish): {400 * brier_empirical - 100:.1f}%")
-  optimal = np.minimum(roc.y_convex, 1 - roc.y_convex)
-  plt.plot(roc.y_convex, roc.cost_convex - optimal, alpha=0.5, color=color, linewidth=5, zorder=-5, label=f"convex: {400 * brier_convex - 100:.1f}%" if label_alternatives else None)
-  optimal = np.minimum(roc.y_logistic, 1 - roc.y_logistic)
-  plt.plot(roc.y_logistic, roc.cost_logistic - optimal, alpha=0.25, linestyle="--", color=color, label=f"logistic: {400 * brier_logistic - 100:.1f}%" if label_alternatives else None)
-  #optimal = np.minimum(roc.y_hat, 1 - roc.y_hat)
-  #plt.plot(roc.y_hat, optimal - roc.cost_hat, color=colors["convex"], label="convex")
+  base_rate_only = np.minimum(roc.y_hat, 1 - roc.y_hat)
+  plt.plot(roc.y_hat, roc.cost_empirical - base_rate_only, color=color, label=f"empirical: {400 * brier_empirical - 100:.1f}%" if label_alternatives else f"Brier(ish): {400 * brier_empirical - 100:.1f}%")
+  base_rate_only = np.minimum(roc.y_convex, 1 - roc.y_convex)
+  plt.plot(roc.y_convex, roc.cost_convex - base_rate_only, alpha=0.5, color=color, linewidth=5, zorder=-5, label=f"convex: {400 * brier_convex - 100:.1f}%" if label_alternatives else None)
+  base_rate_only = np.minimum(roc.y_logistic, 1 - roc.y_logistic)
+  plt.plot(roc.y_logistic, roc.cost_logistic - base_rate_only, alpha=0.25, linestyle="--", color=color, label=f"logistic: {400 * brier_logistic - 100:.1f}%" if label_alternatives else None)
+  #base_rate_only = np.minimum(roc.y_hat, 1 - roc.y_hat)
+  #plt.plot(roc.y_hat, base_rate_only - roc.cost_hat, color=colors["convex"], label="convex")
 
   plt.xlabel('skew')
   plt.xscale('logit')
@@ -77,8 +77,8 @@ def plot_brier(roc, color, label_alternatives=False):
   plt.gca().xaxis.set_minor_formatter(lambda x, pos: "")
   plt.xlim([1e-1, 1 - 1e-1])
 
-  plt.ylabel('cost (delta from optimal)')
-  plt.yscale('symlog', linthresh=1e-3)
+  plt.ylabel('cost (delta from only using base rates)')
+  plt.yscale('symlog', linthresh=1e-2)
   plt.gca().yaxis.set_major_formatter(ticker.PercentFormatter(xmax=1))
   #plt.ylim([-1, 0])
 
