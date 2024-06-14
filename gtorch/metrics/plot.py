@@ -21,7 +21,7 @@ def plot_roc(roc, label_alternatives=False):
   auc_empirical = np.trapz(roc.tpr_empirical, roc.fpr_empirical)
   auc_convex = np.trapz(roc.tpr_convex, roc.fpr_convex)
   auc_logistic = np.trapz(roc.tpr_logistic, roc.fpr_logistic)
-  auc_hat = np.trapz(roc.tpr_hat, roc.fpr_hat)
+  #auc_hat = np.trapz(roc.tpr_hat, roc.fpr_hat)
 
   color = plt.plot(roc.fpr_empirical, roc.tpr_empirical, label=f"empirical: {100 * auc_empirical:.1f}%" if label_alternatives else f"AUC: {100 * auc_empirical:.1f}%")[0].get_color()
   plt.plot(roc.fpr_convex, roc.tpr_convex, alpha=0.5, color=color, linewidth=5, zorder=-5, label=f"convex: {100 * auc_convex:.1f}%" if label_alternatives else None)
@@ -31,7 +31,7 @@ def plot_roc(roc, label_alternatives=False):
   low_z, high_z = -4, 4
   fpr_z = np.linspace(low_z, high_z, 100)
 
-  for i in range(5):
+  for i in range(4):
     plt.plot(norm.cdf(fpr_z), norm.cdf(fpr_z + i), color="lightgray", linestyle=':', zorder=-10)
 
   skew = roc.targets.mean()
@@ -44,7 +44,7 @@ def plot_roc(roc, label_alternatives=False):
 
   plt.xlabel('fpr')
   plt.xscale('probit')
-  plt.xlim([1e-2, 1 - 1e-2])
+  plt.xlim([1e-3, 1 - 1e-1])
   plt.gca().xaxis.set_label_position('top')
   plt.gca().xaxis.tick_top()
 
