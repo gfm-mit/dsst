@@ -33,7 +33,7 @@ def plot_3_types(predicted, labels, axs):
   plt.sca(axs[2])
   color, artist_pr, avg_pr = plot_precision_at_k(eta, idx, roc, convex, interpolated_smooth, axs, color)
   plt.sca(axs[3])
-  #plot_supply_demand(eta, idx, roc, convex, interpolated_smooth, axs, color)
+  plot_supply_demand(eta, idx, roc, convex, interpolated_smooth, axs, color)
 
   aucroc = 100 * roc_auc_score(labels, predicted)
   return dict(

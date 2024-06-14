@@ -6,7 +6,6 @@ import gtorch.train.tune
 import gtorch.metrics.metrics
 import gtorch.metrics.calibration
 import gtorch.metrics.plot
-from plot.palette import get_3_axes, plot_3_types
 
 class Experiment:
   def __init__(self, model_class, train_loader, val_loader, test_loader, args):

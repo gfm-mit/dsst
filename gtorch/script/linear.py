@@ -25,7 +25,6 @@ import gtorch.models.registry
 import gtorch.loss.loss
 import gtorch.metrics.metrics
 import gtorch.loss.optimizer
-from plot.palette import draw_3_legends
 
 class TomlAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):

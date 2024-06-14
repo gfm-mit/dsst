@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib.scale import ScaleBase
-from matplotlib.ticker import LogitFormatter, LogitLocator, NullFormatter, PercentFormatter
+from matplotlib.ticker import LogitLocator, NullFormatter, PercentFormatter
 from matplotlib.transforms import Transform
 from scipy.stats import norm
 
