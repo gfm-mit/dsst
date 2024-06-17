@@ -46,7 +46,13 @@ def get_roc_table(roc):
 
   roc["y_logistic"] = 1
   valid = roc.iloc[1:]
-  X = valid.logits.values.reshape(-1, 1)
+
+  rescaled = valid.logits - valid.logits.mean()
+  rescaled = rescaled / rescaled.std()
+  X = np.stack([
+    rescaled,
+    #3e-2 * rescaled ** 2,  # this is a hack to keep monotonicity
+  ], axis=1)
   roc.loc[0:, "y_logistic"] = linear_model.LogisticRegression().fit(X, valid.targets.values).predict_proba(X)[:, 1]
   roc['tpr_logistic'] = roc.y_logistic.cumsum() / roc.y_logistic.sum()
   roc['fpr_logistic'] = (1 - roc.y_logistic).cumsum() / (1 - roc.y_logistic).sum()
