@@ -7,7 +7,7 @@ def rescale_and_cut(df):
   # these are magic numbers, deduced by trial and error
   # it absolutely can be done with scipy.optimize.fmin, but getting the objective right is hard
   df.x = df.x / 12.6 - 1.6
-  df.y = df.y / 12.6 - 2.9 - (1-df.symbol_digit) * 10.6
+  df.y = df.y / 12.6 - 2.9 - (1 - df.symbol_digit) * 10.6
   minmax = df.groupby("stroke_id").y.agg(['min', 'max'])
   bad_strokes = minmax[minmax["min"] < 0]
   df = df[~df.stroke_id.isin(bad_strokes.index)].copy()
@@ -105,9 +105,9 @@ def assign_stroke(j):
   elif j.fraction_center > .75 and j.width < 1.5:
     Z = pd.Series(dict(x=j.first_touch_box, color="lightgray"))
   elif j.fraction_left > .75 and j.width < 1.5:
-    Z = pd.Series(dict(x=j.first_touch_box-1, color="lightgray"))
+    Z = pd.Series(dict(x=j.first_touch_box - 1, color="lightgray"))
   elif j.fraction_right > .75 and j.width < 1.5:
-    Z = pd.Series(dict(x=j.first_touch_box+1, color="lightgray"))
+    Z = pd.Series(dict(x=j.first_touch_box + 1, color="lightgray"))
   elif j.close_left and not j.close_right:
     Z = pd.Series(dict(x=np.floor(j.this_min), color="lightgray" if j.far_right else "red"))
   elif j.close_right and not j.close_left:
@@ -126,12 +126,12 @@ def debug_plot(points, assignments, title):
   print(title)
   print(assignments[assignments.color != "lightgray"])
   plt.figure(figsize=(12, 6))
-  z = (1-points.symbol_digit)
+  z = (1 - points.symbol_digit)
   plt.plot(points.x + DX * z, points.y, color="lightgray", zorder=-20)
   for stroke_idx, stroke_points in points.groupby("stroke_id"):
     assignment = assignments.loc[stroke_idx]
     color = assignment.color
-    z = (1-stroke_points.symbol_digit)
+    z = (1 - stroke_points.symbol_digit)
     plt.scatter(stroke_points.x + DX * z, stroke_points.y, color=color, zorder=-10, alpha=0.2)
     plt.scatter(assignment.x + 0.5 + DX * z.max(), 2 * assignment.y_assigned + 0.5, color=color, zorder=-20, alpha=0.1, s=1000)
   plt.yticks(np.arange(-8, 2, step=2))
