@@ -45,8 +45,9 @@ class LogAction(argparse.Action):
       if values == "":
         return
       assert isinstance(values, str)
-      assert not pathlib.Path(values).exists()
+      #assert not pathlib.Path(values).exists()
       pathlib.Path(values).touch()
+      setattr(namespace, self.dest, values)
 
 if __name__ == "__main__":
   sys.excepthook = util.excepthook.custom_excepthook
@@ -66,7 +67,7 @@ if __name__ == "__main__":
   parser.add_argument('--model', default='linear', help='which model class to use')
   parser.add_argument('--task', default='classify', choices=set("next_token classify classify_patient".split()), help='training target / loss')
   parser.add_argument('--disk', default='none', choices=set("none load save".split()), help='whether to persist the model (or use persisted)')
-  parser.add_argument('--log', default='', help='filename to log metrics and parameters')
+  parser.add_argument('--log', action=LogAction, default='', help='filename to log metrics and parameters')
   parser.add_argument('--config', action=TomlAction, default={}, help='read a config toml file')
   args = parser.parse_args()
 
@@ -107,7 +108,7 @@ if __name__ == "__main__":
       experiment.tune()
     elif args.find_lr:
       if args.disk == "save":
-        metric, epoch_loss_history = experiment.train(scheduler=None)
+        metric, epoch_loss_history = experiment.train(scheduler=None, **args.config)
         plot.lr_finder.plot_epoch_loss_history(args, epoch_loss_history)
       else:
         experiment.find_momentum(momentum=[0, 0.5, 0.9])

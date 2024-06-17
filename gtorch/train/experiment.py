@@ -39,11 +39,11 @@ class Experiment:
   def log_training(self, params, metric):
     with open(self.args.log, "w") as f:
       json.dump(dict(
-        args=self.args,
+        args=vars(self.args),
         model_class=self.model_class.__name__,
         params=params,
         metric=metric,
-      ), f)
+      ), f, indent=2)
 
   def plot_trained(self, axs, label=None):
     assert self.model is not None
