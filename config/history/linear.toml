@@ -63,3 +63,47 @@
   max_epochs=20
   min_epochs=3
   learning_rate=1
+
+[lion]
+  scheduler='none'
+  optimizer='lion'
+  weight_decay=0
+  momentum=0.9
+  conditioning_smoother=0.99
+  pct_start=0.0
+  max_epochs=20
+  min_epochs=3
+  learning_rate=3e-2
+
+[samsgd]
+  scheduler='none'
+  optimizer='samsgd'
+  weight_decay=0
+  momentum=0.9
+  conditioning_smoother=0.99
+  pct_start=0.0
+  max_epochs=20
+  min_epochs=3
+  learning_rate=3e-2
+
+[samadam]
+  scheduler='none'
+  optimizer='samadam'
+  weight_decay=0
+  momentum=0.9
+  conditioning_smoother=0.99
+  pct_start=0.0
+  max_epochs=20
+  min_epochs=3
+  learning_rate=3e-2
+
+[prodigy]
+  scheduler='none'
+  optimizer='prodigy'
+  weight_decay=0
+  momentum=0.9
+  conditioning_smoother=0.99
+  pct_start=0.0
+  max_epochs=20
+  min_epochs=3
+  learning_rate=1
