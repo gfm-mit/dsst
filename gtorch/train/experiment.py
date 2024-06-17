@@ -79,7 +79,7 @@ class Experiment:
     return dict(
         schedule="ramp",
         min_lr=1e-5,
-        max_lr=1e1,
+        max_lr=1,
         max_epochs=50,
     ) | self.args.config | (params or {})
 
