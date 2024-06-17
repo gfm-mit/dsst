@@ -44,7 +44,7 @@ def get_roc_table(roc):
   roc['fpr_hat'] = (1 - roc.y_hat).cumsum() / (1 - roc.y_hat).sum()
   roc['tpr_hat'] = roc.y_hat.cumsum() / roc.y_hat.sum()
 
-  roc["y_logistic"] = 1
+  roc["y_logistic"] = 1.
   valid = roc.iloc[1:]
 
   rescaled = valid.logits - valid.logits.mean()
@@ -53,7 +53,8 @@ def get_roc_table(roc):
     rescaled,
     #3e-2 * rescaled ** 2,  # this is a hack to keep monotonicity
   ], axis=1)
-  roc.loc[0:, "y_logistic"] = linear_model.LogisticRegression().fit(X, valid.targets.values).predict_proba(X)[:, 1]
+  Y = valid.targets.values
+  roc.loc[0:, "y_logistic"] = linear_model.LogisticRegression().fit(X, Y).predict_proba(X)[:, 1]
   roc['tpr_logistic'] = roc.y_logistic.cumsum() / roc.y_logistic.sum()
   roc['fpr_logistic'] = (1 - roc.y_logistic).cumsum() / (1 - roc.y_logistic).sum()
 

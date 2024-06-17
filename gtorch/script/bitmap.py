@@ -1,14 +1,17 @@
 import argparse
 import cProfile
 import sys
+from matplotlib import pyplot as plt
 
 import gtorch.datasets.bitmap
 import gtorch.train.train
 import gtorch.train.tune
+import gtorch.metrics.calibration
+import gtorch.metrics.metrics
 import gtorch.models.cnn_2d
 import gtorch.loss.optimizer
+import plot.metrics
 import util.excepthook
-from plot.palette import draw_3_legends, get_3_axes, plot_3_types
 
 if __name__ == "__main__":
   # Set the custom excepthook
@@ -38,7 +41,10 @@ if __name__ == "__main__":
                                                              train_loader=train_loader, val_loader=val_loader)
     pr.dump_stats('results/output_file.prof')
     model.eval()
-    logits, targets = gtorch.loss.metrics.get_combined_roc(model, test_loader, combine_fn=gtorch.datasets.linear_box.combiner)
-    axs = get_3_axes() if axs is None else axs
-    lines += [plot_3_types(logits, targets, axs)]
-    draw_3_legends(axs, lines)
+    logits, targets = gtorch.metrics.metrics.get_combined_roc(model, test_loader, combine_fn=gtorch.datasets.linear_box.combiner)
+
+    roc = gtorch.metrics.calibration.get_full_roc_table(logits, targets)
+    axs = plot.metrics.plot_palette(roc, axs)
+    plt.suptitle("linear_box.combiner")
+    plt.tight_layout()
+    plt.show()
