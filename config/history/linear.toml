@@ -1,0 +1,65 @@
+[sgd]
+  scheduler='none'
+  optimizer='sgd'
+  weight_decay=0
+  momentum=0.9
+  conditioning_smoother=0.99
+  pct_start=0.0
+  max_epochs=20
+  min_epochs=3
+  learning_rate=3e-1
+
+[onecyclesgd]
+  scheduler='onecycle'
+  optimizer='sgd'
+  weight_decay=0
+  momentum=0.9
+  conditioning_smoother=0.99
+  pct_start=0.0
+  max_epochs=20
+  min_epochs=3
+  learning_rate=3e-1
+
+[sfsgd]
+  scheduler='none'
+  optimizer='sfsgd'
+  weight_decay=0
+  momentum=0.9
+  conditioning_smoother=0.99
+  pct_start=0.0
+  max_epochs=20
+  min_epochs=3
+  learning_rate=3e-1
+
+[adam]
+  scheduler='none'
+  optimizer='adam'
+  weight_decay=0
+  momentum=0.9
+  conditioning_smoother=0.99
+  pct_start=0.0
+  max_epochs=20
+  min_epochs=3
+  learning_rate=3e-1
+
+[onecycleadam]
+  scheduler='onecycle'
+  optimizer='adam'
+  weight_decay=0
+  momentum=0.9
+  conditioning_smoother=0.99
+  pct_start=0.0
+  max_epochs=20
+  min_epochs=3
+  learning_rate=3e-1
+
+[sfadam]
+  scheduler='none'
+  optimizer='sfadam'
+  weight_decay=0
+  momentum=0.9
+  conditioning_smoother=0.99
+  pct_start=0.0
+  max_epochs=20
+  min_epochs=3
+  learning_rate=1

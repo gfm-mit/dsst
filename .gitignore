@@ -1,5 +1,5 @@
 .venv
 .DS_Store
 results/*
-config/*
+config/*.toml
 scripts/local.py
