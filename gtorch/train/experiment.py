@@ -1,11 +1,11 @@
 import gtorch.datasets.linear_box
 import gtorch.train.lr_finder
-import gtorch.train.lr_plots
+import plot.lr_finder
 import gtorch.train.train
 import gtorch.train.tune
 import gtorch.metrics.metrics
 import gtorch.metrics.calibration
-import gtorch.metrics.plot
+import plot.metrics
 
 class Experiment:
   def __init__(self, model_class, train_loader, val_loader, test_loader, args):
@@ -37,7 +37,7 @@ class Experiment:
       self.model, self.test_loader,
       combine_fn=None if self.args.task == "classify" else gtorch.datasets.linear_box.combiner)
     roc = gtorch.metrics.calibration.get_full_roc_table(logits, targets)
-    axs = gtorch.metrics.plot.plot_palette(roc, axs)
+    axs = plot.metrics.plot_palette(roc, axs)
     return axs
 
   def tune(self, **kwargs):
@@ -56,7 +56,7 @@ class Experiment:
         train_loader=self.train_loader,
         task=self.args.task,
         disk=self.args.disk)
-    losses, conds = gtorch.train.lr_plots.plot_lr(lrs, losses, conds=conds, smooth=len(self.train_loader), label=label, axs=axs)
+    losses, conds = plot.lr_finder.plot_lr(lrs, losses, conds=conds, smooth=len(self.train_loader), label=label, axs=axs)
     return losses, conds
 
   def get_lr_params(self, params=None):
@@ -70,9 +70,9 @@ class Experiment:
   def find_momentum(self, momentum, params=None):
     assert momentum is not None
     params = self.get_lr_params(params)
-    axs = gtorch.train.lr_plots.get_axes(params)
+    axs = plot.lr_finder.get_axes(params)
     loss, cond = zip(*[
       self.find_lr(axs, params=params | {"momentum": m}, label=f"momentum={m}")
       for m in momentum
     ])
-    gtorch.train.lr_plots.show_axes(axs, loss, cond)
+    plot.lr_finder.show_axes(axs, loss, cond)

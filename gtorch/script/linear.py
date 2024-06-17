@@ -12,7 +12,7 @@ import gtorch.train.coef
 import gtorch.train.experiment
 import gtorch.train.train
 import gtorch.train.tune
-import gtorch.train.lr_plots
+import plot.lr_finder
 import gtorch.models.cnn_1d
 import gtorch.models.cnn_1d_atrous
 import gtorch.models.cnn_1d_butterfly
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     elif args.find_lr:
       if args.disk == "save":
         metric, epoch_loss_history = experiment.train(scheduler=None)
-        gtorch.train.lr_plots.plot_epoch_loss_history(args, epoch_loss_history)
+        plot.lr_finder.plot_epoch_loss_history(args, epoch_loss_history)
       else:
         experiment.find_momentum(momentum=[0, 0.9])
     elif args.profile:
@@ -102,7 +102,7 @@ if __name__ == "__main__":
       axs = None
       metric, epoch_loss_history = experiment.train()
       if args.history != "none":
-        gtorch.train.lr_plots.plot_epoch_loss_history(args, epoch_loss_history)
+        plot.lr_finder.plot_epoch_loss_history(args, epoch_loss_history)
       elif args.task in 'classify classify_patient'.split():
         axs = experiment.plot_trained(axs)
 
