@@ -36,6 +36,6 @@ def main(train_loader, val_loader, builder=None, base_params=None, task="classif
   results = pd.DataFrame(results)
   if history == "none":
     results = results.drop(columns="history")
-    plot.tune.plot_tuning_results(spaces, results, task)
+    plot.tune.plot_tuning_results(spaces.columns, results, task)
   else:
-    plot.tune.plot_tuning_history(spaces, results, ylabel=f"tune.args.{history=}")
+    plot.tune.plot_tuning_history(spaces.columns, results, ylabel=f"tune.args.{history=}")
