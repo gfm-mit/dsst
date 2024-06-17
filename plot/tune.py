@@ -1,43 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import torch
-
-import gtorch.datasets.linear_box
-import gtorch.datasets.linear_patient
-import gtorch.train.train
-import gtorch.loss.optimizer
 
 
-def get_spaces(**kwargs):
-  print("spaces.kwargs:")
-  for k, v in kwargs.items():
-    print(f"  {k}: {v}")
-  spaces = pd.DataFrame(kwargs)
-  for col in spaces.columns:
-    spaces[col] = np.random.permutation(spaces[col].values)
-  return spaces
-
-def main(train_loader, val_loader, builder=None, base_params=None, task="classify", disk="none", history="none"):
-  torch.manual_seed(42)
-  assert isinstance(builder, gtorch.models.base.Base)
-  assert builder.get_tuning_ranges(), "no parameters to tune"
-  spaces = get_spaces(**builder.get_tuning_ranges())
-  results = []
-  for i in spaces.index:
-    params = dict(**base_params)
-    for k in spaces.columns:
-      params[k] = spaces.loc[i, k]
-    case_label = spaces.loc[i].to_dict()
-    metric, epoch_loss_history, model = gtorch.train.train.setup_training_run(
-      params, model_factory_fn=builder, train_loader=train_loader, val_loader=val_loader,
-      task=task, disk=disk, tqdm_prefix=f"Tuning Case {i} {case_label}", history=history)
-    results += [dict(**params, metric=metric, history=epoch_loss_history)]
-  results = pd.DataFrame(results)
-  if history == "none":
-    results = results.drop(columns="history")
-    plot_tuning_results(spaces, results, task)
-  else:
+def plot_tuning_history(spaces, results, history):
     for e, row in results.iterrows():
       label = str({
         k: "{:.2E}".format(row[k]) if isinstance(row[k], float) else row[k]
@@ -67,7 +32,7 @@ def plot_tuning_results(spaces, results, task):
     plt.scatter(results[k], results['metric'])
     plt.ylabel(metric_name)
     plt.xlabel(k)
-    if results[k].dtype == str:
+    if results[k].dtype == object:
       plt.xticks(rotation=45)
     elif 0 < results[k].min() < results[k].max() < 1:
       plt.xscale('logit')
