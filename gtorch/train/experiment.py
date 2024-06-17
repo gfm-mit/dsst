@@ -45,7 +45,7 @@ class Experiment:
         metric=metric,
       ), f)
 
-  def plot_trained(self, axs):
+  def plot_trained(self, axs, label=None):
     assert self.model is not None
     assert self.args.task in 'classify classify_patient'.split()
     self.model.eval()
@@ -53,7 +53,7 @@ class Experiment:
       self.model, self.test_loader,
       combine_fn=None if self.args.task == "classify" else gtorch.datasets.linear_box.combiner)
     roc = gtorch.metrics.calibration.get_full_roc_table(logits, targets)
-    axs = plot.metrics.plot_palette(roc, axs)
+    axs = plot.metrics.plot_palette(roc, axs, label=label)
     return axs
 
   def tune(self, **kwargs):

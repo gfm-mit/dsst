@@ -61,13 +61,14 @@ def show_axes(axs, losses, conds):
   plt.tight_layout()
   plt.show()
 
-def plot_epoch_loss_history(args, epoch_loss_history, axs=None):
+def plot_epoch_loss_history(args, epoch_loss_history, axs=None, label=None):
   if axs is None:
     fig, axs = plt.subplots(1, 1)
   else:
     plt.sca(axs)
-  plt.plot(epoch_loss_history)
+  plt.plot(epoch_loss_history, label=label)
   plt.xlabel('epoch')
   plt.ylabel('validation metric' if args.history == "val" else 'training loss')
   plt.title(f"{args.history=}")
+  plt.legend()
   return axs

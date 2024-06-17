@@ -7,7 +7,7 @@ import scipy.special
 
 from plot.probit import ProbitScale
 
-def plot_palette(roc, axs=None, label_alternatives=False):
+def plot_palette(roc, axs=None, label_alternatives=False, label=None):
   if axs is None:
     fig, axs = plt.subplots(1, 3, width_ratios=[1, 2, 1], figsize=(12, 5))
   plt.sca(axs[0])
@@ -15,11 +15,11 @@ def plot_palette(roc, axs=None, label_alternatives=False):
   plt.sca(axs[1])
   plot_brier(roc, color, label_alternatives=label_alternatives)
   plt.sca(axs[2])
-  plot_calibration(roc, color)
+  plot_calibration(roc, color, label=label)
   return axs
 
-def plot_calibration(roc, color):
-  plt.plot(roc.y_hat, roc.y_convex, alpha=0.5, color=color, linewidth=5, zorder=-5)
+def plot_calibration(roc, color, label=None):
+  plt.plot(roc.y_hat, roc.y_convex, alpha=0.5, color=color, linewidth=5, zorder=-5, label=label)
   plt.plot(roc.y_logistic, roc.y_convex, alpha=0.25, linestyle="--", color=color)
   plt.scatter(roc.y_logistic, roc.y_convex, alpha=0.05, s=1, color=color)
 
@@ -34,6 +34,7 @@ def plot_calibration(roc, color):
   plt.gca().yaxis.set_minor_formatter(ticker.NullFormatter())
 
   plt.gca().set_aspect('equal')
+  plt.legend()
 
 def plot_roc(roc, label_alternatives=False):
   register_scale(ProbitScale)

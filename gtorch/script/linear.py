@@ -4,6 +4,7 @@ import sys
 import cProfile
 import util.excepthook
 import tomli
+import matplotlib.pyplot as plt
 
 import gtorch.datasets.bitmap
 import gtorch.datasets.dataset
@@ -30,8 +31,13 @@ import gtorch.loss.optimizer
 class TomlAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
       assert isinstance(values, str)
+      key = None
+      if "," in values:
+        values, key = values.split(",")
       with open(values, 'rb') as stream:
         config = tomli.load(stream)
+      if key is not None:
+        config = config[key]
       setattr(namespace, self.dest, config)
 
 class LogAction(argparse.Action):
@@ -110,27 +116,19 @@ if __name__ == "__main__":
       pr.dump_stats('results/output_file.prof')
     else:
       axs = None
-      metric, epoch_loss_history = experiment.train()
-      if args.history != "none":
-        axs = plot.lr_finder.plot_epoch_loss_history(args, epoch_loss_history)
-      elif args.task in 'classify classify_patient'.split():
-        axs = experiment.plot_trained(axs)
-
       if args.compare:
-        experiment = gtorch.train.experiment.Experiment(
-          model_class=gtorch.models.linear_bnc.Linear,
-          train_loader=train_loader,
-          val_loader=val_loader,
-          test_loader=test_loader,
-          args=args)
-        metric, epoch_loss_history = experiment.train(scheduler='onecycle', optimizer='sgd')
+        setups = args.config
+      else:
+        setups = {"base": {}}
+      for k, v in setups.items():
+        metric, epoch_loss_history = experiment.train(**v)
         if args.history != "none":
-          axs = plot.lr_finder.plot_epoch_loss_history(args, epoch_loss_history, axs)
+          axs = plot.lr_finder.plot_epoch_loss_history(args, epoch_loss_history, axs=axs, label=k)
         elif args.task in 'classify classify_patient'.split():
-          axs = experiment.plot_trained(axs)
+          axs = experiment.plot_trained(axs, label=k)
+
       if axs is not None:
         suptitle = "Aggregated at the Box Level, not Patient" if args.task == "classify" else "Aggregated at Patient Level, not Box"
-        import matplotlib.pyplot as plt
         plt.suptitle(suptitle)
         plt.tight_layout()
         plt.show()
