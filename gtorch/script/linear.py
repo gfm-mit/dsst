@@ -86,8 +86,9 @@ if __name__ == "__main__":
         val_loader=[val_batch],
         test_loader=None,
         args=args)
+      print(f"starting test {model_class=}")
       metric, epoch_loss_history = experiment.train(min_epochs=0, max_epochs=1)
-      print(model_class, metric)
+      print(f"finished test {model_class=} {metric=}")
   elif args.coef:
     # check coefficients
     gtorch.train.coef.get_coef_dist(

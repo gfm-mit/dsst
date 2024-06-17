@@ -81,7 +81,7 @@ class Transformer(gtorch.models.base.SequenceBase):
       schedule='onecycle',
       weight_decay=0,
       momentum=1 - 1e-3,
-      beta2=1 - 3e-2,
+      conditioning_smoother=1 - 3e-2,
       pct_start=0.0,
 
       max_epochs=10,
@@ -99,7 +99,7 @@ class Transformer(gtorch.models.base.SequenceBase):
         #pct_start=np.geomspace(0.01, .95, 15),
         #max_epochs=np.geomspace(5, 100, 15).astype(int),
         #momentum=1-np.geomspace(.1, 1e-5, 15),
-        #beta2=1-np.geomspace(.5, .0001, 15),
+        #conditioning_smoother=1-np.geomspace(.5, .0001, 15),
     )
 
   def get_coefficients(self, model):

@@ -14,14 +14,14 @@ def get_optimizer(params, model):
                                   lr=params["learning_rate"],
                                   betas=[
                                       params["momentum"],
-                                      params["beta2"],
+                                      params["conditioning_smoother"],
                                   ],
                                   weight_decay=params["weight_decay"])
   elif "optimizer" in params and params["optimizer"] == "signedmomentum":
     optimizer = pytorch_optimizer.Lion(model.parameters(),
                                        betas=[
                                            params["momentum"],
-                                           params["beta2"],
+                                           params["conditioning_smoother"],
                                        ],
                                        weight_decouple=True,
                                        weight_decay=params["weight_decay"])
@@ -29,7 +29,7 @@ def get_optimizer(params, model):
     optimizer = pytorch_optimizer.Prodigy(model.parameters(),
                                           betas=[
                                               params["momentum"],
-                                              params["beta2"],
+                                              params["conditioning_smoother"],
                                           ],
                                           weight_decouple=True,
                                           weight_decay=params["weight_decay"])

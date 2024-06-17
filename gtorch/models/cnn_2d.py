@@ -46,11 +46,10 @@ class Cnn(gtorch.models.base.Base):
 
   def get_parameters(self, **kwargs):
     return dict(
-      #optimizer='adam',
       schedule='onecycle',
       weight_decay=0,
       momentum=0,
-      beta2=0.9,
+      conditioning_smoother=0.9,
       pct_start=0.0,
 
       max_epochs=10,
@@ -68,7 +67,7 @@ class Cnn(gtorch.models.base.Base):
         #pct_start=np.geomspace(0.01, .95, 15),
         #max_epochs=np.geomspace(5, 100, 15).astype(int),
         #momentum=1-np.geomspace(.1, 1e-5, 15),
-        #beta2=1-np.geomspace(.5, .0001, 15),
+        #conditioning_smoother=1-np.geomspace(.5, .0001, 15),
     )
 
   def get_coefficients(self, model):

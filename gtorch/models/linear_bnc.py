@@ -33,7 +33,7 @@ class Linear(gtorch.models.base.Base):
       optimizer='sgd',
       weight_decay=0,
       momentum=0.9,
-      beta2=0.99,
+      conditioning_smoother=0.99,
       pct_start=0.0,
       max_epochs=2,
       min_epochs=0,
@@ -51,7 +51,7 @@ class Linear(gtorch.models.base.Base):
         #pct_start=np.geomspace(0.01, .95, 15),
         #max_epochs=1 + np.arange(10).astype(int),
         #momentum=[0, .1, .5, .9, .99],
-        #beta2=1-np.geomspace(.5, .0001, 15),
+        #conditioning_smoother=1-np.geomspace(.5, .0001, 15),
     )
 
   def get_coefficients(self, model):
