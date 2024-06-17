@@ -1,23 +1,31 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 
-def plot_tuning_history(spaces, results, history):
-    for e, row in results.iterrows():
-      label = str({
-        k: "{:.2E}".format(row[k]) if isinstance(row[k], float) else row[k]
-        for k in spaces.keys()
-      })
-      plt.plot(row['history'], label=label)
-    plt.legend()
-    plt.axhline(y=.725, color="gray", zorder=-10)
-    plt.xlabel('epoch')
-    plt.ylabel(f'{history=}')
-    #y_min = results.history.apply(lambda x: x[0]).min()
-    #y_max = results.history.apply(max).max()
-    y_min, y_max = .71, .725
-    plt.ylim([y_min, y_max])
-    plt.show()
+# todo, these two seem redundant
+def plot_epoch_loss_history(args, epoch_loss_history, axs=None, label=None):
+  ylabel = 'validation metric' if args.history == "val" else 'training loss'
+  results = pd.Series(dict(history=epoch_loss_history, label=label)).to_frame().transpose()
+  return plot_tuning_history(spaces={"label": None}, results=results, ylabel=ylabel, axs=axs)
+
+def plot_tuning_history(spaces, results, ylabel, axs=None):
+  if axs is None:
+    fig, axs = plt.subplots(1, 1)
+  plt.sca(axs)
+  for e, row in results.iterrows():
+    label = str({
+      k: "{:.2E}".format(row[k]) if isinstance(row[k], float) else row[k]
+      for k in spaces.keys()
+    })
+    plt.plot(row['history'], label=label)
+  plt.legend()
+  plt.axhline(y=.725, color="gray", zorder=-10)
+  plt.xlabel('epoch')
+  plt.ylabel(ylabel)
+  y_min, y_max = .71, .725
+  plt.ylim([y_min, y_max])
+  return axs
 
 def plot_tuning_results(spaces, results, task):
   N = int(np.ceil(np.sqrt(spaces.shape[1])))
