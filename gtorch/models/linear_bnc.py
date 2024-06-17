@@ -29,14 +29,13 @@ class Linear(gtorch.models.base.Base):
 
   def get_parameters(self, **kwargs):
     return dict(
-      #optimizer='adam',
-      schedule='onecycle',
+      scheduler='none',
+      optimizer='sgd',
       weight_decay=0,
-      momentum=0,
-      beta2=0.9,
+      momentum=0.9,
+      beta2=0.99,
       pct_start=0.0,
-
-      max_epochs=10,
+      max_epochs=2,
       min_epochs=0,
 
       learning_rate=3e-1, # stupid edge of stability!!
@@ -45,12 +44,13 @@ class Linear(gtorch.models.base.Base):
 
   def get_tuning_ranges(self):
     return dict(
+        #optimizer=["adam", "signedmomentum"],
         #nonce=np.arange(5),
-        #learning_rate=np.geomspace(1e-1, 5e-1, 15),
-        #weight_decay=np.geomspace(1e-8, 1e-4, 15),
+        #learning_rate=np.geomspace(3e-2, 3e-1, 5),
+        #weight_decay=np.geomspace(1e-8, 1e-0, 10),
         #pct_start=np.geomspace(0.01, .95, 15),
         #max_epochs=1 + np.arange(10).astype(int),
-        #momentum=1-np.geomspace(.1, 1e-5, 15),
+        #momentum=[0, .1, .5, .9, .99],
         #beta2=1-np.geomspace(.5, .0001, 15),
     )
 
