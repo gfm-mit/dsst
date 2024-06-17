@@ -103,7 +103,7 @@ if __name__ == "__main__":
         metric, epoch_loss_history = experiment.train(scheduler=None)
         plot.lr_finder.plot_epoch_loss_history(args, epoch_loss_history)
       else:
-        experiment.find_momentum(momentum=[0, 0.9])
+        experiment.find_momentum(momentum=[0, 0.5, 0.9])
     elif args.profile:
       with cProfile.Profile() as pr:
         experiment.train()
@@ -112,7 +112,7 @@ if __name__ == "__main__":
       axs = None
       metric, epoch_loss_history = experiment.train()
       if args.history != "none":
-        plot.lr_finder.plot_epoch_loss_history(args, epoch_loss_history)
+        axs = plot.lr_finder.plot_epoch_loss_history(args, epoch_loss_history)
       elif args.task in 'classify classify_patient'.split():
         axs = experiment.plot_trained(axs)
 
@@ -123,8 +123,11 @@ if __name__ == "__main__":
           val_loader=val_loader,
           test_loader=test_loader,
           args=args)
-        experiment.train()
-        axs = experiment.plot_trained(axs)
+        metric, epoch_loss_history = experiment.train(scheduler='onecycle', optimizer='sgd')
+        if args.history != "none":
+          axs = plot.lr_finder.plot_epoch_loss_history(args, epoch_loss_history, axs)
+        elif args.task in 'classify classify_patient'.split():
+          axs = experiment.plot_trained(axs)
       if axs is not None:
         suptitle = "Aggregated at the Box Level, not Patient" if args.task == "classify" else "Aggregated at Patient Level, not Box"
         import matplotlib.pyplot as plt

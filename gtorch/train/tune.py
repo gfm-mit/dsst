@@ -18,7 +18,7 @@ def get_spaces(**kwargs):
     spaces[col] = np.random.permutation(spaces[col].values)
   return spaces
 
-def main(train_loader, val_loader, builder=None, base_params=None, task="classify", disk="none"):
+def main(train_loader, val_loader, builder=None, base_params=None, task="classify", disk="none", history="none"):
   torch.manual_seed(42)
   assert isinstance(builder, gtorch.models.base.Base)
   assert builder.get_tuning_ranges(), "no parameters to tune"
@@ -31,10 +31,30 @@ def main(train_loader, val_loader, builder=None, base_params=None, task="classif
     case_label = spaces.loc[i].to_dict()
     metric, epoch_loss_history, model = gtorch.train.train.setup_training_run(
       params, model_factory_fn=builder, train_loader=train_loader, val_loader=val_loader,
-      task=task, disk=disk, tqdm_prefix=f"Tuning Case {i} {case_label}")
-    results += [dict(**params, metric=metric)]
+      task=task, disk=disk, tqdm_prefix=f"Tuning Case {i} {case_label}", history=history)
+    results += [dict(**params, metric=metric, history=epoch_loss_history)]
   results = pd.DataFrame(results)
-  print(results)
+  if history == "none":
+    results = results.drop(columns="history")
+    plot_tuning_results(spaces, results, task)
+  else:
+    for e, row in results.iterrows():
+      label = str({
+        k: "{:.2E}".format(row[k]) if isinstance(row[k], float) else row[k]
+        for k in spaces.keys()
+      })
+      plt.plot(row['history'], label=label)
+    plt.legend()
+    plt.axhline(y=.725, color="gray", zorder=-10)
+    plt.xlabel('epoch')
+    plt.ylabel(f'{history=}')
+    #y_min = results.history.apply(lambda x: x[0]).min()
+    #y_max = results.history.apply(max).max()
+    y_min, y_max = .71, .725
+    plt.ylim([y_min, y_max])
+    plt.show()
+
+def plot_tuning_results(spaces, results, task):
   N = int(np.ceil(np.sqrt(spaces.shape[1])))
   fig, axs = plt.subplots(N, N)
   if not isinstance(axs, np.ndarray):

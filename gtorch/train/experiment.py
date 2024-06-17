@@ -62,7 +62,7 @@ class Experiment:
     gtorch.train.tune.main(
       self.train_loader, self.val_loader,
       builder=builder, base_params=base_params,
-      task=self.args.task, disk=self.args.disk)
+      task=self.args.task, disk=self.args.disk, history=self.args.history)
 
   def find_lr(self, axs=None, params=None, label=None):
     builder = self.model_class(n_classes=2, device=self.args.device)
