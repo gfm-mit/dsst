@@ -17,7 +17,11 @@ def get_optimizer(params, model):
                                       params["conditioning_smoother"],
                                   ],
                                   weight_decay=params["weight_decay"])
-  elif "optimizer" in params and params["optimizer"] == "signedmomentum":
+  elif "optimizer" in params and params["optimizer"] == "lion":
+    # this thing is just the signed momentum optimizer, rediscovered by GDM and then published because life is fair
+    # needs huge model / batch size to counteract the variance
+    # because it preconditions by just taking the sign of the update, which is crazy
+    # but saves 30% of memory
     optimizer = pytorch_optimizer.Lion(model.parameters(),
                                        betas=[
                                            params["momentum"],
@@ -51,6 +55,15 @@ def get_optimizer(params, model):
                                       base_optimizer=torch.optim.SGD,
                                       lr=params["learning_rate"],
                                       momentum=params["momentum"],
+                                      weight_decay=params["weight_decay"])
+  elif "optimizer" in params and params["optimizer"] == "samadam":
+    optimizer = pytorch_optimizer.SAM(model.parameters(),
+                                      base_optimizer=torch.optim.AdamW,
+                                      lr=params["learning_rate"],
+                                      betas=[
+                                          params["momentum"],
+                                          params["conditioning_smoother"],
+                                      ],
                                       weight_decay=params["weight_decay"])
   else:
     if "optimizer" not in params:
