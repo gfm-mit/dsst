@@ -1,3 +1,4 @@
+import json
 import gtorch.datasets.linear_box
 import gtorch.train.lr_finder
 import plot.lr_finder
@@ -15,6 +16,8 @@ class Experiment:
     self.test_loader = test_loader
     self.args = args
     self.model = None
+    self.last_train_params = None
+    self.last_metric = None
 
   def train(self, **kwargs):
     #torch.manual_seed(42)
@@ -27,7 +30,20 @@ class Experiment:
         task=self.args.task,
         disk=self.args.disk,
         history=self.args.history)
+    if self.args.log != "":
+      self.log_training(
+        params=base_params,
+        metric=metric)
     return metric, epoch_loss_history
+
+  def log_training(self, params, metric):
+    with open(self.args.log, "w") as f:
+      json.dump(dict(
+        args=self.args,
+        model_class=self.model_class.__name__,
+        params=params,
+        metric=metric,
+      ), f)
 
   def plot_trained(self, axs):
     assert self.model is not None

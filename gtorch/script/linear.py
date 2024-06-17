@@ -1,4 +1,5 @@
 import argparse
+import pathlib
 import sys
 import cProfile
 import util.excepthook
@@ -33,6 +34,14 @@ class TomlAction(argparse.Action):
         config = tomli.load(stream)
       setattr(namespace, self.dest, config)
 
+class LogAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+      if values == "":
+        return
+      assert isinstance(values, str)
+      assert not pathlib.Path(values).exists()
+      pathlib.Path(values).touch()
+
 if __name__ == "__main__":
   sys.excepthook = util.excepthook.custom_excepthook
   # will save stack traces from creation in components, makes error messages less stupid
@@ -51,6 +60,7 @@ if __name__ == "__main__":
   parser.add_argument('--model', default='linear', help='which model class to use')
   parser.add_argument('--task', default='classify', choices=set("next_token classify classify_patient".split()), help='training target / loss')
   parser.add_argument('--disk', default='none', choices=set("none load save".split()), help='whether to persist the model (or use persisted)')
+  parser.add_argument('--log', default='', help='filename to log metrics and parameters')
   parser.add_argument('--config', action=TomlAction, default={}, help='read a config toml file')
   args = parser.parse_args()
 
