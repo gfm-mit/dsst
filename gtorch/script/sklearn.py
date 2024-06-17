@@ -10,7 +10,8 @@ import gtorch.datasets.linear_box
 import gtorch.datasets.linear_patient
 import gtorch.datasets.synthetic
 import util.excepthook
-from plot.palette import draw_3_legends, get_3_axes, plot_3_types
+import plot.metrics
+import gtorch.metrics.calibration
 
 
 def main(train_loader, val_loader, test_loader, axs=None, random_state=None, solver=None, combine_fn=None):
@@ -35,9 +36,8 @@ def main(train_loader, val_loader, test_loader, axs=None, random_state=None, sol
   if combine_fn is not None:
     logits, targets = combine_fn(logits, targets, g)
 
-  axs = get_3_axes() if axs is None else axs
-  line1 = plot_3_types(logits, targets, axs)
-  return axs, line1
+  roc = gtorch.metrics.calibration.get_full_roc_table(logits, targets)
+  axs = plot.metrics.plot_palette(roc, axs)
 
 def measure_conditioning(x, y, model):
     print("cond", np.linalg.cond(x @ x.T))
@@ -74,6 +74,7 @@ if __name__ == "__main__":
   lines = []
   sys.excepthook = util.excepthook.custom_excepthook
   train_loader, val_loader, test_loader = gtorch.datasets.linear_box.get_loaders()
-  axs, line1 = main(train_loader, val_loader, test_loader, axs=axs, random_state=42, solver=args.solver, combine_fn=gtorch.datasets.linear_box.combiner)
-  lines += [line1]
-  draw_3_legends(axs, lines)
+  main(train_loader, val_loader, test_loader, axs=axs, random_state=42, solver=args.solver, combine_fn=gtorch.datasets.linear_box.combiner)
+  plt.suptitle("linear_box.combiner")
+  plt.tight_layout()
+  plt.show()
