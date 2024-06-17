@@ -78,8 +78,8 @@ class Experiment:
   def get_lr_params(self, params=None):
     return dict(
         schedule="ramp",
-        min_lr=1e-8,
-        max_lr=1e+8,
+        min_lr=1e-5,
+        max_lr=1e1,
         max_epochs=50,
     ) | self.args.config | (params or {})
 

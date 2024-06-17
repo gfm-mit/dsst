@@ -2,12 +2,13 @@ import torch
 import numpy as np
 
 class LogRampScheduler():
-  def __init__(self, optimizer, min_lr=1e-4, max_lr=1e4, epochs=30):
+  def __init__(self, optimizer, min_lr=None, max_lr=None, epochs=None):
     super(LogRampScheduler, self).__init__()
     self.lrs = np.geomspace(min_lr, max_lr, epochs)
     self.optimizer = optimizer
     self.momenta = []
     for pg in optimizer.param_groups:
+      pg["lr"] = self.lrs[0]
       self.momenta += [self.get_group_momentum(pg)]
       self.set_group_momentum(pg, 0.01)
     self.step_count = 0
@@ -82,8 +83,8 @@ def get_scheduler(params, model, optimizer):
   elif "schedule" in params and params["schedule"] == "ramp":
     scheduler = LogRampScheduler(
         optimizer,
-        min_lr=params["min_lr"],
-        max_lr=params["max_lr"],
+        min_lr=params.get("min_lr", None),
+        max_lr=params.get("max_lr", None),
         epochs=int(params["max_epochs"]))
   else:
     assert "schedule" not in params or params["schedule"] is None or params["schedule"] == "none", params["schedule"]
