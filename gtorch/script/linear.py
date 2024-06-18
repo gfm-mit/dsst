@@ -123,16 +123,17 @@ if __name__ == "__main__":
       if args.compare:
         setups = args.config
       else:
-        setups = {"base": {}}
+        setups = {"base": args.config["base"] if "base" in args.config else {}}
+      plt.ion()
       for k, v in setups.items():
         metric, epoch_loss_history = experiment.train(**v)
         if args.history != "none":
           axs = plot.tune.plot_epoch_loss_history(args, epoch_loss_history, axs=axs, label=k)
         elif args.task in 'classify classify_patient'.split():
           axs = experiment.plot_trained(axs, label=k)
-
-      if axs is not None:
-        suptitle = "Aggregated at the Box Level, not Patient" if args.task == "classify" else "Aggregated at Patient Level, not Box"
-        plt.suptitle(suptitle)
-        plt.tight_layout()
-        plt.show()
+        plt.pause(0.1)
+      plt.ioff()
+      suptitle = "Aggregated at the Box Level, not Patient" if args.task == "classify" else "Aggregated at Patient Level, not Box"
+      plt.suptitle(suptitle)
+      plt.tight_layout()
+      plt.show()
