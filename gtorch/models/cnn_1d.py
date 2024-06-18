@@ -14,7 +14,7 @@ class Cnn(gtorch.models.base.Base):
     self.device = device
     super().__init__()
 
-  def get_classifier_architecture(self, hidden_width='unused'):
+  def get_classifier_architecture(self):
     model = torch.nn.Sequential(
         # b n c
         Rearrange('b n c -> b c n'),
@@ -58,7 +58,6 @@ class Cnn(gtorch.models.base.Base):
       min_epochs=0,
 
       learning_rate=1e-1, # stupid edge of stability!!
-      hidden_width=2,
     )
 
   def get_tuning_ranges(self):

@@ -31,7 +31,7 @@ class Rnn(gtorch.models.base.SequenceBase):
       num_layers=2,
       batch_first=True)
 
-  def get_next_token_architecture(self, hidden_width='unused'):
+  def get_next_token_architecture(self):
     model = torch.nn.Sequential(
         # b n c
         self.get_lstm(),
@@ -40,7 +40,7 @@ class Rnn(gtorch.models.base.SequenceBase):
     model = model.to(self.device)
     return model
 
-  def get_classifier_architecture(self, hidden_width='unused'):
+  def get_classifier_architecture(self):
     model = torch.nn.Sequential(
         # b n c
         self.get_lstm(),
@@ -80,7 +80,6 @@ class Rnn(gtorch.models.base.SequenceBase):
       min_epochs=0,
 
       learning_rate=1e-1,
-      hidden_width=2,
     )
 
   def get_tuning_ranges(self):

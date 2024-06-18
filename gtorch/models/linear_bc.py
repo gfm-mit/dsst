@@ -14,7 +14,7 @@ class Linear(gtorch.models.base.Base):
     self.device = device
     super().__init__()
 
-  def get_classifier_architecture(self, hidden_width='unused'):
+  def get_classifier_architecture(self):
     if self.classes == 1:
       model = torch.nn.Sequential(
           Rearrange('b c 1 -> b c'),
@@ -45,7 +45,6 @@ class Linear(gtorch.models.base.Base):
       min_epochs=0,
 
       learning_rate=3e-1, # stupid edge of stability!!
-      hidden_width=2,
     )
 
   def get_tuning_ranges(self):

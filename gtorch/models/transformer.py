@@ -46,7 +46,7 @@ class Transformer(gtorch.models.base.SequenceBase):
     self.device = device
     super().__init__()
 
-  def get_next_token_architecture(self, hidden_width='unused'):
+  def get_next_token_architecture(self):
     model = torch.nn.Sequential(
         # b n c
         Decoder(n_features=12, causal=True),
@@ -54,7 +54,7 @@ class Transformer(gtorch.models.base.SequenceBase):
     model = model.to(self.device)
     return model
 
-  def get_classifier_architecture(self, hidden_width='unused'):
+  def get_classifier_architecture(self):
     model = torch.nn.Sequential(
         # b n c
         Decoder(n_features=12, causal=True), # TODO: try False
@@ -88,7 +88,6 @@ class Transformer(gtorch.models.base.SequenceBase):
       min_epochs=0,
 
       learning_rate=1e-2, # stupid edge of stability!!
-      hidden_width=2,
     )
 
   def get_tuning_ranges(self):
