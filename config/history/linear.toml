@@ -5,7 +5,7 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  pct_start=0.0
+  warmup_steps=0
   max_epochs=20
   min_epochs=3
   learning_rate=3e-1
@@ -17,7 +17,7 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  pct_start=0.0
+  warmup_steps=0
   max_epochs=20
   min_epochs=3
   learning_rate=3e-1
@@ -29,7 +29,7 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  pct_start=0.0
+  warmup_steps=0
   max_epochs=20
   min_epochs=3
   learning_rate=3e-1
@@ -41,7 +41,7 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  pct_start=0.0
+  warmup_steps=0
   max_epochs=20
   min_epochs=3
   learning_rate=3e-1
@@ -52,7 +52,7 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  pct_start=0.0
+  warmup_steps=0
   max_epochs=20
   min_epochs=3
   learning_rate=3e-1
@@ -64,7 +64,7 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  pct_start=0.0
+  warmup_steps=0
   max_epochs=20
   min_epochs=3
   learning_rate=1
@@ -76,7 +76,7 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  pct_start=0.0
+  warmup_steps=0
   max_epochs=20
   min_epochs=3
   learning_rate=3e-2
@@ -88,7 +88,7 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  pct_start=0.0
+  warmup_steps=0
   max_epochs=20
   min_epochs=3
   learning_rate=3e-2
@@ -100,7 +100,7 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  pct_start=0.0
+  warmup_steps=0
   max_epochs=20
   min_epochs=3
   learning_rate=3e-2
@@ -112,7 +112,7 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  pct_start=0.0
+  warmup_steps=0
   max_epochs=20
   min_epochs=3
   learning_rate=1

@@ -5,7 +5,7 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  pct_start=0.0
+  warmup_steps=5
   max_epochs=80
   min_epochs=3
   learning_rate=3e-1
@@ -17,7 +17,7 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  pct_start=0.0
+  warmup_steps=5
   max_epochs=80
   min_epochs=3
   learning_rate=3e-1
@@ -29,10 +29,22 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  pct_start=0.0
+  warmup_steps=5
   max_epochs=80
   min_epochs=3
   learning_rate=3e-1
+
+[samsgd]
+  # scary good.  crosses .85 on validation after 800 steps
+  scheduler='none'
+  optimizer='samsgd'
+  weight_decay=0
+  momentum=0.9
+  conditioning_smoother=0.999
+  warmup_steps=5
+  max_epochs=80
+  min_epochs=3
+  learning_rate=2e-1
 
 [adam]
   # not helpful for convex
@@ -41,7 +53,7 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  pct_start=0.0
+  warmup_steps=5
   max_epochs=80
   min_epochs=3
   learning_rate=3e-1
@@ -52,7 +64,7 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  pct_start=0.0
+  warmup_steps=5
   max_epochs=80
   min_epochs=3
   learning_rate=3e-1
@@ -64,34 +76,10 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  pct_start=0.0
+  warmup_steps=5
   max_epochs=80
   min_epochs=3
-  learning_rate=1
-
-[lion]
-  # terrible performance
-  scheduler='none'
-  optimizer='lion'
-  weight_decay=0
-  momentum=0.9
-  conditioning_smoother=0.999
-  pct_start=0.0
-  max_epochs=80
-  min_epochs=3
-  learning_rate=3e-2
-
-[samsgd]
-  # useless on convex problem, apparently
-  scheduler='none'
-  optimizer='samsgd'
-  weight_decay=0
-  momentum=0.9
-  conditioning_smoother=0.999
-  pct_start=0.0
-  max_epochs=80
-  min_epochs=3
-  learning_rate=3e-2
+  learning_rate=3e-1
 
 [samadam]
   # useless on convex problem, apparently
@@ -100,10 +88,22 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  pct_start=0.0
+  warmup_steps=5
   max_epochs=80
   min_epochs=3
-  learning_rate=3e-2
+  learning_rate=2e-1
+
+[lion]
+  # terrible performance
+  scheduler='none'
+  optimizer='lion'
+  weight_decay=0
+  momentum=0.9
+  conditioning_smoother=0.999
+  warmup_steps=5
+  max_epochs=80
+  min_epochs=3
+  learning_rate=2e-1
 
 [prodigy]
   # nothing special, but nice not to have to tune learning rate
@@ -112,7 +112,7 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  pct_start=0.0
+  warmup_steps=5
   max_epochs=80
   min_epochs=3
   learning_rate=1
