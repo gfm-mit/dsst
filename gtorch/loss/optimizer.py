@@ -50,6 +50,13 @@ def get_optimizer(params, model):
                                                         params["conditioning_smoother"],
                                                     ],
                                                     weight_decay=params["weight_decay"])
+  elif "optimizer" in params and params["optimizer"] == "asamsgd":
+    optimizer = pytorch_optimizer.SAM(model.parameters(),
+                                      base_optimizer=torch.optim.SGD,
+                                      adaptive=True,
+                                      lr=params["learning_rate"],
+                                      momentum=params["momentum"],
+                                      weight_decay=params["weight_decay"])
   elif "optimizer" in params and params["optimizer"] == "samsgd":
     optimizer = pytorch_optimizer.SAM(model.parameters(),
                                       base_optimizer=torch.optim.SGD,
