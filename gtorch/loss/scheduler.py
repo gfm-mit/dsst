@@ -1,4 +1,6 @@
+import pytorch_optimizer.lr_scheduler
 import torch
+import pytorch_optimizer
 import numpy as np
 
 class LogRampScheduler():
@@ -80,6 +82,12 @@ def get_scheduler(params, model, optimizer):
         steps_per_epoch=1,
         pct_start=params["pct_start"],
         epochs=int(params["max_epochs"]))
+  elif "schedule" in params and params["schedule"] == "cosine":
+    scheduler = pytorch_optimizer.lr_scheduler.CosineScheduler(
+        optimizer,
+        max_lr=params["learning_rate"],
+        warmup_steps=int(params["pct_start"] * params["max_epochs"]),
+        t_max=int(params["max_epochs"]))
   elif "schedule" in params and params["schedule"] == "ramp":
     scheduler = LogRampScheduler(
         optimizer,
