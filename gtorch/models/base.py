@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 
 
 class Base(ABC):
-  def __init__(self, device='cpu'):
+  def __init__(self, device=None):
+    assert device is not None
     self.device = device
 
   @abstractmethod

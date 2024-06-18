@@ -43,8 +43,7 @@ class Transformer(gtorch.models.base.SequenceBase):
     self.classes = n_classes
     self.features = n_features
     self.layers = n_layers
-    self.device = device
-    super().__init__()
+    super().__init__(device=device)
 
   def get_next_token_architecture(self):
     model = torch.nn.Sequential(

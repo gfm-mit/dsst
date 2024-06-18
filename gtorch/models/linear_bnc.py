@@ -11,8 +11,7 @@ class Linear(gtorch.models.base.Base):
   def __init__(self, n_features=12, n_classes=2, device='cpu'):
     self.classes = n_classes
     self.features = n_features
-    self.device = device
-    super().__init__()
+    super().__init__(device=device)
 
   def get_classifier_architecture(self):
     model = torch.nn.Sequential(
