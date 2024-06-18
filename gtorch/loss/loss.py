@@ -1,6 +1,5 @@
 import torch
 import numpy as np
-import pytorch_optimizer
 
 import gtorch.loss.loss_sam
 
