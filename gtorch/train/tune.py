@@ -1,3 +1,4 @@
+from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
@@ -39,3 +40,4 @@ def main(train_loader, val_loader, builder=None, base_params=None, task="classif
     plot.tune.plot_tuning_results(spaces.columns, results, task)
   else:
     plot.tune.plot_tuning_history(spaces.columns, results, ylabel=f"tune.args.{history=}")
+    plt.show()
