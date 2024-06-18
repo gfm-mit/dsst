@@ -20,10 +20,10 @@ def plot_tuning_history(keys, results, ylabel, axs=None):
     })
     plt.plot(row['history'], label=label)
   plt.legend()
-  plt.axhline(y=.725, color="gray", zorder=-10)
+  plt.axhline(y=.725, color="lightgray", linestyle=":", zorder=-10)
   plt.xlabel('epoch')
   plt.ylabel(ylabel)
-  y_min, y_max = .71, .725
+  y_min, y_max = .65, .85
   plt.ylim([y_min, y_max])
   return axs
 
