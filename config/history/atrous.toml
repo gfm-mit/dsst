@@ -3,43 +3,43 @@
   scheduler='none'
   optimizer='sgd'
   weight_decay=0
-  momentum=0.9
+  momentum=0.5
   conditioning_smoother=0.999
   warmup_steps=5
   max_epochs=80
   min_epochs=3
-  learning_rate=3e-1
+  learning_rate=2e-1
 
 [onecyclesgd]
   # better than sgd, but annoying
   scheduler='onecycle'
   optimizer='sgd'
   weight_decay=0
-  momentum=0.9
+  momentum=0.5
   conditioning_smoother=0.999
   warmup_steps=5
   max_epochs=80
   min_epochs=3
-  learning_rate=3e-1
+  learning_rate=2e-1
 
 [sfsgd]
-  # a little slower than hand-tuned one-cycle sgd, but nice
+  # not as good as sam, but nice not to depend on epoch count so much
   scheduler='none'
   optimizer='sfsgd'
   weight_decay=0
-  momentum=0.9
+  momentum=0.5
   conditioning_smoother=0.999
   warmup_steps=5
   max_epochs=80
   min_epochs=3
-  learning_rate=3e-1
+  learning_rate=2e-1
 
 [samsgd]
   # scary good.  crosses .85 on validation after 800 steps
   scheduler='none'
   optimizer='samsgd'
   weight_decay=0
-  momentum=0.9
+  momentum=0.5
   conditioning_smoother=0.999
   warmup_steps=5
   max_epochs=80
@@ -51,7 +51,7 @@
   scheduler='none'
   optimizer='adam'
   weight_decay=0
-  momentum=0.9
+  momentum=0.5
   conditioning_smoother=0.999
   warmup_steps=5
   max_epochs=80
@@ -62,7 +62,7 @@
   scheduler='onecycle'
   optimizer='adam'
   weight_decay=0
-  momentum=0.9
+  momentum=0.5
   conditioning_smoother=0.999
   warmup_steps=5
   max_epochs=80
@@ -74,7 +74,7 @@
   scheduler='none'
   optimizer='sfadam'
   weight_decay=0
-  momentum=0.9
+  momentum=0.5
   conditioning_smoother=0.999
   warmup_steps=5
   max_epochs=80
@@ -86,7 +86,7 @@
   scheduler='none'
   optimizer='samadam'
   weight_decay=0
-  momentum=0.9
+  momentum=0.5
   conditioning_smoother=0.999
   warmup_steps=5
   max_epochs=80
@@ -98,7 +98,7 @@
   scheduler='none'
   optimizer='lion'
   weight_decay=0
-  momentum=0.9
+  momentum=0.5
   conditioning_smoother=0.999
   warmup_steps=5
   max_epochs=80
@@ -110,7 +110,7 @@
   scheduler='none'
   optimizer='prodigy'
   weight_decay=0
-  momentum=0.9
+  momentum=0.5
   conditioning_smoother=0.999
   warmup_steps=5
   max_epochs=80
