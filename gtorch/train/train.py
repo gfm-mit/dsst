@@ -70,7 +70,7 @@ def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=N
 
   torch.cuda.empty_cache()
   model, epoch_loss_history = one_training_run(model, optimizer, scheduler,
-                                   min_epochs=params["min_epochs"],
+                                   min_epochs=params.get("min_epochs", params.get("warmup_steps", 0)),
                                    max_epochs=params["max_epochs"],
                                    train_loader=train_loader,
                                    task=task,
