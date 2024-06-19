@@ -6,7 +6,7 @@
   momentum=0.5
   conditioning_smoother=0.999
   warmup_steps=5
-  max_epochs=80
+  max_epochs=800
   min_epochs=3
   learning_rate=2e-1
 
@@ -18,19 +18,19 @@
   momentum=0.5
   conditioning_smoother=0.999
   warmup_steps=5
-  max_epochs=80
+  max_epochs=800
   min_epochs=3
   learning_rate=2e-1
 
 [sfsgd]
-  # not as good as sam, but nice not to depend on epoch count so much
+  # gives out around step 300
   scheduler='none'
   optimizer='sfsgd'
   weight_decay=0
   momentum=0.5
   conditioning_smoother=0.999
   warmup_steps=5
-  max_epochs=80
+  max_epochs=800
   min_epochs=3
   learning_rate=2e-1
 
@@ -42,7 +42,7 @@
   momentum=0.5
   conditioning_smoother=0.999
   warmup_steps=5
-  max_epochs=80
+  max_epochs=800
   min_epochs=3
   learning_rate=2e-1
 
@@ -51,35 +51,35 @@
   scheduler='none'
   optimizer='adam'
   weight_decay=0
-  momentum=0.5
+  momentum=0.9
   conditioning_smoother=0.999
   warmup_steps=5
-  max_epochs=80
+  max_epochs=800
   min_epochs=3
-  learning_rate=3e-1
+  learning_rate=1e-2
 
 [onecycleadam]
   scheduler='onecycle'
   optimizer='adam'
   weight_decay=0
-  momentum=0.5
+  momentum=0.9
   conditioning_smoother=0.999
   warmup_steps=5
-  max_epochs=80
+  max_epochs=800
   min_epochs=3
-  learning_rate=3e-1
+  learning_rate=1e-2
 
 [sfadam]
-  # adam not so great on convex
+  # gives out around step 300
   scheduler='none'
   optimizer='sfadam'
   weight_decay=0
   momentum=0.5
   conditioning_smoother=0.999
   warmup_steps=5
-  max_epochs=80
+  max_epochs=800
   min_epochs=3
-  learning_rate=3e-1
+  learning_rate=1e-2
 
 [samadam]
   # useless on convex problem, apparently
@@ -89,9 +89,9 @@
   momentum=0.5
   conditioning_smoother=0.999
   warmup_steps=5
-  max_epochs=80
+  max_epochs=800
   min_epochs=3
-  learning_rate=2e-1
+  learning_rate=1e-2
 
 [lion]
   # terrible performance
@@ -101,18 +101,18 @@
   momentum=0.5
   conditioning_smoother=0.999
   warmup_steps=5
-  max_epochs=80
+  max_epochs=800
   min_epochs=3
-  learning_rate=2e-1
+  learning_rate=1e-2
 
 [prodigy]
-  # nothing special, but nice not to have to tune learning rate
+  # gives out around step 300, like "sf" versions
   scheduler='none'
   optimizer='prodigy'
   weight_decay=0
   momentum=0.5
   conditioning_smoother=0.999
   warmup_steps=5
-  max_epochs=80
+  max_epochs=800
   min_epochs=3
   learning_rate=1
