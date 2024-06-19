@@ -7,7 +7,7 @@ from gtorch.models.util import NoopAttention
 
 
 class Decoder(torch.nn.Module):
-  def __init__(self, n_features, causal=False):
+  def __init__(self, n_features, device=None, causal=False):
       super(Decoder, self).__init__()
       decoder_layer = torch.nn.TransformerDecoderLayer(
         d_model=12,
@@ -24,13 +24,14 @@ class Decoder(torch.nn.Module):
       decoder_layer.multihead_attn = NoopAttention() # this is used on the memory
       self.decoder = torch.nn.TransformerDecoder(decoder_layer=decoder_layer, num_layers=2)
       self.causal = causal
+      self.device = device
 
   def forward(self, input):
     mask = None
     if self.causal:
       seq_len = input.shape[1]
       # tgt, src
-      mask = torch.Tensor(np.tril(np.ones((seq_len, seq_len)), k=-1).astype(bool))
+      mask = torch.Tensor(np.tril(np.ones((seq_len, seq_len)), k=-1).astype(bool)).to(self.device)
     return self.decoder(input, memory=None, tgt_mask=mask)
 
 class GetClassifierOutputs(torch.nn.Module):
@@ -48,7 +49,7 @@ class Transformer(gtorch.models.base.SequenceBase):
   def get_next_token_architecture(self):
     model = torch.nn.Sequential(
         # b n c
-        Decoder(n_features=12, causal=True),
+        Decoder(n_features=12, device=self.device, causal=True),
     )
     model = model.to(self.device)
     return model
@@ -56,7 +57,7 @@ class Transformer(gtorch.models.base.SequenceBase):
   def get_classifier_architecture(self):
     model = torch.nn.Sequential(
         # b n c
-        Decoder(n_features=12, causal=True), # TODO: try False
+        Decoder(n_features=12, device=self.device, causal=True), # TODO: try False
         GetClassifierOutputs(),
         torch.nn.BatchNorm1d(num_features=self.features),
         torch.nn.Linear(self.features, self.classes),
@@ -79,14 +80,14 @@ class Transformer(gtorch.models.base.SequenceBase):
       scheduler='none',
       optimizer='prodigy',
       weight_decay=0,
-      momentum=1 - 1e-3,
-      conditioning_smoother=1 - 3e-2,
-      pct_start=0.0,
+      momentum=.9,
+      conditioning_smoother=.999,
+      warmup_steps=5,
 
-      max_epochs=10,
+      max_epochs=100,
       min_epochs=0,
 
-      learning_rate=1e-2, # stupid edge of stability!!
+      learning_rate=1, # stupid edge of stability!!
     )
 
   def get_tuning_ranges(self):
