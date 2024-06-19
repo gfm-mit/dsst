@@ -32,7 +32,7 @@ def main(train_loader, val_loader, builder=None, base_params=None, task="classif
     case_label = spaces.loc[i].to_dict()
     metric, epoch_loss_history, model = gtorch.train.train.setup_training_run(
       params, model_factory_fn=builder, train_loader=train_loader, val_loader=val_loader,
-      task=task, disk=disk, tqdm_prefix=f"Tuning Case {i} {case_label}", history=history)
+      task=task, disk=disk, tqdm_prefix=f"Tuning[{i}]={case_label}", history=history)
     results += [dict(**params, metric=metric, history=epoch_loss_history)]
   results = pd.DataFrame(results)
   if history == "none":

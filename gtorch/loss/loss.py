@@ -9,14 +9,14 @@ def get_task_loss(epoch, model, optimizer, train_loader, task):
       loss = gtorch.loss.loss_sam.next_token(epoch, model, optimizer, train_loader)
     else:
       loss = next_token(epoch, model, optimizer, train_loader)
-    description = 'Train Epoch: {} \tLast Batch RMSE: {:.2f}'.format(epoch, np.sqrt(loss))
+    description = 'Last Batch MSE[{}]={:.2f}'.format(epoch, np.sqrt(loss))
     return loss, description
   else:
     if optimizer.__module__ == "pytorch_optimizer.optimizer.sam":
       loss = gtorch.loss.loss_sam.classify(epoch, model, optimizer, train_loader)
     else:
       loss = classify(epoch, model, optimizer, train_loader)
-    description = 'Train Epoch: {} \tLast Batch Perplexity: {:.2f}'.format(epoch, np.exp(loss))
+    description = 'Last Batch Perplexity[{}]={:.2f}'.format(epoch, np.exp(loss))
     return loss, description
 
 def balance_class_weights(target):

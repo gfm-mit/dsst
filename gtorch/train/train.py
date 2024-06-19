@@ -33,7 +33,7 @@ def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_
       return model, epoch_loss_history
     loss_upper_bound = 1.5 * train_loss
     torch.cuda.empty_cache()
-    progress.set_description(tqdm_prefix + loss_description)
+    progress.set_postfix_str(" " + loss_description)
     if loss_history_loader is not None:
       val_loss = gtorch.metrics.metrics.evaluate(model, loss_history_loader, task)
       epoch_loss_history += [val_loss]
