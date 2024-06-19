@@ -15,6 +15,7 @@ def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="
   new_params = dict(**params)
   losses = []
   conds = []
+  assert new_params['optimizer'] != 'prodigy'  # prodigy LR is weird
   optimizer, scheduler = get_optimizer_and_scheduler(new_params, model)
   assert isinstance(scheduler, gtorch.loss.scheduler.LogRampScheduler)
   last_grads = None
