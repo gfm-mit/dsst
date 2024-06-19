@@ -44,14 +44,15 @@ class Cnn(gtorch.models.base.Base):
 
   def get_parameters(self, **kwargs):
     return dict(
-      scheduler='onecycle',
+      scheduler='none',
+      optimizer='samadam',
       weight_decay=0,
-      momentum=0,
-      conditioning_smoother=0.9,
-      pct_start=0.0,
+      momentum=0.5,
+      conditioning_smoother=0.999,
+      warmup_steps=5,
 
-      max_epochs=10,
+      max_epochs=400, # maybe 1200, actually
       min_epochs=0,
 
-      learning_rate=1e-1, # stupid edge of stability!!
+      learning_rate=1e-2, # stupid edge of stability!!
     )
