@@ -75,6 +75,7 @@ class FakeOptimizer():
 
 
 def get_scheduler(params, model, optimizer):
+  assert "scheduler" not in params
   if "schedule" in params and params["schedule"] == "onecycle":
     # damned thing uses cosine decay, anyway
     scheduler = torch.optim.lr_scheduler.OneCycleLR(
@@ -84,7 +85,7 @@ def get_scheduler(params, model, optimizer):
         pct_start=params["pct_start"] if "pct_start" in params else float(params["warmup_steps"]) / params["max_epochs"],
         epochs=int(params["max_epochs"]))
   elif "schedule" in params and params["schedule"] == "cosine":
-    scheduler = pytorch_optimizer.lr_scheduler.CosineScheduler(
+    scheduler = pytorch_optimizer.lr_scheduler.linear_warmup.CosineScheduler(
         optimizer,
         max_lr=params["learning_rate"],
         warmup_steps=int(params["pct_start"] * params["max_epochs"]) if "pct_start" in params else params["warmup_steps"],
