@@ -22,7 +22,7 @@ def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="
   for e, batch in zip(progress, itertools.cycle(train_loader)):
     losses += [gtorch.loss.loss.get_task_loss(0, model, optimizer, [batch], task)[0]]
     scheduler.step()
-    grads = np.concatenate([t.detach().numpy().flatten() for t in model.parameters()])
+    grads = np.concatenate([t.detach().cpu().numpy().flatten() for t in model.parameters()])
     if last_grads is not None:
       plus = grads + last_grads
       plus /= np.linalg.norm(plus)
