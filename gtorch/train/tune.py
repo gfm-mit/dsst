@@ -23,7 +23,11 @@ def postprocess_tuning_ranges(tuning_ranges):
   for k in tuning_ranges.keys():
     if isinstance(tuning_ranges[k], dict):
       assert tuning_ranges[k].keys() == set("low high steps".split())
-      tuning_ranges[k] = list(np.geomspace(tuning_ranges[k]["low"], tuning_ranges[k]["high"], tuning_ranges[k]["steps"]))
+      tuning_ranges[k] = np.geomspace(
+        tuning_ranges[k]["low"],
+        tuning_ranges[k]["high"],
+        tuning_ranges[k]["steps"]
+        ).tolist()
     else:
       assert isinstance(tuning_ranges[k], list)
   return tuning_ranges
