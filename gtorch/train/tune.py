@@ -19,11 +19,21 @@ def get_spaces(**kwargs):
     spaces[col] = np.random.permutation(spaces[col].values)
   return spaces
 
-def main(train_loader, val_loader, builder=None, base_params=None, task="classify", disk="none", history="none"):
+def postprocess_tuning_ranges(tuning_ranges):
+  for k in tuning_ranges.keys():
+    assert isinstance(tuning_ranges[k], list)
+  return tuning_ranges
+
+def main(train_loader, val_loader, builder=None, base_params=None, task="classify", disk="none", history="none", tuning_ranges=None):
   torch.manual_seed(42)
   assert isinstance(builder, gtorch.models.base.Base)
-  assert builder.get_tuning_ranges(), "no parameters to tune"
-  spaces = get_spaces(**builder.get_tuning_ranges())
+  print(f"{tuning_ranges=}")
+  if tuning_ranges is None:
+    tuning_ranges = builder.get_tuning_ranges()
+  else:
+    tuning_ranges = postprocess_tuning_ranges(tuning_ranges)
+  assert tuning_ranges
+  spaces = get_spaces(**tuning_ranges)
   results = []
   for i in spaces.index:
     params = dict(**base_params)
@@ -32,7 +42,7 @@ def main(train_loader, val_loader, builder=None, base_params=None, task="classif
     case_label = spaces.loc[i].to_dict()
     metric, epoch_loss_history, model = gtorch.train.train.setup_training_run(
       params, model_factory_fn=builder, train_loader=train_loader, val_loader=val_loader,
-      task=task, disk=disk, tqdm_prefix=f"Tuning[{i}]={case_label}", history=history)
+      task=task, disk=disk, tqdm_prefix=f"Tuning[{i+1}/{spaces.shape[0]}]={case_label}", history=history)
     results += [dict(**params, metric=metric, history=epoch_loss_history)]
   results = pd.DataFrame(results)
   if history == "none":

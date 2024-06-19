@@ -33,16 +33,18 @@ class Experiment:
     if self.args.log != "":
       self.log_training(
         params=base_params,
-        metric=metric)
+        metric=metric,
+        epoch_loss_history=epoch_loss_history)
     return metric, epoch_loss_history
 
-  def log_training(self, params, metric):
+  def log_training(self, params, metric, epoch_loss_history):
     with open(self.args.log, "w") as f:
       json.dump(dict(
         args=vars(self.args),
         model_class=self.model_class.__name__,
         params=params,
         metric=metric,
+        epoch_loss_history=epoch_loss_history,
       ), f, indent=2)
 
   def plot_trained(self, axs, label=None):
@@ -62,7 +64,8 @@ class Experiment:
     gtorch.train.tune.main(
       self.train_loader, self.val_loader,
       builder=builder, base_params=base_params,
-      task=self.args.task, disk=self.args.disk, history=self.args.history)
+      task=self.args.task, disk=self.args.disk, history=self.args.history,
+      tuning_ranges=self.args.tune)
 
   def find_lr(self, axs=None, params=None, label=None):
     builder = self.model_class(n_classes=2, device=self.args.device)
@@ -80,10 +83,10 @@ class Experiment:
   def get_lr_params(self, params=None):
     return dict(
         scheduler="ramp",
-        min_lr=1e-1,
-        max_lr=1e+0,
-        max_epochs=200,
-    ) | self.args.config | (params or {})
+        min_lr=1e-5,
+        max_lr=1,
+        max_epochs=50,
+    ) | self.args.find_lr | (params or {})
 
   def find_momentum(self, momentum, params=None):
     assert momentum is not None
