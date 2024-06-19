@@ -22,7 +22,6 @@ class Experiment:
   def train(self, **kwargs):
     #torch.manual_seed(42)
     builder = self.model_class(n_classes=2, device=self.args.device)
-    print(f"{self.args.device=} {builder.device=} {builder=}")
     base_params = builder.get_parameters(task=self.args.task) | self.args.config | kwargs
     metric, epoch_loss_history, self.model = gtorch.train.train.setup_training_run(
         base_params, model_factory_fn=builder,
