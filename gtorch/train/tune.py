@@ -21,7 +21,11 @@ def get_spaces(**kwargs):
 
 def postprocess_tuning_ranges(tuning_ranges):
   for k in tuning_ranges.keys():
-    assert isinstance(tuning_ranges[k], list)
+    if isinstance(tuning_ranges[k], dict):
+      assert tuning_ranges[k].keys() == set("low high steps".split())
+      tuning_ranges[k] = list(np.geomspace(tuning_ranges[k]["low"], tuning_ranges[k]["high"], tuning_ranges[k]["steps"]))
+    else:
+      assert isinstance(tuning_ranges[k], list)
   return tuning_ranges
 
 def main(train_loader, val_loader, builder=None, base_params=None, task="classify", disk="none", history="none", tuning_ranges=None):
