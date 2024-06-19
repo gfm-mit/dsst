@@ -78,26 +78,26 @@ class Transformer(gtorch.models.base.SequenceBase):
   def get_classifier_parameters(self, **kwargs):
     return dict(
       scheduler='none',
-      optimizer='prodigy',
+      optimizer='samadam',
       weight_decay=0,
       momentum=.9,
       conditioning_smoother=.999,
       warmup_steps=5,
 
-      max_epochs=100,
-      min_epochs=0,
+      max_epochs=20,
+      min_epochs=5,
 
-      learning_rate=1, # stupid edge of stability!!
+      learning_rate=1.3e-1, # stupid edge of stability!!
     )
 
   def get_tuning_ranges(self):
     return dict(
         #nonce=np.arange(5),
-        learning_rate=np.geomspace(1e-3, 1e1, 10),
+        learning_rate=np.geomspace(7e-2, 5e-1, 10),
         #weight_decay=np.geomspace(1e-8, 1e-4, 15),
         #pct_start=np.geomspace(0.01, .95, 15),
         #max_epochs=np.geomspace(5, 100, 15).astype(int),
-        #momentum=1-np.geomspace(.1, 1e-5, 15),
+        #momentum=[0, 0.5, 0.9, 0.999],
         #conditioning_smoother=1-np.geomspace(.5, .0001, 15),
     )
 
