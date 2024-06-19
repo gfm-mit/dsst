@@ -14,10 +14,7 @@ from gtorch.loss.optimizer import get_optimizer_and_scheduler
 Path('./results').mkdir(parents=True, exist_ok=True)
 def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_loader, task=None, tqdm_prefix=None, loss_history_loader=None):
   loss_upper_bound = 8 # only for the first step
-  start_time = time.time()
-  if tqdm_prefix is None:
-    tqdm_prefix = ""
-  progress = tqdm(range(max_epochs), desc=tqdm_prefix)
+  progress = tqdm(range(max_epochs), desc=tqdm_prefix or "")
   epoch_loss_history = []
   for epoch in progress:
     state_dict = dict(**model.state_dict())
@@ -39,7 +36,6 @@ def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_
       epoch_loss_history += [val_loss]
     else:
       epoch_loss_history += [train_loss]
-  print("Train time per epoch", np.round((time.time() - start_time) / (epoch + 1), 2))
   return model, epoch_loss_history
 
 def setup_model(params, model_factory_fn, task="classify", disk="none"):
