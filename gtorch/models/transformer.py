@@ -34,9 +34,20 @@ class Decoder(torch.nn.Module):
     return self.decoder(input, memory=None, tgt_mask=mask)
 
 class GetClassifierOutputs(torch.nn.Module):
+  def __init__(self, kind=None):
+    self.kind = kind
+    assert self.kind in "max mean last".split()
+    super(GetClassifierOutputs, self).__init__()
+
   def forward(self, input):
-    return torch.amax(input, dim=1)
-    return input[:, -1, :]
+    if self.kind == "max":
+      return torch.amax(input, dim=1)
+    elif self.kind == "mean":
+      nonzeros = torch.sum(torch.amax(input != 0, dim=2, keepdim=True), dim=1)
+      return torch.sum(input, dim=1) / nonzeros
+    elif self.kind == "last":
+      return input[:, -1, :]
+    assert False
 
 class Transformer(gtorch.models.base.SequenceBase):
   def __init__(self, n_layers=2, n_features=12, n_classes=2, device='cpu'):
@@ -53,11 +64,11 @@ class Transformer(gtorch.models.base.SequenceBase):
     model = model.to(self.device)
     return model
 
-  def get_classifier_architecture(self):
+  def get_classifier_architecture(self, agg_kind=None):
     model = torch.nn.Sequential(
         # b n c
         Decoder(n_features=12, device=self.device, causal=True), # TODO: try False
-        GetClassifierOutputs(),
+        GetClassifierOutputs(kind=agg_kind),
         torch.nn.BatchNorm1d(num_features=self.features),
         torch.nn.Linear(self.features, self.classes),
         torch.nn.LogSoftmax(dim=-1),
@@ -82,8 +93,9 @@ class Transformer(gtorch.models.base.SequenceBase):
       momentum=.9,
       conditioning_smoother=.999,
       warmup_steps=5,
+      agg_kind="mean",
 
-      max_epochs=20,
+      max_epochs=5,
       min_epochs=5,
 
       learning_rate=1.3e-1, # stupid edge of stability!!
