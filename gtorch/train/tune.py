@@ -27,7 +27,7 @@ def postprocess_tuning_ranges(tuning_ranges):
         tuning_ranges[k]["low"],
         tuning_ranges[k]["high"],
         tuning_ranges[k]["steps"]
-        ).tolist()
+      ).tolist()
     else:
       assert isinstance(tuning_ranges[k], list)
   return tuning_ranges
