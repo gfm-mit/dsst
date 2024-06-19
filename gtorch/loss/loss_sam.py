@@ -2,7 +2,7 @@ import torch
 
 import gtorch.models.bn_utils
 
-def classify(epoch, model, optimizer, train_loader):
+def classify(model, optimizer, train_loader):
   DEVICE = next(model.parameters()).device
   model.train()
   loader_has_batches = False
@@ -23,7 +23,7 @@ def classify(epoch, model, optimizer, train_loader):
   assert loader_has_batches
   return loss.item()
 
-def next_token(epoch, model, optimizer, train_loader):
+def next_token(model, optimizer, train_loader):
   DEVICE = next(model.parameters()).device
   model.train()
   loader_has_batches = False

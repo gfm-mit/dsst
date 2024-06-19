@@ -20,7 +20,7 @@ def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="
   last_grads = None
   progress = trange(new_params["max_epochs"])
   for e, batch in zip(progress, itertools.cycle(train_loader)):
-    losses += [gtorch.loss.loss.get_task_loss(0, model, optimizer, [batch], task)[0]]
+    losses += [gtorch.loss.loss.get_task_loss(model, optimizer, [batch], task)[0]]
     scheduler.step()
     grads = np.concatenate([t.detach().cpu().numpy().flatten() for t in model.parameters()])
     if last_grads is not None:

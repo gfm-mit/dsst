@@ -17,7 +17,7 @@ def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_
   epoch_loss_history = []
   for epoch in progress:
     state_dict = dict(**model.state_dict())
-    train_loss, loss_description = gtorch.loss.loss.get_task_loss(epoch, model, optimizer, train_loader, task=task)
+    train_loss, loss_description = gtorch.loss.loss.get_task_loss(model, optimizer, train_loader, task=task)
     scheduler.step()
     if train_loss > loss_upper_bound and epoch > min_epochs:
       print(f"next_loss too big: {train_loss} > {loss_upper_bound}")

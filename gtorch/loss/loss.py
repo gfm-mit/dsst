@@ -3,20 +3,20 @@ import numpy as np
 
 import gtorch.loss.loss_sam
 
-def get_task_loss(epoch, model, optimizer, train_loader, task):
+def get_task_loss(model, optimizer, train_loader, task):
   if task == "next_token":
     if optimizer.__module__ == "pytorch_optimizer.optimizer.sam":
-      loss = gtorch.loss.loss_sam.next_token(epoch, model, optimizer, train_loader)
+      loss = gtorch.loss.loss_sam.next_token(model, optimizer, train_loader)
     else:
-      loss = next_token(epoch, model, optimizer, train_loader)
-    description = 'Last Batch MSE[{}]={:.2f}'.format(epoch, np.sqrt(loss))
+      loss = next_token(model, optimizer, train_loader)
+    description = 'Last Batch MSE={:.2f}'.format(np.sqrt(loss))
     return loss, description
   else:
     if optimizer.__module__ == "pytorch_optimizer.optimizer.sam":
-      loss = gtorch.loss.loss_sam.classify(epoch, model, optimizer, train_loader)
+      loss = gtorch.loss.loss_sam.classify(model, optimizer, train_loader)
     else:
-      loss = classify(epoch, model, optimizer, train_loader)
-    description = 'Last Batch Perplexity[{}]={:.2f}'.format(epoch, np.exp(loss))
+      loss = classify(model, optimizer, train_loader)
+    description = 'Last Batch Perplexity={:.2f}'.format(np.exp(loss))
     return loss, description
 
 def balance_class_weights(target):
@@ -26,7 +26,7 @@ def balance_class_weights(target):
     w = w / w.sum()
     return w
 
-def classify(epoch, model, optimizer, train_loader):
+def classify(model, optimizer, train_loader):
   DEVICE = next(model.parameters()).device
   model.train()
   loader_has_batches = False
@@ -42,7 +42,7 @@ def classify(epoch, model, optimizer, train_loader):
   assert loader_has_batches
   return loss.item()
 
-def next_token(epoch, model, optimizer, train_loader):
+def next_token(model, optimizer, train_loader):
   DEVICE = next(model.parameters()).device
   model.train()
   loader_has_batches = False
