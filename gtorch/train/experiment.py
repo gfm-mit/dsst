@@ -35,13 +35,14 @@ class Experiment:
     return metric, epoch_loss_history
 
   def log_training(self, history, label):
+    log_content = dict(
+      args=vars(self.args),
+      model_class=self.model_class.__name__,
+      params=self.log_params,
+      epoch_loss_history=history,
+    )
     with open(self.args.log + "/{label}.json".format(label=label), "w") as f:
-      json.dump(dict(
-        args=vars(self.args),
-        model_class=self.model_class.__name__,
-        params=self.log_params,
-        epoch_loss_history=history,
-      ), f, indent=2)
+      json.dump(log_content, f, indent=2)
 
   def plot_trained(self, axs, label=None):
     assert self.model is not None
