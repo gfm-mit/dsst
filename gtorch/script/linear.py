@@ -141,9 +141,9 @@ if __name__ == "__main__":
         elif args.task in 'classify classify_patient'.split():
           axs = experiment.plot_trained(axs, label=k)
         plt.pause(0.1)
+      plt.ioff()
       if args.history != "none":
         plot.tune.set_ylim(np.concatenate(running_loss_history))
-      plt.ioff()
       suptitle = "Aggregated at the Box Level, not Patient" if args.task == "classify" else "Aggregated at Patient Level, not Box"
       plt.suptitle(suptitle)
       plt.tight_layout()
