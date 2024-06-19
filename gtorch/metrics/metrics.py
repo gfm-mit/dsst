@@ -9,7 +9,7 @@ def evaluate(model, val_loader, task):
   else:
     return binary_classifier_metrics(model, val_loader)
 
-def next_token_metrics(model, val_loader, verbose=True):
+def next_token_metrics(model, val_loader, verbose=False):
   DEVICE = next(model.parameters()).device
   results = []
   model.eval()
