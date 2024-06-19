@@ -41,17 +41,16 @@ def setup_model(params, model_factory_fn, task="classify", disk="none"):
   assert isinstance(model_factory_fn, gtorch.models.base.Base)
   assert task in "classify classify_patient next_token".split()
   assert disk in "none load save".split()
+  overlay_params = {
+    k: params[k]
+    for k in "".split()
+    # TODO: figure out where this needs to be controlled
+  }
   if task == "next_token":
     assert isinstance(model_factory_fn, gtorch.models.base.SequenceBase)
-    model = model_factory_fn.get_next_token_architecture(**{
-        k: params[k]
-        for k in "".split()
-    })
+    model = model_factory_fn.get_next_token_architecture(**overlay_params)
   else:
-    model = model_factory_fn.get_classifier_architecture(**{
-        k: params[k]
-        for k in "".split()
-    })
+    model = model_factory_fn.get_classifier_architecture(**overlay_params)
 
   if disk == "load":
     network_state_dict = torch.load('./results/model.pth')
