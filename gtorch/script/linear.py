@@ -36,7 +36,7 @@ class TomlAction(argparse.Action):
         assert "default" not in kwargs
         kwargs["default"] = {}
         super(TomlAction, self).__init__(**kwargs)
-            
+
     def __call__(self, parser, namespace, values, option_string=None):
       assert isinstance(values, str)
       with open(values, 'rb') as stream:
