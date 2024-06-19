@@ -31,20 +31,16 @@ class Experiment:
         disk=self.args.disk,
         history=self.args.history)
     if self.args.log != "":
-      self.log_training(
-        params=base_params,
-        metric=metric,
-        epoch_loss_history=epoch_loss_history)
+      self.log_params = base_params
     return metric, epoch_loss_history
 
-  def log_training(self, params, metric, epoch_loss_history):
-    with open(self.args.log, "w") as f:
+  def log_training(self, history, label):
+    with open(self.args.log + "/{label}.json".format(label=label), "w") as f:
       json.dump(dict(
         args=vars(self.args),
         model_class=self.model_class.__name__,
-        params=params,
-        metric=metric,
-        epoch_loss_history=epoch_loss_history,
+        params=self.log_params,
+        epoch_loss_history=history,
       ), f, indent=2)
 
   def plot_trained(self, axs, label=None):

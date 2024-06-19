@@ -47,11 +47,8 @@ class TomlAction(argparse.Action):
 
 class LogAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
-      if values == "":
-        return
       assert isinstance(values, str)
-      #assert not pathlib.Path(values).exists()
-      pathlib.Path(values).touch()
+      assert pathlib.Path(values).is_dir()
       setattr(namespace, self.dest, values)
 
 if __name__ == "__main__":
@@ -136,6 +133,8 @@ if __name__ == "__main__":
       running_loss_history = []
       for k, v in setups.items():
         metric, epoch_loss_history = experiment.train(**v)
+        if args.log != "":
+          experiment.log_training(epoch_loss_history, k)
         if args.history != "none":
           axs = plot.tune.plot_epoch_loss_history(args, epoch_loss_history, axs=axs, label=k)
           running_loss_history += [epoch_loss_history]
