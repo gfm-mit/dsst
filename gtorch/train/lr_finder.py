@@ -9,7 +9,7 @@ import gtorch.loss.scheduler
 from gtorch.loss.optimizer import get_optimizer_and_scheduler
 
 
-def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="none"):
+def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="none", tqdm_desc=""):
   model = gtorch.train.train.setup_model(params, model_factory_fn, task, disk)
 
   new_params = dict(**params)
@@ -18,7 +18,7 @@ def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="
   optimizer, scheduler = get_optimizer_and_scheduler(new_params, model)
   assert isinstance(scheduler, gtorch.loss.scheduler.LogRampScheduler)
   last_grads = None
-  progress = trange(new_params["max_epochs"])
+  progress = trange(new_params["max_epochs"], desc=tqdm_desc)
   for e, batch in zip(progress, itertools.cycle(train_loader)):
     losses += [gtorch.loss.loss.get_task_loss(model, optimizer, [batch], task)[0]]
     scheduler.step()
@@ -37,7 +37,7 @@ def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="
     last_grads = grads
 
     if np.argmin(losses) == len(losses) - 1:
-      progress.set_description(f"loss: {losses[-1]:.2E} @ step {e}")
+      progress.set_postfix_str(f"loss: {losses[-1]:.2E} @ step {e}")
     if e > 0 and losses[-1] > losses[0] * 2:
       break
   lrs = scheduler.state_dict()["lrs"]

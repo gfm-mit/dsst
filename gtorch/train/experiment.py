@@ -68,19 +68,21 @@ class Experiment:
     builder = self.model_class(n_classes=2, device=self.args.device)
     base_params = builder.get_parameters(task=self.args.task) | params
     lrs, losses, conds = gtorch.train.lr_finder.find_lr(
-        base_params, model_factory_fn=builder,
+        base_params,
+        model_factory_fn=builder,
         train_loader=self.train_loader,
         task=self.args.task,
-        disk=self.args.disk)
+        disk=self.args.disk,
+        tqdm_desc=label)
     losses, conds = plot.lr_finder.plot_lr(lrs, losses, conds=conds, smooth=len(self.train_loader), label=label, axs=axs)
     return losses, conds
 
   def get_lr_params(self, params=None):
     return dict(
         scheduler="ramp",
-        min_lr=1e-5,
-        max_lr=1,
-        max_epochs=50,
+        min_lr=1e-1,
+        max_lr=1e+0,
+        max_epochs=200,
     ) | self.args.config | (params or {})
 
   def find_momentum(self, momentum, params=None):
