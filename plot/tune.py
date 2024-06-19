@@ -6,6 +6,7 @@ import pandas as pd
 # todo, these two seem redundant
 def plot_epoch_loss_history(args, epoch_loss_history, axs=None, label=None):
   ylabel = 'validation metric' if args.history == "val" else 'training loss'
+  np.save(f'results/epoch/{label}.npy', epoch_loss_history)
   results = pd.Series(dict(history=epoch_loss_history, label=label)).to_frame().transpose()
   return plot_tuning_history(keys="label".split(), results=results, ylabel=ylabel, axs=axs)
 
@@ -23,7 +24,10 @@ def plot_tuning_history(keys, results, ylabel, axs=None):
   plt.axhline(y=.725, color="lightgray", linestyle=":", zorder=-10)
   plt.xlabel('epoch')
   plt.ylabel(ylabel)
-  y_min, y_max = .65, .85
+  all_data = np.concatenate(results['history'].values)
+  low, med, high = np.quantile(all_data, (0.25, 0.95, 1))
+  y_min, y_max = 2.5 * low - 1.5 * high, 2 * high - med
+  y_min = np.maximum(y_min, 0.5)
   plt.ylim([y_min, y_max])
   return axs
 
