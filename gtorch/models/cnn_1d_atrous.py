@@ -47,26 +47,28 @@ class Cnn(gtorch.models.base.Base):
 
   def get_parameters(self, **kwargs):
     return dict(
-      optimizer='samsgd',
+      scheduler='none',
+      optimizer='samadam',
       weight_decay=0,
-      momentum=0,
-      conditioning_smoother=0.9,
-      pct_start=0.0,
+      momentum=0.5,
+      conditioning_smoother=0.999,
+      warmup_steps=5,
 
-      max_epochs=10,
+      max_epochs=400, # maybe 1200, actually
       min_epochs=0,
 
-      learning_rate=3e-2, # stupid edge of stability!!
+      learning_rate=1e-2, # stupid edge of stability!!
     )
 
   def get_tuning_ranges(self):
     return dict(
+        #optimizer="samsgd sfsgd sgd".split(),
         #nonce=np.arange(5),
-        learning_rate=np.geomspace(3e-3, 3e-1, 3),
-        #weight_decay=np.geomspace(1e-8, 1e-4, 15),
+        #learning_rate=np.geomspace(3e-3, 3e-1, 15),
+        #weight_decay=[0, 1e-5],
         #pct_start=np.geomspace(0.01, .95, 15),
         #max_epochs=np.geomspace(5, 100, 15).astype(int),
-        #momentum=1-np.geomspace(.1, 1e-5, 15),
+        momentum=[0, .5, .9, 0.999],
         #conditioning_smoother=1-np.geomspace(.5, .0001, 15),
     )
 
