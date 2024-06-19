@@ -69,7 +69,7 @@ class Rnn(gtorch.models.base.SequenceBase):
 
   def get_classifier_parameters(self, **kwargs):
     return dict(
-      schedule='onecycle',
+      scheduler='onecycle',
       weight_decay=0,
       momentum=1 - 1e-3,
       conditioning_smoother=1 - 3e-2,

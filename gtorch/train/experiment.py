@@ -77,7 +77,7 @@ class Experiment:
 
   def get_lr_params(self, params=None):
     return dict(
-        schedule="ramp",
+        scheduler="ramp",
         min_lr=1e-5,
         max_lr=1,
         max_epochs=50,

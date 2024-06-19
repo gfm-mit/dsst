@@ -75,8 +75,9 @@ class FakeOptimizer():
 
 
 def get_scheduler(params, model, optimizer):
-  assert "scheduler" not in params
-  if "schedule" in params and params["schedule"] == "onecycle":
+  key = "scheduler"
+  assert "schedule" not in params
+  if key in params and params[key] == "onecycle":
     # damned thing uses cosine decay, anyway
     scheduler = torch.optim.lr_scheduler.OneCycleLR(
         optimizer,
@@ -84,19 +85,19 @@ def get_scheduler(params, model, optimizer):
         steps_per_epoch=1,
         pct_start=params["pct_start"] if "pct_start" in params else float(params["warmup_steps"]) / params["max_epochs"],
         epochs=int(params["max_epochs"]))
-  elif "schedule" in params and params["schedule"] == "cosine":
+  elif key in params and params[key] == "cosine":
     scheduler = pytorch_optimizer.lr_scheduler.linear_warmup.CosineScheduler(
         optimizer,
         max_lr=params["learning_rate"],
         warmup_steps=int(params["pct_start"] * params["max_epochs"]) if "pct_start" in params else params["warmup_steps"],
         t_max=int(params["max_epochs"]))
-  elif "schedule" in params and params["schedule"] == "ramp":
+  elif key in params and params[key] == "ramp":
     scheduler = LogRampScheduler(
         optimizer,
         min_lr=params.get("min_lr", None),
         max_lr=params.get("max_lr", None),
         epochs=int(params["max_epochs"]))
   else:
-    assert "schedule" not in params or params["schedule"] is None or params["schedule"] == "none", params["schedule"]
+    assert key not in params or params[key] is None or params[key] == "none", params[key]
     scheduler = FakeOptimizer(model, verbose=False)
   return optimizer, scheduler

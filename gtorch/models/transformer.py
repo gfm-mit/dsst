@@ -68,7 +68,7 @@ class Transformer(gtorch.models.base.SequenceBase):
   def get_next_token_parameters(self, **kwargs):
     return dict(
       optimizer='adam',
-      schedule=None,
+      scheduler=None,
       learning_rate=1e-2,
       momentum=0.9,
       max_epochs=100,
@@ -76,8 +76,8 @@ class Transformer(gtorch.models.base.SequenceBase):
 
   def get_classifier_parameters(self, **kwargs):
     return dict(
-      optimizer='adam',
-      schedule='onecycle',
+      scheduler='none',
+      optimizer='prodigy',
       weight_decay=0,
       momentum=1 - 1e-3,
       conditioning_smoother=1 - 3e-2,

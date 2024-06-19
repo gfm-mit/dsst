@@ -34,7 +34,7 @@ class Linear(gtorch.models.base.Base):
 
   def get_parameters(self, **kwargs):
     return dict(
-      schedule='onecycle',
+      scheduler='onecycle',
       weight_decay=0,
       momentum=0,
       conditioning_smoother=0.9,
