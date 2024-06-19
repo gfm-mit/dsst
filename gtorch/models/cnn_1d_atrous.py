@@ -1,10 +1,7 @@
-import numpy as np
-import pandas as pd
 import torch
 from einops.layers.torch import Rearrange
 
 import gtorch.models.base
-#from gtorch.models.util import OneCat, PrintCat
 
 
 class Cnn(gtorch.models.base.Base):
@@ -58,33 +55,4 @@ class Cnn(gtorch.models.base.Base):
       min_epochs=0,
 
       learning_rate=1e-2, # stupid edge of stability!!
-    )
-
-  def get_tuning_ranges(self):
-    return dict(
-        #optimizer="samsgd sfsgd sgd".split(),
-        #nonce=np.arange(5),
-        #learning_rate=np.geomspace(3e-3, 3e-1, 15),
-        #weight_decay=[0, 1e-5],
-        #pct_start=np.geomspace(0.01, .95, 15),
-        #max_epochs=np.geomspace(5, 100, 15).astype(int),
-        momentum=[0, .5, .9, 0.999],
-        #conditioning_smoother=1-np.geomspace(.5, .0001, 15),
-    )
-
-  def get_coefficients(self, model):
-    if self.classes == 2:
-      return pd.Series(
-        np.concatenate([
-          [model.state_dict()['2.bias'].numpy()[1]
-          - model.state_dict()['2.bias'].numpy()[0]],
-          model.state_dict()['2.weight'].numpy()[1]
-          - model.state_dict()['2.weight'].numpy()[0]
-        ])
-      )
-    return pd.Series(
-      np.concatenate([
-        model.state_dict()['1.bias'].numpy(),
-        model.state_dict()['1.weight'].numpy().flatten(),
-      ])
     )

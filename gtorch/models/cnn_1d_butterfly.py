@@ -1,5 +1,3 @@
-import numpy as np
-import pandas as pd
 import torch
 from einops.layers.torch import Rearrange
 
@@ -67,32 +65,4 @@ class Cnn(gtorch.models.base.Base):
       min_epochs=0,
 
       learning_rate=1e-1, # stupid edge of stability!!
-    )
-
-  def get_tuning_ranges(self):
-    return dict(
-        #nonce=np.arange(5),
-        #learning_rate=np.geomspace(1e-5, 1e-0, 15),
-        #weight_decay=np.geomspace(1e-8, 1e-4, 15),
-        #pct_start=np.geomspace(0.01, .95, 15),
-        #max_epochs=np.geomspace(5, 100, 15).astype(int),
-        #momentum=1-np.geomspace(.1, 1e-5, 15),
-        #conditioning_smoother=1-np.geomspace(.5, .0001, 15),
-    )
-
-  def get_coefficients(self, model):
-    if self.classes == 2:
-      return pd.Series(
-        np.concatenate([
-          [model.state_dict()['2.bias'].numpy()[1]
-          - model.state_dict()['2.bias'].numpy()[0]],
-          model.state_dict()['2.weight'].numpy()[1]
-          - model.state_dict()['2.weight'].numpy()[0]
-        ])
-      )
-    return pd.Series(
-      np.concatenate([
-        model.state_dict()['1.bias'].numpy(),
-        model.state_dict()['1.weight'].numpy().flatten(),
-      ])
     )

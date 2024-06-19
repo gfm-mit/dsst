@@ -14,13 +14,8 @@ class Base(ABC):
   def get_parameters(self, **kwargs):
     pass
 
-  @abstractmethod
-  def get_tuning_ranges(self):
-    pass
-
-  @abstractmethod
   def get_coefficients(self, model):
-    pass
+    assert "get_coefficients not implemented in {}".format(self.__class__.__name__)
 
 
 class SequenceBase(Base):

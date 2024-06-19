@@ -1,10 +1,7 @@
-import numpy as np
-import pandas as pd
 import torch
 from einops import rearrange
 
 import gtorch.models.base
-#from gtorch.models.util import OneCat, PrintCat
 
 class GetNextTokenOutputs(torch.nn.Module):
   def forward(self, input):
@@ -79,33 +76,4 @@ class Rnn(gtorch.models.base.SequenceBase):
       min_epochs=0,
 
       learning_rate=1e-1,
-    )
-
-  def get_tuning_ranges(self):
-    return dict(
-        #nonce=np.arange(5),
-        #optimizer=['adam'] * 8 + ['sgd'] * 7,
-        #learning_rate=np.geomspace(1e-1, 1e+2, 15),
-        #weight_decay=np.geomspace(1e-8, 1e-4, 15),
-        #pct_start=np.geomspace(0.01, .95, 15),
-        #max_epochs=np.geomspace(5, 100, 15).astype(int),
-        #momentum=1-np.geomspace(.1, 1e-5, 35),
-        #conditioning_smoother=1-np.geomspace(.5, .0001, 15),
-    )
-
-  def get_coefficients(self, model):
-    if self.classes == 2:
-      return pd.Series(
-        np.concatenate([
-          [model.state_dict()['2.bias'].numpy()[1]
-          - model.state_dict()['2.bias'].numpy()[0]],
-          model.state_dict()['2.weight'].numpy()[1]
-          - model.state_dict()['2.weight'].numpy()[0]
-        ])
-      )
-    return pd.Series(
-      np.concatenate([
-        model.state_dict()['1.bias'].numpy(),
-        model.state_dict()['1.weight'].numpy().flatten(),
-      ])
     )

@@ -4,7 +4,6 @@ import torch
 from einops.layers.torch import Rearrange
 
 import gtorch.models.base
-#from gtorch.models.util import OneCat, PrintCat
 
 
 class Linear(gtorch.models.base.Base):
@@ -38,18 +37,6 @@ class Linear(gtorch.models.base.Base):
       min_epochs=0,
 
       learning_rate=3e-1, # stupid edge of stability!!
-    )
-
-  def get_tuning_ranges(self):
-    return dict(
-        #optimizer=["adam", "signedmomentum"],
-        #nonce=np.arange(5),
-        #learning_rate=np.geomspace(3e-2, 3e-1, 5),
-        #weight_decay=np.geomspace(1e-8, 1e-0, 10),
-        #pct_start=np.geomspace(0.01, .95, 15),
-        #max_epochs=1 + np.arange(10).astype(int),
-        #momentum=[0, .1, .5, .9, .99],
-        #conditioning_smoother=1-np.geomspace(.5, .0001, 15),
     )
 
   def get_coefficients(self, model):

@@ -46,17 +46,6 @@ class Linear(gtorch.models.base.Base):
       learning_rate=3e-1, # stupid edge of stability!!
     )
 
-  def get_tuning_ranges(self):
-    return dict(
-        #nonce=np.arange(5),
-        #learning_rate=np.geomspace(1e-1, 5e-1, 15),
-        #weight_decay=np.geomspace(1e-8, 1e-4, 15),
-        #pct_start=np.geomspace(0.01, .95, 15),
-        #max_epochs=np.geomspace(5, 100, 15).astype(int),
-        #momentum=1-np.geomspace(.1, 1e-5, 15),
-        #conditioning_smoother=1-np.geomspace(.5, .0001, 15),
-    )
-
   def get_coefficients(self, model):
     if self.classes == 2:
       return pd.Series(
