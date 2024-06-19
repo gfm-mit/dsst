@@ -36,7 +36,7 @@ class Decoder(torch.nn.Module):
 class GetClassifierOutputs(torch.nn.Module):
   def __init__(self, kind=None):
     self.kind = kind
-    assert self.kind in "max mean last".split()
+    assert self.kind in "meanmax max mean last".split()
     super(GetClassifierOutputs, self).__init__()
 
   def forward(self, input):
@@ -45,9 +45,14 @@ class GetClassifierOutputs(torch.nn.Module):
     elif self.kind == "mean":
       nonzeros = torch.sum(torch.amax(input != 0, dim=2, keepdim=True), dim=1)
       return torch.sum(input, dim=1) / nonzeros
+    elif self.kind == "meanmax":
+      max = torch.amax(input, dim=1)
+      nonzeros = torch.sum(torch.amax(input != 0, dim=2, keepdim=True), dim=1)
+      mean = torch.sum(input, dim=1) / nonzeros
+      return torch.cat([max, mean], dim=1)
     elif self.kind == "last":
       return input[:, -1, :]
-    assert False
+    assert False, "unknown transformer aggregation kind: {}".format(self.kind)
 
 class Transformer(gtorch.models.base.SequenceBase):
   def __init__(self, n_layers=2, n_features=12, n_classes=2, device='cpu'):
@@ -65,12 +70,15 @@ class Transformer(gtorch.models.base.SequenceBase):
     return model
 
   def get_classifier_architecture(self, agg_kind=None):
+    n_features = self.features
+    if agg_kind == "meanmax":
+      n_features *= 2
     model = torch.nn.Sequential(
         # b n c
         Decoder(n_features=12, device=self.device, causal=True), # TODO: try False
         GetClassifierOutputs(kind=agg_kind),
-        torch.nn.BatchNorm1d(num_features=self.features),
-        torch.nn.Linear(self.features, self.classes),
+        torch.nn.BatchNorm1d(num_features=n_features),
+        torch.nn.Linear(n_features, self.classes),
         torch.nn.LogSoftmax(dim=-1),
     )
     model = model.to(self.device)
@@ -78,11 +86,12 @@ class Transformer(gtorch.models.base.SequenceBase):
 
   def get_next_token_parameters(self, **kwargs):
     return dict(
-      optimizer='adam',
-      scheduler=None,
-      learning_rate=1e-2,
+      scheduler='none',
+      optimizer='sfadam',
+      learning_rate=2e-2,
       momentum=0.9,
-      max_epochs=100,
+      warmup_step=3,
+      max_epochs=200,
     )
 
   def get_classifier_parameters(self, **kwargs):
@@ -93,7 +102,7 @@ class Transformer(gtorch.models.base.SequenceBase):
       momentum=.9,
       conditioning_smoother=.999,
       warmup_steps=5,
-      agg_kind="mean",
+      agg_kind="max",
 
       max_epochs=5,
       min_epochs=5,
