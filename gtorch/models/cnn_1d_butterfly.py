@@ -61,5 +61,5 @@ class Cnn(gtorch.models.base.Base):
       max_epochs=100,
       min_epochs=0,
 
-      learning_rate=1e-2,
+      learning_rate=1e-2,  # not tuned
     )
