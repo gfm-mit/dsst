@@ -4,12 +4,12 @@ import sys
 from matplotlib import pyplot as plt
 
 import etl.torch.bitmap
-import gtorch.train.train
+import gtorch.core.train
 import gtorch.train.tune
-import gtorch.metrics.calibration
-import gtorch.metrics.metrics
+import plot.calibration
+import gtorch.core.metrics
 import models.cnn_2d
-import gtorch.loss.optimizer
+import gtorch.core.optimizer
 import plot.metrics
 import util.excepthook
 
@@ -37,14 +37,14 @@ if __name__ == "__main__":
     #torch.manual_seed(42)
     base_params = builder.get_parameters()
     with cProfile.Profile() as pr:
-      retval, train_loss, model = gtorch.train.train.setup_training_run(
+      retval, train_loss, model = gtorch.core.train.setup_training_run(
         base_params, model_factory_fn=builder,
         train_loader=train_loader, val_loader=val_loader)
     pr.dump_stats('results/output_file.prof')
     model.eval()
-    logits, targets = gtorch.metrics.metrics.get_combined_roc(model, test_loader, combine_fn=etl.torch.linear_box.combiner)
+    logits, targets = gtorch.core.metrics.get_combined_roc(model, test_loader, combine_fn=etl.torch.linear_box.combiner)
 
-    roc = gtorch.metrics.calibration.get_full_roc_table(logits, targets)
+    roc = plot.calibration.get_full_roc_table(logits, targets)
     axs = plot.metrics.plot_palette(roc, axs)
     plt.suptitle("linear_box.combiner")
     plt.tight_layout()

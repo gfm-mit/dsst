@@ -3,25 +3,25 @@ import numpy as np
 from tqdm import trange
 
 import models.base
-import gtorch.train.train
-import gtorch.loss.loss
-import gtorch.loss.scheduler
-from gtorch.loss.optimizer import get_optimizer_and_scheduler
+import gtorch.core.train
+import gtorch.core.loss
+import gtorch.core.scheduler
+from gtorch.core.optimizer import get_optimizer_and_scheduler
 
 
 def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="none", tqdm_desc=""):
-  model = gtorch.train.train.setup_model(params, model_factory_fn, task, disk)
+  model = gtorch.core.train.setup_model(params, model_factory_fn, task, disk)
 
   new_params = dict(**params)
   losses = []
   conds = []
   assert new_params['optimizer'] != 'prodigy'  # prodigy LR is weird
   optimizer, scheduler = get_optimizer_and_scheduler(new_params, model)
-  assert isinstance(scheduler, gtorch.loss.scheduler.LogRampScheduler)
+  assert isinstance(scheduler, gtorch.core.scheduler.LogRampScheduler)
   last_grads = None
   progress = trange(new_params["max_epochs"], desc=tqdm_desc)
   for e, batch in zip(progress, itertools.cycle(train_loader)):
-    losses += [gtorch.loss.loss.get_task_loss(model, optimizer, [batch], task)[0]]
+    losses += [gtorch.core.loss.get_task_loss(model, optimizer, [batch], task)[0]]
     scheduler.step()
     grads = np.concatenate([t.detach().cpu().numpy().flatten() for t in model.parameters()])
     if last_grads is not None:

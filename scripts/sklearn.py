@@ -11,7 +11,7 @@ import etl.torch.linear_patient
 import etl.torch.synthetic
 import util.excepthook
 import plot.metrics
-import gtorch.metrics.calibration
+import plot.calibration
 
 
 def main(train_loader, val_loader, test_loader, axs=None, random_state=None, solver=None, combine_fn=None):
@@ -36,7 +36,7 @@ def main(train_loader, val_loader, test_loader, axs=None, random_state=None, sol
   if combine_fn is not None:
     logits, targets = combine_fn(logits, targets, g)
 
-  roc = gtorch.metrics.calibration.get_full_roc_table(logits, targets)
+  roc = plot.calibration.get_full_roc_table(logits, targets)
   axs = plot.metrics.plot_palette(roc, axs)
 
 def measure_conditioning(x, y, model):

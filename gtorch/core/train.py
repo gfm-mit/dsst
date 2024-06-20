@@ -5,10 +5,10 @@ import torch
 from tqdm import tqdm
 
 import models.base
-import gtorch.loss.optimizer
-import gtorch.loss.loss
-import gtorch.metrics.metrics
-from gtorch.loss.optimizer import get_optimizer_and_scheduler
+import gtorch.core.optimizer
+import gtorch.core.loss
+import gtorch.core.metrics
+from gtorch.core.optimizer import get_optimizer_and_scheduler
 
 Path('./results').mkdir(parents=True, exist_ok=True)
 def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_loader, task=None, tqdm_prefix=None, loss_history_loader=None):
@@ -17,7 +17,7 @@ def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_
   epoch_loss_history = []
   for epoch in progress:
     state_dict = dict(**model.state_dict())
-    train_loss, loss_description = gtorch.loss.loss.get_task_loss(model, optimizer, train_loader, task=task)
+    train_loss, loss_description = gtorch.core.loss.get_task_loss(model, optimizer, train_loader, task=task)
     scheduler.step()
     if train_loss > loss_upper_bound and epoch > min_epochs:
       print(f"next_loss too big: {train_loss} > {loss_upper_bound}")
@@ -31,7 +31,7 @@ def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_
     torch.cuda.empty_cache()
     progress.set_postfix_str(" " + loss_description)
     if loss_history_loader is not None:
-      val_loss = gtorch.metrics.metrics.evaluate(model, loss_history_loader, task)
+      val_loss = gtorch.core.metrics.evaluate(model, loss_history_loader, task)
       epoch_loss_history += [val_loss]
     else:
       epoch_loss_history += [train_loss]
@@ -77,5 +77,5 @@ def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=N
                                    loss_history_loader=val_loader if history == "val" else None)
   if disk == "save":
     torch.save(model.state_dict(), './results/model.pth')
-  metric = gtorch.metrics.metrics.evaluate(model, val_loader, task)
+  metric = gtorch.core.metrics.evaluate(model, val_loader, task)
   return metric, epoch_loss_history, model

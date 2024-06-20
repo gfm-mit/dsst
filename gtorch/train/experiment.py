@@ -2,10 +2,10 @@ import json
 import etl.torch.linear_box
 import gtorch.train.lr_finder
 import plot.lr_finder
-import gtorch.train.train
+import gtorch.core.train
 import gtorch.train.tune
-import gtorch.metrics.metrics
-import gtorch.metrics.calibration
+import gtorch.core.metrics
+import plot.calibration
 import plot.metrics
 
 class Experiment:
@@ -23,7 +23,7 @@ class Experiment:
     #torch.manual_seed(42)
     builder = self.model_class(n_classes=2, device=self.args.device)
     base_params = builder.get_parameters(task=self.args.task) | self.args.config | kwargs
-    metric, epoch_loss_history, self.model = gtorch.train.train.setup_training_run(
+    metric, epoch_loss_history, self.model = gtorch.core.train.setup_training_run(
         base_params, model_factory_fn=builder,
         train_loader=self.train_loader,
         val_loader=self.val_loader,
@@ -48,10 +48,10 @@ class Experiment:
     assert self.model is not None
     assert self.args.task in 'classify classify_patient'.split()
     self.model.eval()
-    logits, targets = gtorch.metrics.metrics.get_combined_roc(
+    logits, targets = gtorch.core.metrics.get_combined_roc(
       self.model, self.test_loader,
       combine_fn=None if self.args.task == "classify" else etl.torch.linear_box.combiner)
-    roc = gtorch.metrics.calibration.get_full_roc_table(logits, targets)
+    roc = plot.calibration.get_full_roc_table(logits, targets)
     axs = plot.metrics.plot_palette(roc, axs, label=label)
     return axs
 

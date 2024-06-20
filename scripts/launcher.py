@@ -13,7 +13,7 @@ import etl.torch.linear_box
 import etl.torch.linear_patient
 import gtorch.train.coef
 import gtorch.train.experiment
-import gtorch.train.train
+import gtorch.core.train
 import gtorch.train.tune
 import plot.lr_finder
 import plot.tune
@@ -26,9 +26,9 @@ import models.linear_bnc
 import models.rnn_lstm
 import models.transformer
 import models.registry
-import gtorch.loss.loss
-import gtorch.metrics.metrics
-import gtorch.loss.optimizer
+import gtorch.core.loss
+import gtorch.core.metrics
+import gtorch.core.optimizer
 
 class TomlAction(argparse.Action):
     def __init__(self, toml_key=None, **kwargs):

@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-import gtorch.metrics.metrics
+import gtorch.core.metrics
 
 
 def get_coef_dist(builder, train_loader, val_loader):
