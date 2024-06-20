@@ -1,5 +1,6 @@
 import argparse
 import pathlib
+import pstats
 import sys
 import cProfile
 import util.excepthook
@@ -39,7 +40,7 @@ class LogAction(argparse.Action):
       assert pathlib.Path(values).is_dir()
       setattr(namespace, self.dest, values)
 
-if __name__ == "__main__":
+def main():
   sys.excepthook = util.excepthook.custom_excepthook
   # will save stack traces from creation in components, makes error messages less stupid
   #torch.autograd.set_detect_anomaly(True)
@@ -111,7 +112,13 @@ if __name__ == "__main__":
       with cProfile.Profile() as pr:
         experiment.train()
       pr.dump_stats('results/output_file.prof')
+      stats = pstats.Stats('results/output_file.prof')
+      stats.sort_stats('cumulative')
+      stats.print_stats(30)
     else:
+      compare(args, experiment)
+
+def compare(args, experiment):
       axs = None
       if args.compare:
         setups = args.compare
@@ -136,3 +143,6 @@ if __name__ == "__main__":
       plt.suptitle(suptitle)
       plt.tight_layout()
       plt.show()
+
+if __name__ == "__main__":
+  main()
