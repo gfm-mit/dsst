@@ -2,7 +2,7 @@ import torch
 from einops.layers.torch import Rearrange
 
 import gtorch.models.base
-from gtorch.models.util import PadLengthTo
+from gtorch.models.util import ZeroPadLastDim
 
 
 class Cnn(gtorch.models.base.Base):
@@ -21,7 +21,7 @@ class Cnn(gtorch.models.base.Base):
           kernel_size=5,
           stride=5),
         torch.nn.BatchNorm1d(num_features=self.features),
-        PadLengthTo(32), # bug in device=mps implementation, only
+        ZeroPadLastDim(32), # bug in device=mps implementation, only
         torch.nn.AdaptiveMaxPool1d(32),
         torch.nn.Conv1d(
           self.features,

@@ -6,8 +6,12 @@ class OnePadChannelsForBias(torch.nn.Module):
     return torch.cat([torch.zeros([input.shape[0], 1]), input], axis=1)
 
 class PrintfModule(torch.nn.Module):
+  def __init__(self, tag=""):
+    super().__init__()
+    self.tag = tag
+
   def forward(self, input):
-    print(input.shape)
+    print(f"{self.tag=} {input.shape=}")
     return input
 
 class PadWidthToMultiple(torch.nn.Module):
@@ -19,16 +23,17 @@ class PadWidthToMultiple(torch.nn.Module):
     n_h = int(np.ceil(input.shape[2] / self.width)) * self.width
     return torch.nn.functional.pad(input, (0, n_h - input.shape[2]))
 
-class ZeroPad(torch.nn.Module):
-  def __init__(self, length=None):
+class ZeroPadLastDim(torch.nn.Module):
+  def __init__(self, min_size=None):
     super().__init__()
-    self.length = length
+    self.min_size = min_size
 
   def forward(self, input):
-    if input.shape[2] >= self.length:
+    print(f"{input.shape=}")
+    padding = self.min_size - input.shape[2]
+    if padding <= 0:
       return input
     else:
-      padding = self.length - input.shape[2]
       return torch.nn.functional.pad(input, (0, padding))
 
 class NoopAttention(torch.nn.Module):
