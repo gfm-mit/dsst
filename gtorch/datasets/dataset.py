@@ -70,12 +70,15 @@ def get_loaders():
   #assert(features.index.difference(labels.index).empty), (features.index, labels.index)
   labels = labels.Diagnosis[labels.Diagnosis.isin(["Healthy Control", "Dementia-AD senile onset"])] == "Dementia-AD senile onset"
   labels = labels.reset_index()
-  split = labels.index.astype(str).map(lambda x: int(sha1(bytes(x, 'utf8')).hexdigest(), 16) % 5)
-  labels["split"] = np.where(split == 0, 'test', np.where(split == 1, 'validation', 'train'))
+  split = labels.index.astype(str).map(lambda x: int(sha1(bytes(x, 'utf8')).hexdigest(), 16) % 6)
+  labels["split"] = np.select(
+    [split == 0, split == 1, split == 2],
+    "test val2 val1".split(),
+    default="train")
   labels = labels.set_index("split")
   train_data = SeqDataset(labels.loc["train"])
-  val_data = SeqDataset(labels.loc["train"])
-  test_data = SeqDataset(labels.loc["train"], test_split=True)
+  val_data = SeqDataset(labels.loc["val1"])
+  test_data = SeqDataset(labels.loc["val2"], test_split=True)
   train_loader = torch.utils.data.DataLoader(train_data, batch_size=1000, shuffle=False, collate_fn=lambda x: x)
   val_loader = torch.utils.data.DataLoader(val_data, batch_size=1000, shuffle=False, collate_fn=lambda x: x)
   test_loader = torch.utils.data.DataLoader(test_data, batch_size=1000, shuffle=False, collate_fn=lambda x: x)
