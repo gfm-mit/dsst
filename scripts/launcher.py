@@ -40,11 +40,7 @@ class LogAction(argparse.Action):
       assert pathlib.Path(values).is_dir()
       setattr(namespace, self.dest, values)
 
-def main():
-  sys.excepthook = util.excepthook.custom_excepthook
-  # will save stack traces from creation in components, makes error messages less stupid
-  #torch.autograd.set_detect_anomaly(True)
-
+def parse_args():
   parser = argparse.ArgumentParser(description='Run a linear pytorch model')
   group = parser.add_mutually_exclusive_group()
   group.add_argument('--tune', action=TomlAction, toml_key='tune', help='Parameter ranges to tune')
@@ -65,13 +61,21 @@ def main():
   parser.add_argument('--disk', default='none', choices=set("none load save".split()), help='whether to persist the model (or use persisted)')
   parser.add_argument('--log', action=LogAction, default='', help='filename to log metrics and parameters')
   args = parser.parse_args()
+  return args
 
-  axs = None
-  train_loader, val_loader, test_loader = etl.torch.dataset.get_loaders()
-  BUILDER = models.registry.lookup_model(args.model)
+def main():
+  sys.excepthook = util.excepthook.custom_excepthook
+  # will save stack traces from creation in components, makes error messages less stupid
+  #torch.autograd.set_detect_anomaly(True)
+
+  args = parse_args()
+
   if args.bitmap:
     BUILDER = models.cnn_2d.Cnn
     train_loader, val_loader, test_loader = etl.torch.bitmap.get_loaders()
+  else:
+    train_loader, val_loader, test_loader = etl.torch.dataset.get_loaders()
+    BUILDER = models.registry.lookup_model(args.model)
   if args.test:
     for model_class, train_batch, val_batch in zip(
       models.registry.get_all_1d_models(),
@@ -104,7 +108,7 @@ def main():
     elif args.find_lr:
       if args.disk == "save":
         metric, epoch_loss_history = experiment.train(scheduler=None, **args.config)
-        axs = plot.tune.plot_epoch_loss_history(args, epoch_loss_history)
+        plot.tune.plot_epoch_loss_history(args, epoch_loss_history)
         plt.show()
       else:
         experiment.find_momentum(momentum=[0.9])
