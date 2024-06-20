@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 
-import gtorch.datasets.linear_box
-import gtorch.datasets.linear_patient
-import gtorch.datasets.synthetic
+import etl.torch.linear_box
+import etl.torch.linear_patient
+import etl.torch.synthetic
 import util.excepthook
 import plot.metrics
 import gtorch.metrics.calibration
@@ -73,8 +73,8 @@ if __name__ == "__main__":
   axs = None
   lines = []
   sys.excepthook = util.excepthook.custom_excepthook
-  train_loader, val_loader, test_loader = gtorch.datasets.linear_box.get_loaders()
-  main(train_loader, val_loader, test_loader, axs=axs, random_state=42, solver=args.solver, combine_fn=gtorch.datasets.linear_box.combiner)
+  train_loader, val_loader, test_loader = etl.torch.linear_box.get_loaders()
+  main(train_loader, val_loader, test_loader, axs=axs, random_state=42, solver=args.solver, combine_fn=etl.torch.linear_box.combiner)
   plt.suptitle("linear_box.combiner")
   plt.tight_layout()
   plt.show()

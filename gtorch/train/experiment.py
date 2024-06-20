@@ -1,5 +1,5 @@
 import json
-import gtorch.datasets.linear_box
+import etl.torch.linear_box
 import gtorch.train.lr_finder
 import plot.lr_finder
 import gtorch.train.train
@@ -50,7 +50,7 @@ class Experiment:
     self.model.eval()
     logits, targets = gtorch.metrics.metrics.get_combined_roc(
       self.model, self.test_loader,
-      combine_fn=None if self.args.task == "classify" else gtorch.datasets.linear_box.combiner)
+      combine_fn=None if self.args.task == "classify" else etl.torch.linear_box.combiner)
     roc = gtorch.metrics.calibration.get_full_roc_table(logits, targets)
     axs = plot.metrics.plot_palette(roc, axs, label=label)
     return axs

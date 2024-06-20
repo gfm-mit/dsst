@@ -7,10 +7,10 @@ import tomli
 import matplotlib.pyplot as plt
 import numpy as np
 
-import gtorch.datasets.bitmap
-import gtorch.datasets.dataset
-import gtorch.datasets.linear_box
-import gtorch.datasets.linear_patient
+import etl.torch.bitmap
+import etl.torch.dataset
+import etl.torch.linear_box
+import etl.torch.linear_patient
 import gtorch.train.coef
 import gtorch.train.experiment
 import gtorch.train.train
@@ -78,11 +78,11 @@ if __name__ == "__main__":
   args = parser.parse_args()
 
   axs = None
-  train_loader, val_loader, test_loader = gtorch.datasets.dataset.get_loaders()
+  train_loader, val_loader, test_loader = etl.torch.dataset.get_loaders()
   BUILDER = gtorch.models.registry.lookup_model(args.model)
   if args.bitmap:
     BUILDER = gtorch.models.cnn_2d.Cnn
-    train_loader, val_loader, test_loader = gtorch.datasets.bitmap.get_loaders()
+    train_loader, val_loader, test_loader = etl.torch.bitmap.get_loaders()
   if args.test:
     for model_class, train_batch, val_batch in zip(
       gtorch.models.registry.get_all_1d_models(),

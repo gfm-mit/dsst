@@ -3,7 +3,7 @@ import cProfile
 import sys
 from matplotlib import pyplot as plt
 
-import gtorch.datasets.bitmap
+import etl.torch.bitmap
 import gtorch.train.train
 import gtorch.train.tune
 import gtorch.metrics.calibration
@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
   axs = None
   lines = []
-  train_loader, val_loader, test_loader = gtorch.datasets.bitmap.get_loaders()
+  train_loader, val_loader, test_loader = etl.torch.bitmap.get_loaders()
   if args.tune:
     # tune parameters
     BUILDER = gtorch.models.cnn_2d.Cnn(n_classes=2, device=args.device, n_features=12)
@@ -42,7 +42,7 @@ if __name__ == "__main__":
         train_loader=train_loader, val_loader=val_loader)
     pr.dump_stats('results/output_file.prof')
     model.eval()
-    logits, targets = gtorch.metrics.metrics.get_combined_roc(model, test_loader, combine_fn=gtorch.datasets.linear_box.combiner)
+    logits, targets = gtorch.metrics.metrics.get_combined_roc(model, test_loader, combine_fn=etl.torch.linear_box.combiner)
 
     roc = gtorch.metrics.calibration.get_full_roc_table(logits, targets)
     axs = plot.metrics.plot_palette(roc, axs)

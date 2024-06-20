@@ -3,8 +3,8 @@ import numpy as np
 import pandas as pd
 import torch
 
-import gtorch.datasets.linear_box
-import gtorch.datasets.linear_patient
+import etl.torch.linear_box
+import etl.torch.linear_patient
 import gtorch.train.train
 import gtorch.loss.optimizer
 import plot.tune
