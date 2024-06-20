@@ -96,6 +96,9 @@ def main():
       train_loader=train_loader,
       val_loader=val_loader)
   else:
+    experiment(args, BUILDER, train_loader, val_loader, test_loader)
+
+def experiment(args, BUILDER, train_loader, val_loader, test_loader):
     experiment = wrappers.experiment.Experiment(
       model_class=BUILDER,
       train_loader=train_loader,
