@@ -43,7 +43,7 @@ class Linear(models.base.Base):
       max_epochs=10,
       min_epochs=0,
 
-      learning_rate=3e-1, # stupid edge of stability!!
+      learning_rate=3e-1,  # stupid edge of stability!!
     )
 
   def get_coefficients(self, model):

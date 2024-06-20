@@ -1,3 +1,4 @@
+# flake8: noqa
 import pathlib
 
 import numpy as np
