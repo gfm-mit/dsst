@@ -2,42 +2,41 @@ import torch
 from einops.layers.torch import Rearrange
 
 import gtorch.models.base
-from gtorch.models.util import ZeroPadLastDim, PrintfModule
 
 
 class Cnn(gtorch.models.base.Base):
   def __init__(self, n_features=12, n_classes=2, device='cpu'):
     self.classes = n_classes
-    self.features = n_features
+    n_features = n_features
     super().__init__(device=device)
 
-  def get_classifier_architecture(self):
+  def get_classifier_architecture(self, n_features):
     model = torch.nn.Sequential(
         # b n c
         Rearrange('b n c -> b c n'),
         torch.nn.Conv1d(
           12,
-          self.features,
+          n_features,
           kernel_size=4,
           stride=4),
-        torch.nn.BatchNorm1d(num_features=self.features),
+        torch.nn.BatchNorm1d(num_features=n_features),
         torch.nn.Conv1d(
-          self.features,
-          self.features,
+          n_features,
+          n_features,
           kernel_size=4,
           stride=4),
-        torch.nn.BatchNorm1d(num_features=self.features),
+        torch.nn.BatchNorm1d(num_features=n_features),
         torch.nn.Conv1d(
-          self.features,
-          self.features,
+          n_features,
+          n_features,
           kernel_size=4,
           stride=4),
-        torch.nn.BatchNorm1d(num_features=self.features),
+        torch.nn.BatchNorm1d(num_features=n_features),
         #PrintfModule('After 64x down'),
         torch.nn.AdaptiveMaxPool1d(1),
         Rearrange('b c 1 -> b c'),
-        torch.nn.BatchNorm1d(num_features=self.features),
-        torch.nn.Linear(self.features, self.classes),
+        torch.nn.BatchNorm1d(num_features=n_features),
+        torch.nn.Linear(n_features, self.classes),
         torch.nn.LogSoftmax(dim=-1),
     )
     model = model.to(self.device)
@@ -52,8 +51,10 @@ class Cnn(gtorch.models.base.Base):
       conditioning_smoother=0.999,
       warmup_steps=5,
 
-      max_epochs=80,
-      min_epochs=0,
+      max_epochs=50,
+      min_epochs=50,
 
-      learning_rate=1e-2,  # not tuned
+      learning_rate=1.4e-3,
+
+      n_features=96,
     )
