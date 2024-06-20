@@ -4,6 +4,18 @@ from einops.layers.torch import Rearrange
 import gtorch.models.base
 
 
+class PadLengthTo(torch.nn.Module):
+  def __init__(self, length=None):
+    super().__init__()
+    self.length = length
+
+  def forward(self, input):
+    if input.shape[2] >= self.length:
+      return input
+    else:
+      padding = self.length - input.shape[2]
+      return torch.nn.functional.pad(input, (0, padding))
+
 class Cnn(gtorch.models.base.Base):
   def __init__(self, n_features=12, n_classes=2, device='cpu'):
     self.classes = n_classes
@@ -20,6 +32,7 @@ class Cnn(gtorch.models.base.Base):
           kernel_size=5,
           stride=5),
         torch.nn.BatchNorm1d(num_features=self.features),
+        PadLengthTo(32), # bug in device=mps implementation, only
         torch.nn.AdaptiveMaxPool1d(32),
         torch.nn.Conv1d(
           self.features,
