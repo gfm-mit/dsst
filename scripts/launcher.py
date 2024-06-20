@@ -74,7 +74,7 @@ def main():
     BUILDER = models.cnn_2d.Cnn
     train_loader, val_loader, test_loader = etl.torch.bitmap.get_loaders()
   else:
-    train_loader, val_loader, test_loader = etl.torch.dataset.get_loaders()
+    train_loader, val_loader, test_loader = etl.torch.dataset.get_loaders(device=args.device)
     BUILDER = models.registry.lookup_model(args.model)
   if args.test:
     for model_class, train_batch, val_batch in zip(
