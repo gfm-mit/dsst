@@ -19,6 +19,18 @@ class PadWidthToMultiple(torch.nn.Module):
     n_h = int(np.ceil(input.shape[2] / self.width)) * self.width
     return torch.nn.functional.pad(input, (0, n_h - input.shape[2]))
 
+class ZeroPad(torch.nn.Module):
+  def __init__(self, length=None):
+    super().__init__()
+    self.length = length
+
+  def forward(self, input):
+    if input.shape[2] >= self.length:
+      return input
+    else:
+      padding = self.length - input.shape[2]
+      return torch.nn.functional.pad(input, (0, padding))
+
 class NoopAttention(torch.nn.Module):
     def forward(self, query, key, value,
                 attn_mask=None,

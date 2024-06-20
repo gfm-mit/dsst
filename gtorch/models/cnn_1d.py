@@ -2,19 +2,8 @@ import torch
 from einops.layers.torch import Rearrange
 
 import gtorch.models.base
+from gtorch.models.util import PadLengthTo
 
-
-class PadLengthTo(torch.nn.Module):
-  def __init__(self, length=None):
-    super().__init__()
-    self.length = length
-
-  def forward(self, input):
-    if input.shape[2] >= self.length:
-      return input
-    else:
-      padding = self.length - input.shape[2]
-      return torch.nn.functional.pad(input, (0, padding))
 
 class Cnn(gtorch.models.base.Base):
   def __init__(self, n_features=12, n_classes=2, device='cpu'):
