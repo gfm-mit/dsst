@@ -64,8 +64,8 @@ class Cnn(gtorch.models.base.Base):
       conditioning_smoother=0.999,
       warmup_steps=5,
 
-      max_epochs=400, # maybe 1200, actually
+      max_epochs=80,
       min_epochs=0,
 
-      learning_rate=1e-2, # stupid edge of stability!!
+      learning_rate=1e-2,
     )
