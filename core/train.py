@@ -59,6 +59,10 @@ def setup_model(params, model_factory_fn, task="classify", disk="none"):
     for layer in model.children():
       if hasattr(layer, 'reset_parameters'):
         layer.reset_parameters()
+  # TODO: try this again when compiling to CUDA
+  # DEVICE = next(model.parameters()).device
+  # if DEVICE == "cuda":
+  #   model = torch.compile(model)
   return model
 
 def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=None,
