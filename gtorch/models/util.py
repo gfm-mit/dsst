@@ -14,23 +14,19 @@ class PrintfModule(torch.nn.Module):
     print(f"{self.tag=} {input.shape=}")
     return input
 
-class PadWidthToMultiple(torch.nn.Module):
-  def __init__(self, width=8):
-    super().__init__()
-    self.width = width
-
-  def forward(self, input):
-    n_h = int(np.ceil(input.shape[2] / self.width)) * self.width
-    return torch.nn.functional.pad(input, (0, n_h - input.shape[2]))
-
 class ZeroPadLastDim(torch.nn.Module):
-  def __init__(self, min_size=None):
+  def __init__(self, min_size=None, chunk_size=None):
     super().__init__()
+    assert min_size is not None or chunk_size is not None
     self.min_size = min_size
+    self.chunk_size = chunk_size
 
   def forward(self, input):
-    print(f"{input.shape=}")
-    padding = self.min_size - input.shape[2]
+    if self.chunk_size is not None:
+      min_size = np.ceil(float(input.shape[-1]) / self.chunk_size) * self.chunk_size
+    else:
+      min_size = self.min_size
+    padding = min_size - input.shape[-1]
     if padding <= 0:
       return input
     else:

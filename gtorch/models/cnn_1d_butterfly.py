@@ -2,7 +2,7 @@ import torch
 from einops.layers.torch import Rearrange
 
 import gtorch.models.base
-from gtorch.models.util import PadWidthToMultiple
+from gtorch.models.util import PrintfModule, ZeroPadLastDim
 
 
 class Cnn(gtorch.models.base.Base):
@@ -14,38 +14,34 @@ class Cnn(gtorch.models.base.Base):
   def get_classifier_architecture(self):
     model = torch.nn.Sequential(
         # b n c
+        #PrintfModule('DataLoader'), # 1000 128 12
         Rearrange('b n c -> b c n'),
-        PadWidthToMultiple(8),
+        ZeroPadLastDim(chunk_size=8),
         Rearrange('b c (h w) -> b c h w', h=8),
+        #PrintfModule('4D'), # 1000 12 8 16
         # separable 5x5: slow on CPU, might be fast on GPU
         torch.nn.Conv2d(
           12,
           self.features,
-          kernel_size=(1, 5),
-          stride=(1, 5)),
+          kernel_size=(1, 4),
+          stride=(1, 4)),
         torch.nn.BatchNorm2d(num_features=self.features),
         torch.nn.Conv2d(
           self.features,
           self.features,
-          kernel_size=(5, 1),
-          stride=(5, 1)),
+          kernel_size=(4, 1),
+          stride=(4, 1)),
         torch.nn.BatchNorm2d(num_features=self.features),
-        torch.nn.AdaptiveMaxPool2d((8, 8)),
-        # separable 5x5: slow on CPU, might be fast on GPU
-        torch.nn.Conv2d(
+        #PrintfModule('Separable'), # 1000 12 8 16
+        Rearrange('b c h w -> b c (h w)'),
+        torch.nn.Conv1d(
           self.features,
           self.features,
-          kernel_size=(1, 5),
-          stride=(1, 5)),
-        torch.nn.BatchNorm2d(num_features=self.features),
-        torch.nn.Conv2d(
-          self.features,
-          self.features,
-          kernel_size=(5, 1),
-          stride=(5, 1)),
-        torch.nn.BatchNorm2d(num_features=self.features),
-        torch.nn.AdaptiveMaxPool2d((1, 1)),
-        Rearrange('b c 1 1 -> b c'),
+          kernel_size=4,
+          stride=4),
+        #PrintfModule('Conv1D'), # 1000 12 8 16
+        torch.nn.AdaptiveMaxPool1d(1),
+        Rearrange('b c 1 -> b c'),
         torch.nn.BatchNorm1d(num_features=self.features),
         torch.nn.Linear(self.features, self.classes),
         torch.nn.LogSoftmax(dim=-1),
@@ -62,8 +58,8 @@ class Cnn(gtorch.models.base.Base):
       conditioning_smoother=0.999,
       warmup_steps=5,
 
-      max_epochs=400, # maybe 1200, actually
+      max_epochs=100,
       min_epochs=0,
 
-      learning_rate=1e-2, # stupid edge of stability!!
+      learning_rate=1e-2,
     )

@@ -21,7 +21,7 @@ class Cnn(gtorch.models.base.Base):
           kernel_size=5,
           stride=5),
         torch.nn.BatchNorm1d(num_features=self.features),
-        ZeroPadLastDim(32), # bug in device=mps implementation, only
+        ZeroPadLastDim(min_size=32), # bug in device=mps implementation, only
         torch.nn.AdaptiveMaxPool1d(32),
         torch.nn.Conv1d(
           self.features,
@@ -56,5 +56,5 @@ class Cnn(gtorch.models.base.Base):
       max_epochs=80,
       min_epochs=0,
 
-      learning_rate=1e-2,
+      learning_rate=1e-2,  # not tuned
     )
