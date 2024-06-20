@@ -1,9 +1,9 @@
 import pathlib
 
+from matplotlib import pyplot as plt
 import pandas as pd
 
-from plot.palette import draw_3_legends, get_3_axes, plot_3_types
-from regression.linear_aggregate import get_predictions
+from no_torch.linear_aggregate import get_predictions
 
 
 def read_dynamics(kind="graph"):
@@ -27,13 +27,11 @@ def read_dynamics(kind="graph"):
   summary.to_csv(pathlib.Path("/Users/abe/Desktop/features.csv"))
 
 def make_plots():
-  axs = get_3_axes()
-  axs = axs.flatten()
   y_hat, y = get_predictions(pathlib.Path("/Users/abe/Desktop/features.csv"), weight_ratio=1e3)
-  line1 = plot_3_types(y_hat, y, axs)
+  plt.plot(y_hat, y)
   y_hat, y = get_predictions(pathlib.Path("/Users/abe/Desktop/features.csv"), weight_ratio=1e-1)
-  line2 = plot_3_types(y_hat, y, axs)
-  draw_3_legends(axs, [line1, line2])
+  plt.plot(y_hat, y)
+  plt.show()
 
 if __name__ == "__main__":
   #read_dynamics(graph=True)

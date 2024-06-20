@@ -4,8 +4,6 @@ import pandas as pd
 import torch
 
 import models
-import etl.torch.linear_box
-import etl.torch.linear_patient
 import core.train
 import core.optimizer
 import plot.tune
