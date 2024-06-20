@@ -35,11 +35,8 @@ def postprocess_tuning_ranges(tuning_ranges):
 def main(train_loader, val_loader, builder=None, base_params=None, task="classify", disk="none", history="none", tuning_ranges=None):
   torch.manual_seed(42)
   assert isinstance(builder, models.base.Base)
-  print(f"{tuning_ranges=}")
-  if tuning_ranges is None:
-    tuning_ranges = builder.get_tuning_ranges()
-  else:
-    tuning_ranges = postprocess_tuning_ranges(tuning_ranges)
+  assert tuning_ranges
+  tuning_ranges = postprocess_tuning_ranges(tuning_ranges)
   assert tuning_ranges
   spaces = get_spaces(**tuning_ranges)
   results = []
