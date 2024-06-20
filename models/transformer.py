@@ -1,8 +1,8 @@
 import numpy as np
 import torch
 
-import gtorch.models.base
-from gtorch.models.util import NoopAttention
+import models.base
+from models.util import NoopAttention
 
 
 class Decoder(torch.nn.Module):
@@ -54,7 +54,7 @@ class GetClassifierOutputs(torch.nn.Module):
       return input[:, -1, :]
     assert False, "unknown transformer aggregation kind: {}".format(self.kind)
 
-class Transformer(gtorch.models.base.SequenceBase):
+class Transformer(models.base.SequenceBase):
   def __init__(self, n_layers=2, n_features=12, n_classes=2, device='cpu'):
     self.classes = n_classes
     self.features = n_features

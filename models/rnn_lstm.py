@@ -1,7 +1,7 @@
 import torch
 from einops import rearrange
 
-import gtorch.models.base
+import models.base
 
 class GetNextTokenOutputs(torch.nn.Module):
   def forward(self, input):
@@ -13,7 +13,7 @@ class GetClassifierOutputs(torch.nn.Module):
     output, (hidden, gating) = input
     return output
 
-class Rnn(gtorch.models.base.SequenceBase):
+class Rnn(models.base.SequenceBase):
   def __init__(self, n_layers=2, n_features=12, n_classes=2, device='cpu'):
     self.classes = n_classes
     self.features = n_features

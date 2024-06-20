@@ -3,11 +3,11 @@ import pandas as pd
 import torch
 from einops.layers.torch import Rearrange
 
-import gtorch.models.base
-from gtorch.models.util import OnePadChannelsForBias
+import models.base
+from models.util import OnePadChannelsForBias
 
 
-class Linear(gtorch.models.base.Base):
+class Linear(models.base.Base):
   def __init__(self, n_features=12, n_classes=2, device='cpu'):
     self.classes = n_classes
     self.features = n_features

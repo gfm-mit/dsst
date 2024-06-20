@@ -1,16 +1,16 @@
 import torch
 from einops.layers.torch import Rearrange
 
-import gtorch.models.base
+import models.base
 
 
-class Cnn(gtorch.models.base.Base):
+class Cnn(models.base.Base):
   def __init__(self, n_features=12, n_classes=2, device='cpu'):
     self.classes = n_classes
     n_features = n_features
     super().__init__(device=device)
 
-  def get_classifier_architecture(self, n_features):
+  def get_classifier_architecture(self, n_features=12):
     model = torch.nn.Sequential(
         # b n c
         Rearrange('b n c -> b c n'),

@@ -8,7 +8,7 @@ import gtorch.train.train
 import gtorch.train.tune
 import gtorch.metrics.calibration
 import gtorch.metrics.metrics
-import gtorch.models.cnn_2d
+import models.cnn_2d
 import gtorch.loss.optimizer
 import plot.metrics
 import util.excepthook
@@ -27,13 +27,13 @@ if __name__ == "__main__":
   train_loader, val_loader, test_loader = etl.torch.bitmap.get_loaders()
   if args.tune:
     # tune parameters
-    BUILDER = gtorch.models.cnn_2d.Cnn(n_classes=2, device=args.device, n_features=12)
+    BUILDER = models.cnn_2d.Cnn(n_classes=2, device=args.device, n_features=12)
     base_params = BUILDER.get_parameters()
     axs, line1 = gtorch.train.tune.main(train_loader, val_loader,
                                         base_params=base_params,
                                         builder=BUILDER)
   else:
-    builder = gtorch.models.cnn_2d.Cnn(n_classes=2, device=args.device, n_features=12)
+    builder = models.cnn_2d.Cnn(n_classes=2, device=args.device, n_features=12)
     #torch.manual_seed(42)
     base_params = builder.get_parameters()
     with cProfile.Profile() as pr:

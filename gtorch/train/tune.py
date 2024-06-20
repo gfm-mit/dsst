@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import torch
 
+import models
 import etl.torch.linear_box
 import etl.torch.linear_patient
 import gtorch.train.train
@@ -34,7 +35,7 @@ def postprocess_tuning_ranges(tuning_ranges):
 
 def main(train_loader, val_loader, builder=None, base_params=None, task="classify", disk="none", history="none", tuning_ranges=None):
   torch.manual_seed(42)
-  assert isinstance(builder, gtorch.models.base.Base)
+  assert isinstance(builder, models.base.Base)
   print(f"{tuning_ranges=}")
   if tuning_ranges is None:
     tuning_ranges = builder.get_tuning_ranges()

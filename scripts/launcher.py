@@ -17,15 +17,15 @@ import gtorch.train.train
 import gtorch.train.tune
 import plot.lr_finder
 import plot.tune
-import gtorch.models.cnn_1d
-import gtorch.models.cnn_1d_atrous
-import gtorch.models.cnn_1d_butterfly
-import gtorch.models.cnn_2d
-import gtorch.models.linear_bc
-import gtorch.models.linear_bnc
-import gtorch.models.rnn_lstm
-import gtorch.models.transformer
-import gtorch.models.registry
+import models.cnn_1d
+import models.cnn_1d_atrous
+import models.cnn_1d_butterfly
+import models.cnn_2d
+import models.linear_bc
+import models.linear_bnc
+import models.rnn_lstm
+import models.transformer
+import models.registry
 import gtorch.loss.loss
 import gtorch.metrics.metrics
 import gtorch.loss.optimizer
@@ -79,13 +79,13 @@ if __name__ == "__main__":
 
   axs = None
   train_loader, val_loader, test_loader = etl.torch.dataset.get_loaders()
-  BUILDER = gtorch.models.registry.lookup_model(args.model)
+  BUILDER = models.registry.lookup_model(args.model)
   if args.bitmap:
-    BUILDER = gtorch.models.cnn_2d.Cnn
+    BUILDER = models.cnn_2d.Cnn
     train_loader, val_loader, test_loader = etl.torch.bitmap.get_loaders()
   if args.test:
     for model_class, train_batch, val_batch in zip(
-      gtorch.models.registry.get_all_1d_models(),
+      models.registry.get_all_1d_models(),
       train_loader, val_loader):
       experiment = gtorch.train.experiment.Experiment(
         model_class=model_class,

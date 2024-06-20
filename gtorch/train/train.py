@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-import gtorch.models.base
+import models.base
 import gtorch.loss.optimizer
 import gtorch.loss.loss
 import gtorch.metrics.metrics
@@ -38,7 +38,7 @@ def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_
   return model, epoch_loss_history
 
 def setup_model(params, model_factory_fn, task="classify", disk="none"):
-  assert isinstance(model_factory_fn, gtorch.models.base.Base)
+  assert isinstance(model_factory_fn, models.base.Base)
   assert task in "classify classify_patient next_token".split()
   assert disk in "none load save".split()
   overlay_params = {
@@ -47,7 +47,7 @@ def setup_model(params, model_factory_fn, task="classify", disk="none"):
     # TODO: figure out where this needs to be controlled
   }
   if task == "next_token":
-    assert isinstance(model_factory_fn, gtorch.models.base.SequenceBase)
+    assert isinstance(model_factory_fn, models.base.SequenceBase)
     model = model_factory_fn.get_next_token_architecture(**overlay_params)
   else:
     model = model_factory_fn.get_classifier_architecture(**overlay_params)

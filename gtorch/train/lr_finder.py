@@ -2,7 +2,7 @@ import itertools
 import numpy as np
 from tqdm import trange
 
-import gtorch.models.base
+import models.base
 import gtorch.train.train
 import gtorch.loss.loss
 import gtorch.loss.scheduler
