@@ -4,7 +4,7 @@ import torch
 from einops.layers.torch import Rearrange
 
 import gtorch.models.base
-from gtorch.models.util import OneCat
+from gtorch.models.util import OnePadChannelsForBias
 
 
 class Linear(gtorch.models.base.Base):
@@ -19,7 +19,7 @@ class Linear(gtorch.models.base.Base):
           Rearrange('b c 1 -> b c'),
           torch.nn.BatchNorm1d(num_features=12),
           torch.nn.Linear(self.features, 1),
-          OneCat(),
+          OnePadChannelsForBias(),
           torch.nn.LogSoftmax(dim=-1),
       )
     else:

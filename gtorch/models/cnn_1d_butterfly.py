@@ -2,7 +2,7 @@ import torch
 from einops.layers.torch import Rearrange
 
 import gtorch.models.base
-from gtorch.models.util import PadCat
+from gtorch.models.util import PadWidthToMultiple
 
 
 class Cnn(gtorch.models.base.Base):
@@ -15,7 +15,7 @@ class Cnn(gtorch.models.base.Base):
     model = torch.nn.Sequential(
         # b n c
         Rearrange('b n c -> b c n'),
-        PadCat(8),
+        PadWidthToMultiple(8),
         Rearrange('b c (h w) -> b c h w', h=8),
         # separable 5x5: slow on CPU, might be fast on GPU
         torch.nn.Conv2d(
