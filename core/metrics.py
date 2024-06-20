@@ -9,6 +9,12 @@ def evaluate(model, val_loader, task):
   else:
     return binary_classifier_metrics(model, val_loader)
 
+def early_stop(history, task):
+  if task == "next_token":
+    return np.min(history)
+  else:
+    return np.max(history)
+
 def next_token_metrics(model, val_loader, verbose=False):
   DEVICE = next(model.parameters()).device
   results = []

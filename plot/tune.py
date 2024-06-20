@@ -55,5 +55,5 @@ def plot_tuning_results(keys, results, task):
       pass
   plt.suptitle("Aggregated at Box Level, not Patient Level")
   plt.show()
-  print(results)
+  print(results[list(keys) + ['metric']])
   return axs, None

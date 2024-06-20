@@ -4,6 +4,7 @@ import pandas as pd
 import torch
 
 import models
+import core.metrics
 import core.train
 import core.optimizer
 import plot.tune
@@ -52,11 +53,12 @@ def main(train_loader, val_loader, builder=None, base_params=None, task="classif
     }
     metric, epoch_loss_history, model = core.train.setup_training_run(
       params, model_factory_fn=builder, train_loader=train_loader, val_loader=val_loader,
-      task=task, disk=disk, tqdm_prefix=f"Tuning[{i+1}/{spaces.shape[0]}]={case_label}", history=history)
+      task=task, disk=disk, tqdm_prefix=f"Tuning[{i+1}/{spaces.shape[0]}]={case_label}",
+      history="val")
+    metric = core.metrics.early_stop(epoch_loss_history, task=task)
     results += [dict(**params, metric=metric, history=epoch_loss_history)]
   results = pd.DataFrame(results)
   if history == "none":
-    results = results.drop(columns="history")
     plot.tune.plot_tuning_results(spaces.columns, results, task)
   else:
     plot.tune.plot_tuning_history(spaces.columns, results, ylabel=f"tune.args.{history=}")
