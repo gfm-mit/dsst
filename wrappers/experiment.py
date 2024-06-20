@@ -1,10 +1,10 @@
 import json
 import etl.torch.linear_box
-import gtorch.train.lr_finder
+import wrappers.lr_finder
 import plot.lr_finder
-import gtorch.core.train
-import gtorch.train.tune
-import gtorch.core.metrics
+import core.train
+import wrappers.tune
+import core.metrics
 import plot.calibration
 import plot.metrics
 
@@ -23,7 +23,7 @@ class Experiment:
     #torch.manual_seed(42)
     builder = self.model_class(n_classes=2, device=self.args.device)
     base_params = builder.get_parameters(task=self.args.task) | self.args.config | kwargs
-    metric, epoch_loss_history, self.model = gtorch.core.train.setup_training_run(
+    metric, epoch_loss_history, self.model = core.train.setup_training_run(
         base_params, model_factory_fn=builder,
         train_loader=self.train_loader,
         val_loader=self.val_loader,
@@ -48,7 +48,7 @@ class Experiment:
     assert self.model is not None
     assert self.args.task in 'classify classify_patient'.split()
     self.model.eval()
-    logits, targets = gtorch.core.metrics.get_combined_roc(
+    logits, targets = core.metrics.get_combined_roc(
       self.model, self.test_loader,
       combine_fn=None if self.args.task == "classify" else etl.torch.linear_box.combiner)
     roc = plot.calibration.get_full_roc_table(logits, targets)
@@ -58,7 +58,7 @@ class Experiment:
   def tune(self, **kwargs):
     builder = self.model_class(n_classes=2, device=self.args.device)
     base_params = builder.get_parameters(task=self.args.task) | self.args.config | kwargs
-    gtorch.train.tune.main(
+    wrappers.tune.main(
       self.train_loader, self.val_loader,
       builder=builder, base_params=base_params,
       task=self.args.task, disk=self.args.disk, history=self.args.history,
@@ -67,7 +67,7 @@ class Experiment:
   def find_lr(self, axs=None, params=None, label=None):
     builder = self.model_class(n_classes=2, device=self.args.device)
     base_params = builder.get_parameters(task=self.args.task) | params
-    lrs, losses, conds = gtorch.train.lr_finder.find_lr(
+    lrs, losses, conds = wrappers.lr_finder.find_lr(
         base_params,
         model_factory_fn=builder,
         train_loader=self.train_loader,

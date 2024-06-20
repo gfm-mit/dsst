@@ -11,10 +11,10 @@ import etl.torch.bitmap
 import etl.torch.dataset
 import etl.torch.linear_box
 import etl.torch.linear_patient
-import gtorch.train.coef
-import gtorch.train.experiment
-import gtorch.core.train
-import gtorch.train.tune
+import wrappers.coef
+import wrappers.experiment
+import core.train
+import wrappers.tune
 import plot.lr_finder
 import plot.tune
 import models.cnn_1d
@@ -26,9 +26,9 @@ import models.linear_bnc
 import models.rnn_lstm
 import models.transformer
 import models.registry
-import gtorch.core.loss
-import gtorch.core.metrics
-import gtorch.core.optimizer
+import core.loss
+import core.metrics
+import core.optimizer
 
 class TomlAction(argparse.Action):
     def __init__(self, toml_key=None, **kwargs):
@@ -87,7 +87,7 @@ if __name__ == "__main__":
     for model_class, train_batch, val_batch in zip(
       models.registry.get_all_1d_models(),
       train_loader, val_loader):
-      experiment = gtorch.train.experiment.Experiment(
+      experiment = wrappers.experiment.Experiment(
         model_class=model_class,
         train_loader=[train_batch],
         val_loader=[val_batch],
@@ -98,12 +98,12 @@ if __name__ == "__main__":
       print(f"finished test {model_class=} {metric=}")
   elif args.coef:
     # check coefficients
-    gtorch.train.coef.get_coef_dist(
+    wrappers.coef.get_coef_dist(
       builder=BUILDER(n_classes=2, device=args.device),
       train_loader=train_loader,
       val_loader=val_loader)
   else:
-    experiment = gtorch.train.experiment.Experiment(
+    experiment = wrappers.experiment.Experiment(
       model_class=BUILDER,
       train_loader=train_loader,
       val_loader=val_loader,

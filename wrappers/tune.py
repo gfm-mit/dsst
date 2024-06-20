@@ -6,8 +6,8 @@ import torch
 import models
 import etl.torch.linear_box
 import etl.torch.linear_patient
-import gtorch.core.train
-import gtorch.core.optimizer
+import core.train
+import core.optimizer
 import plot.tune
 
 
@@ -52,7 +52,7 @@ def main(train_loader, val_loader, builder=None, base_params=None, task="classif
       k: v if isinstance(v, str) else f"{v:.2e}"
       for k, v in spaces.loc[i].items()
     }
-    metric, epoch_loss_history, model = gtorch.core.train.setup_training_run(
+    metric, epoch_loss_history, model = core.train.setup_training_run(
       params, model_factory_fn=builder, train_loader=train_loader, val_loader=val_loader,
       task=task, disk=disk, tqdm_prefix=f"Tuning[{i+1}/{spaces.shape[0]}]={case_label}", history=history)
     results += [dict(**params, metric=metric, history=epoch_loss_history)]

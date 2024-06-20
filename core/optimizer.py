@@ -1,12 +1,12 @@
 import torch
 import pytorch_optimizer
 
-import gtorch.core.scheduler
+import core.scheduler
 
 
 def get_optimizer_and_scheduler(params, model):
   optimizer = get_optimizer(params, model)
-  return gtorch.core.scheduler.get_scheduler(params, model, optimizer)
+  return core.scheduler.get_scheduler(params, model, optimizer)
 
 def get_optimizer(params, model):
   if "optimizer" in params and params["optimizer"] == "adam":
