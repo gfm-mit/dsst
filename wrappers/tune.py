@@ -32,6 +32,23 @@ def postprocess_tuning_ranges(tuning_ranges):
       assert isinstance(tuning_ranges[k], list)
   return tuning_ranges
 
+def pprint_dict(d):
+  str_dict = {}
+  for k, v in d.items():
+      if isinstance(v, str):
+        str_dict[k] = v
+      elif isinstance(v, int):
+        str_dict[k] = str(v)
+      elif 0 < v < .1:
+        str_dict[k] = f"{v:.1e}"
+      elif 0.9 < v < 1:
+        str_dict[k] = f"1 - {1- v:.0e}"
+      elif 0.1 <= v <= .9 or v == 0:
+        str_dict[k] = f"{v:.2f}"
+      else:
+        str_dict[k] = f"{v:.2e}"
+  return str(str_dict)
+
 def main(train_loader, val_loader, builder=None, base_params=None, task="classify", disk="none", history="none", tuning_ranges=None):
   torch.manual_seed(42)
   assert isinstance(builder, models.base.Base)
@@ -44,10 +61,7 @@ def main(train_loader, val_loader, builder=None, base_params=None, task="classif
     params = dict(**base_params)
     for k in spaces.columns:
       params[k] = spaces.loc[i, k]
-    case_label = {
-      k: v if isinstance(v, str) else f"{v:.2e}"
-      for k, v in spaces.loc[i].items()
-    }
+    case_label = pprint_dict(spaces.loc[i].to_dict())
     metric, epoch_loss_history, model = core.train.setup_training_run(
       params, model_factory_fn=builder, train_loader=train_loader, val_loader=val_loader,
       task=task, disk=disk, tqdm_prefix=f"Tuning[{i+1}/{spaces.shape[0]}]={case_label}",
