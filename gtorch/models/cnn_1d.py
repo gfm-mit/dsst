@@ -2,7 +2,7 @@ import torch
 from einops.layers.torch import Rearrange
 
 import gtorch.models.base
-from gtorch.models.util import ZeroPadLastDim
+from gtorch.models.util import ZeroPadLastDim, PrintfModule
 
 
 class Cnn(gtorch.models.base.Base):
@@ -18,23 +18,22 @@ class Cnn(gtorch.models.base.Base):
         torch.nn.Conv1d(
           12,
           self.features,
-          kernel_size=5,
-          stride=5),
-        torch.nn.BatchNorm1d(num_features=self.features),
-        ZeroPadLastDim(min_size=32), # bug in device=mps implementation, only
-        torch.nn.AdaptiveMaxPool1d(32),
-        torch.nn.Conv1d(
-          self.features,
-          self.features,
-          kernel_size=5,
-          stride=5),
+          kernel_size=4,
+          stride=4),
         torch.nn.BatchNorm1d(num_features=self.features),
         torch.nn.Conv1d(
           self.features,
           self.features,
-          kernel_size=5,
-          stride=5),
+          kernel_size=4,
+          stride=4),
         torch.nn.BatchNorm1d(num_features=self.features),
+        torch.nn.Conv1d(
+          self.features,
+          self.features,
+          kernel_size=4,
+          stride=4),
+        torch.nn.BatchNorm1d(num_features=self.features),
+        #PrintfModule('After 64x down'),
         torch.nn.AdaptiveMaxPool1d(1),
         Rearrange('b c 1 -> b c'),
         torch.nn.BatchNorm1d(num_features=self.features),
