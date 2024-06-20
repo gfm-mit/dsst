@@ -47,7 +47,10 @@ def main(train_loader, val_loader, builder=None, base_params=None, task="classif
     params = dict(**base_params)
     for k in spaces.columns:
       params[k] = spaces.loc[i, k]
-    case_label = spaces.loc[i].to_dict()
+    case_label = {
+      k: v if isinstance(v, str) else f"{v:.2e}"
+      for k, v in spaces.loc[i].items()
+    }
     metric, epoch_loss_history, model = gtorch.train.train.setup_training_run(
       params, model_factory_fn=builder, train_loader=train_loader, val_loader=val_loader,
       task=task, disk=disk, tqdm_prefix=f"Tuning[{i+1}/{spaces.shape[0]}]={case_label}", history=history)
