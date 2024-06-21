@@ -5,9 +5,8 @@
   weight_decay=0
   momentum=0.5
   conditioning_smoother=0.999
-  warmup_steps=5
+  warmup_epochs=5
   max_epochs=1200
-  min_epochs=3
   learning_rate=2e-1
 
 [onecyclesgd]
@@ -17,9 +16,8 @@
   weight_decay=0
   momentum=0.5
   conditioning_smoother=0.999
-  warmup_steps=5
+  warmup_epochs=5
   max_epochs=1200
-  min_epochs=3
   learning_rate=2e-1
 
 [sfsgd]
@@ -29,9 +27,8 @@
   weight_decay=0
   momentum=0.5
   conditioning_smoother=0.999
-  warmup_steps=5
+  warmup_epochs=5
   max_epochs=800
-  min_epochs=3
   learning_rate=2e-1
 
 [samsgd]
@@ -41,9 +38,8 @@
   weight_decay=0
   momentum=0.5
   conditioning_smoother=0.999
-  warmup_steps=5
+  warmup_epochs=5
   max_epochs=1200
-  min_epochs=3
   learning_rate=2e-1
 
 [adam]
@@ -53,9 +49,8 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  warmup_steps=5
+  warmup_epochs=5
   max_epochs=1200
-  min_epochs=3
   learning_rate=1e-2
 
 [onecycleadam]
@@ -65,9 +60,8 @@
   weight_decay=0
   momentum=0.9
   conditioning_smoother=0.999
-  warmup_steps=5
+  warmup_epochs=5
   max_epochs=400
-  min_epochs=3
   learning_rate=1e-2
 
 [sfadam]
@@ -77,9 +71,8 @@
   weight_decay=0
   momentum=0.5
   conditioning_smoother=0.999
-  warmup_steps=5
+  warmup_epochs=5
   max_epochs=800
-  min_epochs=3
   learning_rate=1e-2
 
 [samadam]
@@ -89,9 +82,8 @@
   weight_decay=0
   momentum=0.5
   conditioning_smoother=0.999
-  warmup_steps=5
+  warmup_epochs=5
   max_epochs=1200
-  min_epochs=3
   learning_rate=1e-2
 
 [lion]
@@ -101,9 +93,8 @@
   weight_decay=0
   momentum=0.5
   conditioning_smoother=0.999
-  warmup_steps=5
+  warmup_epochs=5
   max_epochs=800
-  min_epochs=3
   learning_rate=1e-2
 
 [prodigy]
@@ -113,7 +104,6 @@
   weight_decay=0
   momentum=0.5
   conditioning_smoother=0.999
-  warmup_steps=5
+  warmup_epochs=5
   max_epochs=800
-  min_epochs=3
   learning_rate=1
