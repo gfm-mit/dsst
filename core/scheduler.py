@@ -91,10 +91,11 @@ def get_scheduler(params, model, optimizer):
         max_lr=params["learning_rate"],
         warmup_steps=int(params["pct_start"] * params["max_epochs"]) if "pct_start" in params else params["warmup_steps"],
         t_max=int(params["max_epochs"]))
-  elif key in params and params[key] == "cosine":
-    scheduler = pytorch_optimizer.lr_scheduler.linear_warmup.CosineScheduler(
+  elif key in params and params[key] == "warmup":
+    scheduler = pytorch_optimizer.lr_scheduler.linear_warmup.LinearScheduler(
         optimizer,
         max_lr=params["learning_rate"],
+        min_lr=params["learning_rate"],
         warmup_steps=int(params["pct_start"] * params["max_epochs"]) if "pct_start" in params else params["warmup_steps"],
         t_max=int(params["max_epochs"]))
   elif key in params and params[key] == "ramp":
