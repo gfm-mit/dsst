@@ -52,7 +52,7 @@ class SeqDataset(torch.utils.data.Dataset):
       if str(indices) not in self.cache:
         self.cache[str(indices)] = tuple(x.to(self.device) for x in self.cache_miss(indices))
       return self.cache[str(indices)]
-    
+
     def cache_miss(self, indices):
         coarse = self.labels[indices, np.newaxis]
         nda = self.features[indices]

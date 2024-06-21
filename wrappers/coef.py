@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-import core.metrics
+import core.train
 
 
 def get_coef_dist(builder, train_loader, val_loader):
@@ -10,8 +10,8 @@ def get_coef_dist(builder, train_loader, val_loader):
   for _ in range(10):
     #torch.manual_seed(42)
     base_params = builder.get_parameters()
-    metrics, model = wrappers.train.setup_training_run(base_params, model_factory_fn=builder,
-                                                         train_loader=train_loader, val_loader=val_loader)
+    metrics, model = core.train.setup_training_run(base_params, model_factory_fn=builder,
+                                                   train_loader=train_loader, val_loader=val_loader)
     model.eval()
     coef = builder.get_coefficients(model)
     #coef = np.concatenate([[metrics], coef])
