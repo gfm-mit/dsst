@@ -74,7 +74,6 @@ def get_combined_roc(model, test_loader, combine_fn=None):
       groups += [g]
       if idx % 100 == 0 and idx > 0:
         print(f"metrics.get_combined_roc()[{idx}]")
-  # TODO: why is this thing not working at all?
   logits = np.concatenate(logits)
   targets = np.concatenate(targets)
   groups = np.concatenate(groups)

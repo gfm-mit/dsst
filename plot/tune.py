@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 
-# todo, these two seem redundant
+# TODO: unify tuning vs compare plots
 def plot_epoch_loss_history(args, epoch_loss_history, axs=None, label=None):
   ylabel = 'validation metric' if args.history == "val" else 'training loss'
   results = pd.Series(dict(history=epoch_loss_history, label=label)).to_frame().transpose()
