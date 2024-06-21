@@ -3,3 +3,4 @@
 results/*
 config/*.toml
 scripts/local.py
+scripts/gprof2dot.py
