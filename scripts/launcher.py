@@ -87,7 +87,7 @@ def main():
         test_loader=None,
         args=args)
       print(f"starting test {model_class=}")
-      metric, epoch_loss_history = experiment.train(min_epochs=0, max_epochs=1)
+      metric, epoch_loss_history = experiment.train(warmup_epochs=0, max_epochs=1)
       print(f"finished test {model_class=} {metric=}")
   elif args.coef:
     # check coefficients

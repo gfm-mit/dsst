@@ -56,10 +56,10 @@ class Cnn(models.base.Base):
       weight_decay=0,
       momentum=0.5,
       conditioning_smoother=0.999,
-      warmup_steps=5,
+      warmup_epochs=5,
 
       max_epochs=100,
-      min_epochs=0,
+      warmup_epochs=0,
 
       learning_rate=1e-2,  # not tuned
     )

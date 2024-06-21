@@ -46,10 +46,9 @@ class Cnn(models.base.Base):
       weight_decay=0,
       momentum=0,
       conditioning_smoother=0.9,
-      pct_start=0.0,
 
       max_epochs=10,
-      min_epochs=0,
+      warmup_epochs=0,
 
       learning_rate=5e-1, # stupid edge of stability!!
     )

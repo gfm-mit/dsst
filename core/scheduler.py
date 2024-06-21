@@ -83,20 +83,20 @@ def get_scheduler(params, model, optimizer):
         optimizer,
         max_lr=params["learning_rate"],
         steps_per_epoch=1,
-        pct_start=params["pct_start"] if "pct_start" in params else float(params["warmup_steps"]) / params["max_epochs"],
+        pct_start=float(params["warmup_epochs"]) / params["max_epochs"],
         epochs=int(params["max_epochs"]))
   elif key in params and params[key] == "cosine":
     scheduler = pytorch_optimizer.lr_scheduler.linear_warmup.CosineScheduler(
         optimizer,
         max_lr=params["learning_rate"],
-        warmup_steps=int(params["pct_start"] * params["max_epochs"]) if "pct_start" in params else params["warmup_steps"],
+        warmup_steps=params["warmup_epochs"],
         t_max=int(params["max_epochs"]))
   elif key in params and params[key] == "warmup":
     scheduler = pytorch_optimizer.lr_scheduler.linear_warmup.LinearScheduler(
         optimizer,
         max_lr=params["learning_rate"],
         min_lr=params["learning_rate"],
-        warmup_steps=int(params["pct_start"] * params["max_epochs"]) if "pct_start" in params else params["warmup_steps"],
+        warmup_steps=params["warmup_epochs"],
         t_max=int(params["max_epochs"]))
   elif key in params and params[key] == "ramp":
     scheduler = LogRampScheduler(

@@ -32,9 +32,8 @@ class Linear(models.base.Base):
       weight_decay=0,
       momentum=0.9,
       conditioning_smoother=0.999,
-      pct_start=0.0,
       max_epochs=5,
-      min_epochs=0,
+      warmup_epochs=0,
 
       learning_rate=3e-1,  # stupid edge of stability!!
     )

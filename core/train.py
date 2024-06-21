@@ -11,7 +11,7 @@ import core.metrics
 from core.optimizer import get_optimizer_and_scheduler
 
 Path('./results').mkdir(parents=True, exist_ok=True)
-def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_loader, task=None, tqdm_prefix=None, loss_history_loader=None):
+def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, train_loader, task=None, tqdm_prefix=None, loss_history_loader=None):
   loss_upper_bound = 8 # only for the first step
   progress = tqdm(range(max_epochs), desc=tqdm_prefix or "")
   epoch_loss_history = []
@@ -19,7 +19,7 @@ def one_training_run(model, optimizer, scheduler, min_epochs, max_epochs, train_
     state_dict = dict(**model.state_dict())
     train_loss, loss_description = core.loss.get_task_loss(model, optimizer, train_loader, task=task)
     scheduler.step()
-    if train_loss > loss_upper_bound and epoch > min_epochs:
+    if train_loss > loss_upper_bound and epoch > warmup_epochs:
       print(f"next_loss too big: {train_loss} > {loss_upper_bound}")
       model.load_state_dict(state_dict)
       return model, epoch_loss_history
@@ -73,7 +73,7 @@ def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=N
 
   torch.cuda.empty_cache()
   model, epoch_loss_history = one_training_run(model, optimizer, scheduler,
-                                   min_epochs=params.get("min_epochs", params.get("warmup_steps", 0)),
+                                   warmup_epochs=params["warmup_epochs"],
                                    max_epochs=params["max_epochs"],
                                    train_loader=train_loader,
                                    task=task,

@@ -101,11 +101,11 @@ class Transformer(models.base.SequenceBase):
       weight_decay=0,
       momentum=.9,
       conditioning_smoother=.999,
-      warmup_steps=5,
+      warmup_epochs=5,
       agg_kind="max",
 
       max_epochs=5,
-      min_epochs=5,
+      warmup_epochs=5,
 
       learning_rate=1.3e-1, # stupid edge of stability!!
     )

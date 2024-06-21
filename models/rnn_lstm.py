@@ -70,10 +70,9 @@ class Rnn(models.base.SequenceBase):
       weight_decay=0,
       momentum=1 - 1e-3,
       conditioning_smoother=1 - 3e-2,
-      pct_start=0.0,
 
       max_epochs=10,
-      min_epochs=0,
+      warmup_epochs=0,
 
       learning_rate=1e-1,
     )
