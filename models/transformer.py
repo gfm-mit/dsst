@@ -101,7 +101,6 @@ class Transformer(models.base.SequenceBase):
       weight_decay=0,
       momentum=.9,
       conditioning_smoother=.999,
-      warmup_epochs=5,
       agg_kind="max",
 
       max_epochs=5,

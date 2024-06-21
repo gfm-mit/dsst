@@ -52,7 +52,6 @@ class Cnn(models.base.Base):
       warmup_epochs=5,
 
       max_epochs=50,
-      warmup_epochs=50,
 
       learning_rate=1.4e-3,
 

@@ -52,7 +52,6 @@ class Cnn(models.base.Base):
       warmup_epochs=5,
 
       max_epochs=400, # maybe 1200, actually
-      warmup_epochs=0,
 
       learning_rate=1e-2, # stupid edge of stability!!
     )
