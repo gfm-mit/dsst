@@ -31,6 +31,7 @@ def get_optimizer(params, model):
                                        weight_decouple=True,
                                        weight_decay=params["weight_decay"])
   elif params["optimizer"] == "prodigy":
+    assert params["scheduler"] == "none"
     optimizer = pytorch_optimizer.Prodigy(model.parameters(),
                                           betas=[
                                               params["momentum"],
