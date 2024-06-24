@@ -10,7 +10,7 @@ class Cnn(models.base.Base):
     self.features = n_features
     super().__init__(device=device)
 
-  def get_classifier_architecture(self):
+  def get_classifier_architecture(self, n_features=None, kernel_split=''):
     model = torch.nn.Sequential(
         # b n c
         Rearrange('b n c -> b c n'),
@@ -19,12 +19,14 @@ class Cnn(models.base.Base):
           self.features,
           kernel_size=5,
           stride=5),
+        torch.nn.SiLU(),
         torch.nn.BatchNorm1d(num_features=self.features),
         torch.nn.Conv1d(
           self.features,
           self.features,
           kernel_size=5,
           dilation=4),
+        torch.nn.SiLU(),
         torch.nn.BatchNorm1d(num_features=self.features),
         torch.nn.Conv1d(
           self.features,
@@ -32,6 +34,7 @@ class Cnn(models.base.Base):
           kernel_size=5,
           padding=32,
           dilation=16),
+        torch.nn.SiLU(),
         torch.nn.BatchNorm1d(num_features=self.features),
         torch.nn.AdaptiveMaxPool1d(1),
         Rearrange('b c 1 -> b c'),
@@ -44,14 +47,15 @@ class Cnn(models.base.Base):
 
   def get_parameters(self, **kwargs):
     return dict(
-      scheduler='none',
+      scheduler='warmup',
       optimizer='samadam',
       weight_decay=0,
-      momentum=0.5,
+      momentum=0.9,
       conditioning_smoother=0.999,
       warmup_epochs=5,
+      max_epochs=50,
 
-      max_epochs=400, # maybe 1200, actually
-
-      learning_rate=1e-2, # stupid edge of stability!!
+      learning_rate=3e-1,
+      n_features=64,
+      kernel_split='',
     )
