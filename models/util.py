@@ -1,6 +1,11 @@
 import numpy as np
 import torch
 
+class SwiGLU(torch.nn.Module):
+  def forward(self, x):
+    x, gate = x.chunk(2, dim=-1)
+    return torch.nn.functional.silu(gate) * x
+
 class OnePadChannelsForBias(torch.nn.Module):
   def forward(self, input):
     return torch.cat([torch.zeros([input.shape[0], 1]), input], axis=1)
