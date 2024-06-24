@@ -44,16 +44,16 @@ class Cnn(models.base.Base):
 
   def get_parameters(self, **kwargs):
     return dict(
-      scheduler='none',
+      scheduler='warmup',
       optimizer='samadam',
       weight_decay=0,
-      momentum=0.5,
+      momentum=0,
       conditioning_smoother=0.999,
       warmup_epochs=5,
 
-      max_epochs=50,
+      max_epochs=80,
 
-      learning_rate=1.4e-3,
+      learning_rate=1.5e-2,
 
-      n_features=96,
+      n_features=48,
     )
