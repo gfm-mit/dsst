@@ -22,12 +22,16 @@ def get_spaces(**kwargs):
 def postprocess_tuning_ranges(tuning_ranges):
   for k in tuning_ranges.keys():
     if isinstance(tuning_ranges[k], dict):
-      assert tuning_ranges[k].keys() == set("low high steps".split())
-      tuning_ranges[k] = np.geomspace(
-        tuning_ranges[k]["low"],
-        tuning_ranges[k]["high"],
-        tuning_ranges[k]["steps"]
-      ).tolist()
+      if tuning_ranges[k].keys() == set("low high steps".split()):
+        tuning_ranges[k] = np.geomspace(
+          tuning_ranges[k]["low"],
+          tuning_ranges[k]["high"],
+          tuning_ranges[k]["steps"]
+        ).tolist()
+      elif tuning_ranges[k].keys() == set("multiple values".split()):
+        tuning_ranges[k] = tuning_ranges[k]["values"] * tuning_ranges[k]["multiple"]
+      else:
+        assert False, tuning_ranges[k]
     else:
       assert isinstance(tuning_ranges[k], list)
   return tuning_ranges
@@ -69,6 +73,8 @@ def main(train_loader, val_loader, builder=None, base_params=None, task="classif
     metric = core.metrics.early_stop(epoch_loss_history, task=task)
     results += [dict(**params, metric=metric, history=epoch_loss_history)]
   results = pd.DataFrame(results)
+  if spaces.columns.size == 1:
+    results = results.sort_values(by=spaces.columns[0])
   if history == "none":
     plot.tune.plot_tuning_results(spaces.columns, results, task)
   else:
