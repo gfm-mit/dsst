@@ -2,7 +2,7 @@ import torch
 from einops.layers.torch import Rearrange
 
 import models.base
-from models.util import PrintfModule
+from models.util import PrintfModule, CausalConv1d
 
 class Cnn(models.base.SequenceBase):
   def __init__(self, n_layers=2, n_features=12, n_classes=2, device='cpu'):
@@ -15,7 +15,7 @@ class Cnn(models.base.SequenceBase):
     model = torch.nn.Sequential(
         # b n c
         Rearrange('b n c -> b c n'),
-        torch.nn.Conv1d(12, 12, 1),
+        models.util.CausalConv1d(12, 12, kernel_size=2, dilation=1),
         Rearrange('b c n -> b n c'),
     )
     model = model.to(self.device)
