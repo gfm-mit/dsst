@@ -35,6 +35,7 @@ def get_optimizer(params, model):
                                               params["momentum"],
                                               params["conditioning_smoother"],
                                           ],
+                                          growth_rate=1.3,
                                           weight_decouple=True,
                                           weight_decay=params["weight_decay"])
   elif "optimizer" in params and params["optimizer"] == "sfsgd":
@@ -86,6 +87,7 @@ def get_optimizer(params, model):
     if "optimizer" not in params:
       print("no optimizer specified, defaulting to sgd")
     elif params["optimizer"] != "sgd":
+      assert False
       print(f"unknown optimizer {params['optimizer']}, defaulting to sgd")
     optimizer = torch.optim.SGD(model.parameters(),
                                 lr=params["learning_rate"],
