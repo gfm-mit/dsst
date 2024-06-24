@@ -5,41 +5,44 @@ import models.base
 
 
 class Cnn(models.base.Base):
-  def __init__(self, n_features=12, n_classes=2, device='cpu'):
+  def __init__(self, n_classes=2, device='cpu'):
     self.classes = n_classes
-    self.features = n_features
     super().__init__(device=device)
 
-  def get_classifier_architecture(self, n_features=None, kernel_split=''):
+  def get_classifier_architecture(self, arch_width=None, arch_dilation=None, arch_kernel_size=None):
+    dilation = [int(d) for d in arch_dilation.split(',')]
+    assert len(dilation) == 2
+    kernels = [int(d) for d in arch_kernel_size.split(',')]
+    assert len(kernels) == 3
     model = torch.nn.Sequential(
         # b n c
         Rearrange('b n c -> b c n'),
         torch.nn.Conv1d(
           12,
-          self.features,
-          kernel_size=5,
-          stride=5),
+          arch_width,
+          kernel_size=kernels[0],
+          stride=kernels[0]),
         torch.nn.SiLU(),
-        torch.nn.BatchNorm1d(num_features=self.features),
+        torch.nn.BatchNorm1d(num_features=arch_width),
         torch.nn.Conv1d(
-          self.features,
-          self.features,
-          kernel_size=5,
-          dilation=4),
+          arch_width,
+          arch_width,
+          kernel_size=kernels[1],
+          dilation=dilation[0]),
         torch.nn.SiLU(),
-        torch.nn.BatchNorm1d(num_features=self.features),
+        torch.nn.BatchNorm1d(num_features=arch_width),
         torch.nn.Conv1d(
-          self.features,
-          self.features,
-          kernel_size=5,
+          arch_width,
+          arch_width,
+          kernel_size=kernels[2],
           padding=32,
-          dilation=16),
+          dilation=dilation[1]),
         torch.nn.SiLU(),
-        torch.nn.BatchNorm1d(num_features=self.features),
+        torch.nn.BatchNorm1d(num_features=arch_width),
         torch.nn.AdaptiveMaxPool1d(1),
         Rearrange('b c 1 -> b c'),
-        torch.nn.BatchNorm1d(num_features=self.features),
-        torch.nn.Linear(self.features, self.classes),
+        torch.nn.BatchNorm1d(num_features=arch_width),
+        torch.nn.Linear(arch_width, self.classes),
         torch.nn.LogSoftmax(dim=-1),
     )
     model = model.to(self.device)
@@ -53,9 +56,10 @@ class Cnn(models.base.Base):
       momentum=0.9,
       conditioning_smoother=0.999,
       warmup_epochs=5,
-      max_epochs=50,
+      max_epochs=30,
 
-      learning_rate=3e-1,
-      n_features=64,
-      kernel_split='',
+      learning_rate=1e-3,
+      arch_width=192,
+      arch_dilation='2,16',
+      arch_kernel_size='5,5,4',
     )
