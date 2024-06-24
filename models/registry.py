@@ -6,6 +6,7 @@ import models.cnn_2d
 import models.linear_bc
 import models.linear_bnc
 import models.rnn_lstm
+import models.seq_cnn
 import models.transformer
 
 def lookup_model(name):
@@ -25,14 +26,17 @@ def lookup_model(name):
     return models.rnn_lstm.Rnn
   elif name == "transformer":
     return models.transformer.Transformer
+  elif name == "causal":
+    return models.seq_cnn.Cnn
   assert False
 
 def get_all_1d_models():
   return [
     models.linear_bnc.Linear,
-    models.cnn_1d.Cnn,
-    models.cnn_1d_atrous.Cnn,
+    #models.cnn_1d.Cnn,
+    #models.cnn_1d_atrous.Cnn,
     models.cnn_1d_butterfly.Cnn,
     models.rnn_lstm.Rnn,
     models.transformer.Transformer,
+    models.seq_cnn.Cnn,
   ]
