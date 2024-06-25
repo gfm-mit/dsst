@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import torch
 from einops.layers.torch import Rearrange
 
@@ -12,9 +13,10 @@ class Cnn(models.base.SequenceBase):
     super().__init__(device=device)
 
   def get_causal_cnn(self, arch_width):
-    return torch.nn.Sequential(
-        models.util.CausalConv1d(self.inputs, arch_width, kernel_size=1, dilation=1),
-    )
+    #return torch.nn.Sequential(
+    #    models.util.CausalConv1d(self.inputs, arch_width, kernel_size=1, dilation=1),
+    #)
+    return models.util.CausalConv1d(self.inputs, arch_width, kernel_size=1, dilation=1)
 
   def get_next_token_architecture(self, **kwargs):
     model = torch.nn.Sequential(
@@ -33,7 +35,6 @@ class Cnn(models.base.SequenceBase):
     return model
 
   def get_classifier_architecture(self, **kwargs):
-    assert False
     model = torch.nn.Sequential(
         # b n c
         Rearrange('b n c -> b c n'),
@@ -42,7 +43,7 @@ class Cnn(models.base.SequenceBase):
         Rearrange('b c 1 -> b c'),
         torch.nn.BatchNorm1d(num_features=kwargs['arch_width']),
         # TODO: one linear layer should not be enough to parse the internal state of the RNN
-        torch.nn.Linear(12, self.classes),
+        torch.nn.Linear(kwargs['arch_width'], self.classes),
         torch.nn.LogSoftmax(dim=-1),
     )
     model = model.to(self.device)
@@ -53,7 +54,7 @@ class Cnn(models.base.SequenceBase):
       scheduler='warmup',
       optimizer='samadam',
       warmup_epochs=2,
-      max_epochs=20,
+      max_epochs=2,
       arch_width=24,
       learning_rate=1e-3,
     )
@@ -66,7 +67,8 @@ class Cnn(models.base.SequenceBase):
       momentum=0.9,
       conditioning_smoother=0.999,
       warmup_epochs=5,
-      max_epochs=30,
-
+      max_epochs=2,
       learning_rate=2e-2,
+
+      arch_width=24,
     )
