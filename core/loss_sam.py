@@ -29,12 +29,13 @@ def next_token(model, optimizer, train_loader):
   loader_has_batches = False
   for data, target in train_loader:
     loader_has_batches = True
-    output = model(data.to(DEVICE))
+    data = data.to(DEVICE)
+    output = model(data)
     assert output.shape == data.shape, f"{output.shape=} {data.shape=}"
     mask = 1 * torch.amax(data != 0, axis=2, keepdim=True)
     output = output * mask
     data = data * mask
-    loss = torch.nn.functional.mse_loss(output[:, :-1, :], data[:, 1:, :].to(DEVICE))
+    loss = torch.nn.functional.mse_loss(output[:, :-1, :], data[:, 1:, :])
     loss.backward()
     optimizer.first_step(zero_grad=True)
 
