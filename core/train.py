@@ -27,7 +27,7 @@ def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, tra
       print("next_loss isnan")
       model.load_state_dict(state_dict)
       return model, epoch_loss_history
-    loss_upper_bound = 1.5 * train_loss
+    loss_upper_bound = 10 * train_loss
     torch.cuda.empty_cache()
     progress.set_postfix_str(" " + loss_description)
     if loss_history_loader is not None:
