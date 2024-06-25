@@ -57,7 +57,8 @@ def setup_model(params, model_factory_fn, task="classify", disk="none"):
   if disk == "load":
     network_state_dict = torch.load('./results/model.pth')
     missing_keys, unexpected_keys = model.load_state_dict(network_state_dict, strict=False)
-    format_state_dict_differences(missing_keys, unexpected_keys)
+    # TODO: set a flag for whether the parameters are frozen
+    freeze_loaded_params(missing_keys, unexpected_keys, model)
   else:
     for layer in model.children():
       if hasattr(layer, 'reset_parameters'):
@@ -68,11 +69,14 @@ def setup_model(params, model_factory_fn, task="classify", disk="none"):
   #   model = torch.compile(model)
   return model
 
-def format_state_dict_differences(missing_keys, unexpected_keys):
+def freeze_loaded_params(missing_keys, unexpected_keys, model):
     sorted_keys = defaultdict(list)
+    loaded_params = dict(model.named_parameters())
     for k in missing_keys:
       kk, v = k.split(".", 1)
       sorted_keys[kk] += [v]
+      if k in loaded_params:
+        del loaded_params[k]
     missing_keys = dict(sorted_keys)
     sorted_keys = defaultdict(list)
     for k in unexpected_keys:
@@ -80,6 +84,8 @@ def format_state_dict_differences(missing_keys, unexpected_keys):
       sorted_keys[kk] += [v]
     unexpected_keys = dict(sorted_keys)
     print(f"loading.{missing_keys=}\nloading.{unexpected_keys=}")
+    for v in loaded_params.values():
+      v.requires_grad = False
 
 def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=None,
                        task="classify", disk="none",
