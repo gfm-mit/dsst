@@ -12,11 +12,11 @@ class Cnn(models.base.SequenceBase):
     print(f"{self.inputs=}")
     super().__init__(device=device)
 
-  def get_causal_cnn(self, arch_width):
+  def get_causal_cnn(self, arch_width, arch_kernel, arch_dilation):
     #return torch.nn.Sequential(
     #    models.util.CausalConv1d(self.inputs, arch_width, kernel_size=1, dilation=1),
     #)
-    return models.util.CausalConv1d(self.inputs, arch_width, kernel_size=1, dilation=1)
+    return models.util.CausalConv1d(self.inputs, arch_width, kernel_size=arch_kernel, dilation=arch_dilation)
 
   def get_next_token_architecture(self, **kwargs):
     model = torch.nn.Sequential(
@@ -62,8 +62,7 @@ class Cnn(models.base.SequenceBase):
       scheduler='warmup',
       optimizer='samadam',
       warmup_epochs=2,
-      max_epochs=2,
-      arch_width=24,
+      max_epochs=10,
       learning_rate=1e-3,
     )
 
@@ -78,5 +77,7 @@ class Cnn(models.base.SequenceBase):
       max_epochs=20,
       learning_rate=2e-2,
 
-      arch_width=24,
+      arch_width=96,
+      arch_kernel=2, # worse than 1, though
+      arch_dilation=2, # probably a fluke
     )
