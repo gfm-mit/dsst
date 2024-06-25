@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import numpy as np
 import torch
 from einops.layers.torch import Rearrange
 
@@ -12,18 +13,28 @@ class Cnn(models.base.SequenceBase):
     print(f"{self.inputs=}")
     super().__init__(device=device)
 
-  def get_causal_cnn(self, arch_width, arch_kernel, arch_dilation):
-    #return torch.nn.Sequential(
-    #    models.util.CausalConv1d(self.inputs, arch_width, kernel_size=1, dilation=1),
-    #)
-    return models.util.CausalConv1d(self.inputs, arch_width, kernel_size=arch_kernel, dilation=arch_dilation)
+  def get_causal_cnn(self, arch_width, arch_kernel, arch_depth, arch_dropout, downsample=False):
+    layers = [
+      models.util.CausalConv1d(self.inputs, arch_width, kernel_size=arch_kernel, dilation=2, downsample=downsample),
+    ]
+    for i in range(2, arch_depth + 1):
+      d = int(np.power(2, i))
+      print(f"dilation: {d}")
+      layers += [
+        torch.nn.SiLU(),
+        torch.nn.BatchNorm1d(num_features=arch_width),
+        torch.nn.Dropout1d(arch_dropout),
+        models.util.CausalConv1d(arch_width, arch_width, kernel_size=arch_kernel, dilation=d, downsample=downsample),
+      ]
+    return layers
 
   def get_next_token_architecture(self, **kwargs):
     model = torch.nn.Sequential(
         # b n c
         Rearrange('b n c -> b c n'),
         models.util.ResidualBlock(torch.nn.Sequential(
-          self.get_causal_cnn(**kwargs),
+          torch.nn.Identity(),
+          *self.get_causal_cnn(downsample=False, **kwargs),
           torch.nn.SiLU(),
           torch.nn.BatchNorm1d(num_features=kwargs['arch_width']),
           torch.nn.Dropout(0.1),
@@ -38,7 +49,7 @@ class Cnn(models.base.SequenceBase):
     classifier_state_dict = {}
     for k, v in next_token_state_dict.items():
       if "causal_conv" in k:
-        kk = k.replace("residual.0.", "")
+        kk = k.replace("1.residual.", "")
         classifier_state_dict[kk] = v
     return classifier_state_dict
 
@@ -46,7 +57,7 @@ class Cnn(models.base.SequenceBase):
     model = torch.nn.Sequential(
         # b n c
         Rearrange('b n c -> b c n'),
-        self.get_causal_cnn(**kwargs),
+        *self.get_causal_cnn(downsample=True, **kwargs),
         torch.nn.AdaptiveMaxPool1d(1),
         Rearrange('b c 1 -> b c'),
         torch.nn.BatchNorm1d(num_features=kwargs['arch_width']),
@@ -75,9 +86,10 @@ class Cnn(models.base.SequenceBase):
       conditioning_smoother=0.999,
       warmup_epochs=5,
       max_epochs=20,
-      learning_rate=2e-2,
+      learning_rate=1e-4,
 
-      arch_width=96,
-      arch_kernel=2, # worse than 1, though
-      arch_dilation=2, # probably a fluke
+      arch_width=48,
+      arch_kernel=4, # worse than 1, though
+      arch_depth=3, # probably a fluke
+      arch_dropout=0.05,
     )
