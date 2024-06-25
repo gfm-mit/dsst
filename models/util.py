@@ -56,3 +56,11 @@ class CausalConv1d(torch.nn.Module):
       if self.padding > 0:
         x = x[:, :, :-self.padding]
       return x
+
+class ResidualBlock(torch.nn.Module):
+    def __init__(self, module):
+        super().__init__()
+        self.module = module
+
+    def forward(self, inputs):
+        return self.module(inputs) + inputs
