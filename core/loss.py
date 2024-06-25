@@ -9,7 +9,7 @@ def get_task_loss(model, optimizer, train_loader, task):
       loss = core.loss_sam.next_token(model, optimizer, train_loader)
     else:
       loss = next_token(model, optimizer, train_loader)
-    description = 'Last Batch MSE={:.2f}'.format(np.sqrt(loss))
+    description = 'Last Batch RMSE={:.2f}'.format(np.sqrt(loss))
   else:
     if optimizer.__module__ == "pytorch_optimizer.optimizer.sam":
       loss = core.loss_sam.classify(model, optimizer, train_loader)
@@ -52,6 +52,9 @@ def next_token(model, optimizer, train_loader):
     loader_has_batches = True
     optimizer.zero_grad()
     output = model(data.to(DEVICE))
+    mask = 1 * torch.amax(data != 0, axis=2, keepdim=True)
+    output = output * mask
+    data = data * mask
     loss = torch.nn.functional.mse_loss(output[:, :-1, :], data[:, 1:, :].to(DEVICE))
     loss.backward()
     optimizer.step()
