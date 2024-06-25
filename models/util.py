@@ -46,13 +46,10 @@ class NoopAttention(torch.nn.Module):
         return query
 
 class CausalConv1d(torch.nn.Module):
-  def __init__(self, in_channels, out_channels, kernel_size, dilation):
+  def __init__(self, in_channels, out_channels, kernel_size, dilation, stride=1):
     super().__init__()
     self.padding = dilation * (kernel_size - 1)
-    self.causal_conv = torch.nn.Conv1d(in_channels, out_channels, kernel_size, padding=self.padding, dilation=dilation)
-    with torch.no_grad():
-      self.causal_conv.weight.data.zero_()
-      self.causal_conv.bias.data.zero_()
+    self.causal_conv = torch.nn.Conv1d(in_channels, out_channels, kernel_size, padding=self.padding, dilation=dilation, stride=stride)
 
   def forward(self, x):
       x = self.causal_conv(x)
