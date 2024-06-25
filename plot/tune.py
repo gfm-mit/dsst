@@ -39,7 +39,7 @@ def plot_tuning_results(keys, results, task):
     axs = [axs]
   else:
     axs = axs.flatten()
-  metric_name = "MSE" if task == "next_token" else "AUC-ROC-C"
+  metric_name = "RMSE" if task == "next_token" else "AUC-ROC-C"
   for e, k in enumerate(keys):
     plt.sca(axs[e])
     plt.scatter(results[k], results['metric'])

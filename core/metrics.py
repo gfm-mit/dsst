@@ -39,8 +39,8 @@ def next_token_metrics(model, val_loader, verbose=False):
                       index="t v_mag2 a_mag2 dv_mag2 cw j_mag2".split(),
                       name="Verbose MSE components"
                       ))
-  mse = float(np.mean((predicted - data)**2))
-  return mse
+  rmse = np.sqrt(float(np.mean((predicted - data)**2)))
+  return rmse
 
 def binary_classifier_metrics(model, val_loader):
   DEVICE = next(model.parameters()).device
