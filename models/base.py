@@ -20,6 +20,10 @@ class Base(ABC):
 
 class SequenceBase(Base):
   @abstractmethod
+  def translate_state_dict(self, state_dict):
+    pass
+
+  @abstractmethod
   def get_next_token_architecture(self):
     pass
 

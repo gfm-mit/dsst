@@ -33,6 +33,14 @@ class Cnn(models.base.SequenceBase):
     )
     model = model.to(self.device)
     return model
+  
+  def translate_state_dict(self, next_token_state_dict):
+    classifier_state_dict = {}
+    for k, v in next_token_state_dict.items():
+      if "causal_conv" in k:
+        kk = k.replace("residual.0.", "")
+        classifier_state_dict[kk] = v
+    return classifier_state_dict
 
   def get_classifier_architecture(self, **kwargs):
     model = torch.nn.Sequential(
@@ -67,7 +75,7 @@ class Cnn(models.base.SequenceBase):
       momentum=0.9,
       conditioning_smoother=0.999,
       warmup_epochs=5,
-      max_epochs=2,
+      max_epochs=20,
       learning_rate=2e-2,
 
       arch_width=24,

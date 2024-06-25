@@ -55,7 +55,8 @@ def setup_model(params, model_factory_fn, task="classify", disk="none"):
 
   if disk == "load":
     network_state_dict = torch.load('./results/model.pth')
-    model.load_state_dict(network_state_dict, strict=False)
+    missing_keys, unexpected_keys = model.load_state_dict(network_state_dict, strict=False)
+    print(f"loading.{missing_keys=}\nloading.{unexpected_keys=}")
   else:
     for layer in model.children():
       if hasattr(layer, 'reset_parameters'):
@@ -81,6 +82,9 @@ def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=N
                                    tqdm_prefix=tqdm_prefix,
                                    loss_history_loader=val_loader if history == "val" else None)
   if disk == "save":
-    torch.save(model.state_dict(), './results/model.pth')
+    state_dict = model.state_dict()
+    if task == "next_token":
+      state_dict = model_factory_fn.translate_state_dict(state_dict)
+    torch.save(state_dict, './results/model.pth')
   metric = core.metrics.evaluate(model, val_loader, task)
   return metric, epoch_loss_history, model
