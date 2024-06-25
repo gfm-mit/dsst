@@ -11,11 +11,16 @@ class Cnn(models.base.SequenceBase):
     self.layers = n_layers
     super().__init__(device=device)
 
+  def get_causal_cnn(self):
+    return torch.nn.Sequential(
+        models.util.CausalConv1d(12, 12, kernel_size=2, dilation=1),
+    )
+
   def get_next_token_architecture(self):
     model = torch.nn.Sequential(
         # b n c
         Rearrange('b n c -> b c n'),
-        models.util.CausalConv1d(12, 12, kernel_size=2, dilation=1),
+        self.get_causal_cnn(),
         Rearrange('b c n -> b n c'),
     )
     model = model.to(self.device)
@@ -25,8 +30,7 @@ class Cnn(models.base.SequenceBase):
     model = torch.nn.Sequential(
         # b n c
         Rearrange('b n c -> b c n'),
-        torch.nn.Conv1d(12, 12, 1),
-        #PrintfModule("after rearrange"),
+        self.get_causal_cnn(),
         torch.nn.AdaptiveMaxPool1d(1),
         Rearrange('b c 1 -> b c'),
         torch.nn.BatchNorm1d(num_features=12),
@@ -39,6 +43,7 @@ class Cnn(models.base.SequenceBase):
 
   def get_next_token_parameters(self):
     return dict(
+      max_epochs=15,
     )
 
   def get_classifier_parameters(self, **kwargs):
@@ -48,11 +53,8 @@ class Cnn(models.base.SequenceBase):
       weight_decay=0,
       momentum=0.9,
       conditioning_smoother=0.999,
-      warmup_epochs=3,
-      max_epochs=10,
+      warmup_epochs=5,
+      max_epochs=30,
 
-      learning_rate=1e-3,
-      arch_width=192,
-      arch_dilation='2,16',
-      arch_kernel_size='5,5,4',
+      learning_rate=2e-2,
     )
