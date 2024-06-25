@@ -1,3 +1,4 @@
+from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
@@ -56,7 +57,7 @@ def setup_model(params, model_factory_fn, task="classify", disk="none"):
   if disk == "load":
     network_state_dict = torch.load('./results/model.pth')
     missing_keys, unexpected_keys = model.load_state_dict(network_state_dict, strict=False)
-    print(f"loading.{missing_keys=}\nloading.{unexpected_keys=}")
+    format_state_dict_differences(missing_keys, unexpected_keys)
   else:
     for layer in model.children():
       if hasattr(layer, 'reset_parameters'):
@@ -66,6 +67,19 @@ def setup_model(params, model_factory_fn, task="classify", disk="none"):
   # if DEVICE == "cuda":
   #   model = torch.compile(model)
   return model
+
+def format_state_dict_differences(missing_keys, unexpected_keys):
+    sorted_keys = defaultdict(list)
+    for k in missing_keys:
+      kk, v = k.split(".", 1)
+      sorted_keys[kk] += [v]
+    missing_keys = dict(sorted_keys)
+    sorted_keys = defaultdict(list)
+    for k in unexpected_keys:
+      kk, v = k.split(".", 1)
+      sorted_keys[kk] += [v]
+    unexpected_keys = dict(sorted_keys)
+    print(f"loading.{missing_keys=}\nloading.{unexpected_keys=}")
 
 def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=None,
                        task="classify", disk="none",
