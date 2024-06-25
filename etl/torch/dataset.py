@@ -43,17 +43,16 @@ class SeqDataset(torch.utils.data.Dataset):
         self.features = np.concatenate(features)
         self.labels = np.array(labels)
         self.groups = np.array(groups)
-
-    cache = {}
+        self.cache = {}
 
     def __getitems__(self, indices):
       if self.device is None or self.device == "cpu":
-         return self.cache_miss(indices)
+        return self.cache_miss(indices)
       if str(indices) not in self.cache:
-        self.cache[str(indices)] = tuple(x.to(self.device) for x in self.cache_miss(indices))
+        self.cache[str(indices)] = self.cache_miss(indices)
       return self.cache[str(indices)]
 
-    def cache_miss(self, indices):
+    def cache_miss(self, indices, device=None):
         coarse = self.labels[indices, np.newaxis]
         nda = self.features[indices]
 
@@ -70,7 +69,9 @@ class SeqDataset(torch.utils.data.Dataset):
           g = self.groups[indices]
           return x, y, g
         else:
-           return x, y
+          if device is not None:
+            return x.to(device), y.to(device)
+          return x, y
 
     def __len__(self):
         return self.labels.shape[0]
