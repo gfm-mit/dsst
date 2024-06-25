@@ -74,7 +74,7 @@ class Cnn(models.base.SequenceBase):
       optimizer='samadam',
       warmup_epochs=2,
       max_epochs=10,
-      learning_rate=1e-3,
+      learning_rate=1e-5,
     )
 
   def get_classifier_parameters(self, **kwargs):
@@ -84,11 +84,11 @@ class Cnn(models.base.SequenceBase):
       weight_decay=0,
       momentum=0.9,
       conditioning_smoother=0.999,
-      warmup_epochs=5,
-      max_epochs=20,
-      learning_rate=1e-4,
+      warmup_epochs=2,
+      max_epochs=40,
+      learning_rate=1e-3,
 
-      arch_width=48,
+      arch_width=192,
       arch_kernel=4, # worse than 1, though
       arch_depth=3, # probably a fluke
       arch_dropout=0.05,
