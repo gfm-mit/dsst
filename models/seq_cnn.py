@@ -5,13 +5,15 @@ import models.base
 from models.util import PrintfModule, CausalConv1d
 
 class Cnn(models.base.SequenceBase):
-  def __init__(self, n_classes=2, device='cpu'):
+  def __init__(self, n_classes=2, n_inputs=12, device='cpu'):
     self.classes = n_classes
+    self.inputs = n_inputs
+    print(f"{self.inputs=}")
     super().__init__(device=device)
 
   def get_causal_cnn(self, arch_width):
     return torch.nn.Sequential(
-        models.util.CausalConv1d(1, arch_width, kernel_size=1, dilation=1),
+        models.util.CausalConv1d(self.inputs, arch_width, kernel_size=1, dilation=1),
     )
 
   def get_next_token_architecture(self, **kwargs):
@@ -22,10 +24,8 @@ class Cnn(models.base.SequenceBase):
           self.get_causal_cnn(**kwargs),
           torch.nn.SiLU(),
           torch.nn.BatchNorm1d(num_features=kwargs['arch_width']),
-          torch.nn.Conv1d(kwargs['arch_width'], kwargs['arch_width'], kernel_size=1),
-          torch.nn.SiLU(),
-          torch.nn.BatchNorm1d(num_features=kwargs['arch_width']),
-          torch.nn.Conv1d(kwargs['arch_width'], 1, kernel_size=1),
+          torch.nn.Dropout(0.1),
+          torch.nn.Conv1d(kwargs['arch_width'], self.inputs, kernel_size=1),
         )),
         Rearrange('b c n -> b n c'),
     )
@@ -50,11 +50,12 @@ class Cnn(models.base.SequenceBase):
 
   def get_next_token_parameters(self):
     return dict(
-      scheduler='none',
-      optimizer='sfsgd',
-      max_epochs=10,
+      scheduler='warmup',
+      optimizer='samadam',
+      warmup_epochs=2,
+      max_epochs=20,
       arch_width=24,
-      learning_rate=1e-2,
+      learning_rate=1e-3,
     )
 
   def get_classifier_parameters(self, **kwargs):

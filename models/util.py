@@ -50,6 +50,9 @@ class CausalConv1d(torch.nn.Module):
     super().__init__()
     self.padding = dilation * (kernel_size - 1)
     self.conv = torch.nn.Conv1d(in_channels, out_channels, kernel_size, padding=self.padding, dilation=dilation)
+    with torch.no_grad():
+      self.conv.weight.data.zero_()
+      self.conv.bias.data.zero_()
 
   def forward(self, x):
       x = self.conv(x)
