@@ -52,6 +52,7 @@ def next_token(model, optimizer, train_loader):
     loader_has_batches = True
     optimizer.zero_grad()
     output = model(data.to(DEVICE))
+    assert output.shape == data.shape, f"{output.shape=} {data.shape=}"
     mask = 1 * torch.amax(data != 0, axis=2, keepdim=True)
     output = output * mask
     data = data * mask
