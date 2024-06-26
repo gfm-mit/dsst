@@ -3,12 +3,12 @@ import numpy as np
 
 import core.loss_sam
 
-def get_task_loss(model, optimizer, train_loader, task):
+def get_task_loss(model, optimizer, train_loader, task, offset=1):
   if task == "next_token":
     if optimizer.__module__ == "pytorch_optimizer.optimizer.sam":
-      loss = core.loss_sam.next_token(model, optimizer, train_loader)
+      loss = core.loss_sam.next_token(model, optimizer, train_loader, offset=offset)
     else:
-      loss = next_token(model, optimizer, train_loader)
+      loss = next_token(model, optimizer, train_loader, offset=offset)
     description = 'Last Batch RMSE={:.2f}'.format(np.sqrt(loss))
   else:
     if optimizer.__module__ == "pytorch_optimizer.optimizer.sam":
@@ -44,7 +44,7 @@ def classify(model, optimizer, train_loader):
   assert loader_has_batches
   return loss.item()
 
-def next_token(model, optimizer, train_loader):
+def next_token(model, optimizer, train_loader, offset=1):
   DEVICE = next(model.parameters()).device
   model.train()
   loader_has_batches = False
@@ -58,7 +58,10 @@ def next_token(model, optimizer, train_loader):
     mask = 1 * torch.amax(data != 0, axis=2, keepdim=True)
     output = output * mask
     data = data * mask
-    loss = torch.nn.functional.mse_loss(output[:, :-1, :], data[:, 1:, :])
+    if offset == 0:
+      loss = torch.nn.functional.mse_loss(output, data)
+    else:
+      loss = torch.nn.functional.mse_loss(output[:, :-offset, :], data[:, offset:, :])
     loss.backward()
     optimizer.step()
   assert loader_has_batches

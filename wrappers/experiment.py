@@ -29,7 +29,8 @@ class Experiment:
         val_loader=self.val_loader,
         task=self.args.task,
         disk=self.args.disk,
-        history=self.args.history)
+        history=self.args.history,
+        offset=self.args.offset)
     if self.args.log != "":
       self.log_params = base_params
     return metric, epoch_loss_history

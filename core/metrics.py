@@ -3,9 +3,9 @@ import pandas as pd
 import torch
 from sklearn.metrics import roc_auc_score
 
-def evaluate(model, val_loader, task):
+def evaluate(model, val_loader, task, offset=1):
   if task == "next_token":
-    return next_token_metrics(model, val_loader)
+    return next_token_metrics(model, val_loader, offset=offset)
   else:
     return binary_classifier_metrics(model, val_loader)
 
@@ -15,17 +15,23 @@ def early_stop(history, task):
   else:
     return np.max(history)
 
-def next_token_metrics(model, val_loader, verbose=False):
+def next_token_metrics(model, val_loader, verbose=False, offset=1):
   DEVICE = next(model.parameters()).device
   results = []
   model.eval()
   with torch.no_grad():
     for data, target in val_loader:
       output = model(data.to(DEVICE)).to('cpu')
-      results += [(
-          output.detach().numpy()[:, :-1, :],
-          data.detach().to('cpu').numpy()[:, 1:, :],
-      )]
+      if offset == 0:
+        results += [(
+            output.detach().numpy(),
+            data.detach().to('cpu').numpy(),
+        )]
+      else:
+        results += [(
+            output.detach().numpy()[:, :-offset, :],
+            data.detach().to('cpu').numpy()[:, offset:, :],
+        )]
   predicted, data = zip(*results)
   predicted = np.concatenate(predicted)
   data = np.concatenate(data)

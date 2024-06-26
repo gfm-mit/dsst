@@ -60,6 +60,7 @@ def parse_args():
 
   parser.add_argument('--disk', default='none', choices=set("none load save freeze".split()), help='whether to persist the model (or use persisted)')
   parser.add_argument('--log', action=LogAction, default='', help='filename to log metrics and parameters')
+  parser.add_argument('--offset', type=int, default=1, help='how far in advance to pretrain')
   args = parser.parse_args()
   return args
 

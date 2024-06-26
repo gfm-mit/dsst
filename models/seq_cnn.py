@@ -69,8 +69,8 @@ class Cnn(models.base.SequenceBase):
 
   def get_next_token_parameters(self):
     return dict(
-      scheduler='onecycle',
-      optimizer='samadam',
+      scheduler='none',
+      optimizer='prodigy',
       warmup_epochs=2,
       max_epochs=10,
       learning_rate=1e-5,

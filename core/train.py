@@ -12,13 +12,13 @@ import core.metrics
 from core.optimizer import get_optimizer_and_scheduler
 
 Path('./results').mkdir(parents=True, exist_ok=True)
-def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, train_loader, task=None, tqdm_prefix=None, loss_history_loader=None):
+def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, train_loader, task=None, tqdm_prefix=None, loss_history_loader=None, offset=1):
   loss_upper_bound = 8 # only for the first step
   progress = tqdm(range(max_epochs), desc=tqdm_prefix or "")
   epoch_loss_history = []
   for epoch in progress:
     state_dict = dict(**model.state_dict())
-    train_loss, loss_description = core.loss.get_task_loss(model, optimizer, train_loader, task=task)
+    train_loss, loss_description = core.loss.get_task_loss(model, optimizer, train_loader, task=task, offset=offset)
     scheduler.step()
     if train_loss > loss_upper_bound and epoch > warmup_epochs:
       print(f"next_loss too big: {train_loss} > {loss_upper_bound}")
@@ -32,7 +32,7 @@ def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, tra
     torch.cuda.empty_cache()
     progress.set_postfix_str(" " + loss_description)
     if loss_history_loader is not None:
-      val_loss = core.metrics.evaluate(model, loss_history_loader, task)
+      val_loss = core.metrics.evaluate(model, loss_history_loader, task, offset=offset)
       epoch_loss_history += [val_loss]
     else:
       epoch_loss_history += [train_loss]
@@ -90,7 +90,7 @@ def freeze_loaded_params(missing_keys, unexpected_keys, model, freeze=True):
 
 def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=None,
                        task="classify", disk="none",
-                       tqdm_prefix=None, history='none'):
+                       tqdm_prefix=None, history='none', offset=1):
   model = setup_model(params, model_factory_fn, task, disk)
   optimizer, scheduler = get_optimizer_and_scheduler(params, model)
 
@@ -101,11 +101,11 @@ def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=N
                                    train_loader=train_loader,
                                    task=task,
                                    tqdm_prefix=tqdm_prefix,
-                                   loss_history_loader=val_loader if history == "val" else None)
+                                   loss_history_loader=val_loader if history == "val" else None, offset=offset)
   if disk == "save":
     state_dict = model.state_dict()
     if task == "next_token":
       state_dict = model_factory_fn.translate_state_dict(state_dict)
     torch.save(state_dict, './results/model.pth')
-  metric = core.metrics.evaluate(model, val_loader, task)
+  metric = core.metrics.evaluate(model, val_loader, task, offset=offset)
   return metric, epoch_loss_history, model

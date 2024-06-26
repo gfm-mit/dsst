@@ -23,7 +23,8 @@ def classify(model, optimizer, train_loader):
   assert loader_has_batches
   return loss.item()
 
-def next_token(model, optimizer, train_loader):
+def next_token(model, optimizer, train_loader, offset=1):
+  print(f"{offset=}")
   DEVICE = next(model.parameters()).device
   model.train()
   loader_has_batches = False
@@ -35,14 +36,20 @@ def next_token(model, optimizer, train_loader):
     mask = 1 * torch.amax(data != 0, axis=2, keepdim=True)
     output = output * mask
     data = data * mask
-    loss = torch.nn.functional.mse_loss(output[:, :-1, :], data[:, 1:, :])
+    if offset == 0:
+      loss = torch.nn.functional.mse_loss(output, data)
+    else:
+      loss = torch.nn.functional.mse_loss(output[:, :-offset, :], data[:, offset:, :])
     loss.backward()
     optimizer.first_step(zero_grad=True)
 
     # second forward-backward pass
     models.bn_utils.disable_running_stats(model)
     output = model(data.to(DEVICE))
-    torch.nn.functional.mse_loss(output[:, :-1, :], data[:, 1:, :].to(DEVICE)).backward()
+    if offset == 0:
+      torch.nn.functional.mse_loss(output, data.to(DEVICE)).backward()
+    else:
+      torch.nn.functional.mse_loss(output[:, :-offset, :], data[:, offset:, :].to(DEVICE)).backward()
     optimizer.second_step(zero_grad=True)
     models.bn_utils.enable_running_stats(model)
   assert loader_has_batches
