@@ -3,7 +3,6 @@ import torch
 from einops.layers.torch import Rearrange
 
 import models.base
-from models.util import PrintfModule, CausalConv1d
 
 class Cnn(models.base.Base):
   def __init__(self, n_classes=2, n_inputs=12, device='cpu'):
