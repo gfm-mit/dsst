@@ -83,7 +83,7 @@ def freeze_loaded_params(missing_keys, unexpected_keys, model):
       kk, v = k.split(".", 1)
       sorted_keys[kk] += [v]
     unexpected_keys = dict(sorted_keys)
-    print(f"loading.{missing_keys=}\nloading.{unexpected_keys=}")
+    print(f"loading.{missing_keys=}\nloading.{unexpected_keys=}\nfreezing: {list(loaded_params.keys())=}")
     for v in loaded_params.values():
       v.requires_grad = False
 
