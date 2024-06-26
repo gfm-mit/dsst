@@ -11,21 +11,6 @@ class Cnn(models.base.Base):
     print(f"{self.inputs=}")
     super().__init__(device=device)
 
-  def get_causal_cnn(self, arch_width, arch_kernel, arch_depth, arch_dropout, downsample=False):
-    layers = [
-      models.util.CausalConv1d(self.inputs, arch_width, kernel_size=arch_kernel, dilation=2, downsample=downsample),
-    ]
-    for i in range(2, arch_depth + 1):
-      d = int(np.power(2, i))
-      print(f"dilation: {d}")
-      layers += [
-        torch.nn.SiLU(),
-        torch.nn.BatchNorm1d(num_features=arch_width),
-        torch.nn.Dropout1d(arch_dropout),
-        models.util.CausalConv1d(arch_width, arch_width, kernel_size=arch_kernel, dilation=d, downsample=downsample),
-      ]
-    return layers
-
   def get_classifier_architecture(
       self, arch_kernel=None, arch_fft_width=None, arch_conv_width=None, arch_fft_length=None, arch_dropout=None, **kwargs):
     model = torch.nn.Sequential(
