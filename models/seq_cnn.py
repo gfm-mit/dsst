@@ -10,7 +10,6 @@ class Cnn(models.base.SequenceBase):
   def __init__(self, n_classes=2, n_inputs=12, device='cpu'):
     self.classes = n_classes
     self.inputs = n_inputs
-    print(f"{self.inputs=}")
     super().__init__(device=device)
 
   def get_causal_cnn(self, arch_width, arch_kernel, arch_depth, arch_dropout, downsample=False):
@@ -19,7 +18,6 @@ class Cnn(models.base.SequenceBase):
     ]
     for i in range(2, arch_depth + 1):
       d = int(np.power(2, i))
-      print(f"dilation: {d}")
       layers += [
         torch.nn.SiLU(),
         torch.nn.BatchNorm1d(num_features=arch_width),
