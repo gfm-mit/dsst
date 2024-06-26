@@ -45,6 +45,17 @@ class NoopAttention(torch.nn.Module):
                 need_weights=False):
         return query
 
+class FftBlock(torch.nn.Module):
+  def __init__(self, trim=0):
+    super().__init__()
+    self.trim = trim
+
+  def forward(self, x):
+    fft = torch.fft.rfft(x, axis=2).abs()
+    if self.trim != 0:
+      fft = fft[:, :, :self.trim]
+    return fft
+
 class CausalConv1d(torch.nn.Module):
   def __init__(self, in_channels, out_channels, kernel_size, dilation, downsample=None):
     super().__init__()

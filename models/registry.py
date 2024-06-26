@@ -2,6 +2,7 @@ import models.base
 import models.cnn_1d
 import models.cnn_1d_atrous
 import models.cnn_1d_butterfly
+import models.cnn_1d_fft
 import models.cnn_2d
 import models.linear_bc
 import models.linear_bnc
@@ -28,6 +29,8 @@ def lookup_model(name):
     return models.transformer.Transformer
   elif name == "causal":
     return models.seq_cnn.Cnn
+  elif name == "fft":
+    return models.cnn_1d_fft.Cnn
   assert False
 
 def get_all_1d_models():
@@ -39,4 +42,5 @@ def get_all_1d_models():
     models.rnn_lstm.Rnn,
     models.transformer.Transformer,
     models.seq_cnn.Cnn,
+    models.cnn_1d_fft.Cnn,
   ]
