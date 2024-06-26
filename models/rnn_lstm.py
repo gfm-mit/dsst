@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from einops import rearrange
 from einops.layers.torch import Rearrange
+import re
 
 import models.base
 from models.util import PrintfModule, CausalConv1d
@@ -22,7 +23,7 @@ class Rnn(models.base.SequenceBase):
     self.inputs = n_inputs
     super().__init__(device=device)
 
-  def get_lstm(self, arch_width, arch_depth):
+  def get_lstm(self, arch_width, arch_depth, arch_linear_width='unused'):
     return torch.nn.LSTM(
       input_size=self.inputs,
       hidden_size=int(arch_width),
@@ -32,7 +33,6 @@ class Rnn(models.base.SequenceBase):
   def get_next_token_architecture(self, **kwargs):
     model = torch.nn.Sequential(
         # b n c
-        torch.nn.Identity(),
         self.get_lstm(**kwargs),
         GetNextStepOutputs(),
         torch.nn.SiLU(),
@@ -45,8 +45,9 @@ class Rnn(models.base.SequenceBase):
   def translate_state_dict(self, next_token_state_dict):
     classifier_state_dict = {}
     for k, v in next_token_state_dict.items():
-      if "causal_conv" in k or "projection" in k:
-        kk = k.replace("1.residual.", "")
+      if re.match("0[.](weight|bias)_[ih][ih]_l\d", k):
+        kk = k.replace("1.residual.", "") # unused
+        print(f"saving param {k=} {kk=}")
         classifier_state_dict[kk] = v
     return classifier_state_dict
 
@@ -58,8 +59,7 @@ class Rnn(models.base.SequenceBase):
         Rearrange('b n c -> b c n'),
         torch.nn.AdaptiveMaxPool1d(1),
         Rearrange('b c 1 -> b c'),
-        #torch.nn.BatchNorm1d(num_features=kwargs['arch_width']),
-        # TODO: one linear layer should not be enough to parse the internal state of the RNN
+        # TODO: why does this work better than adding more layers?  and why is taking the last hidden state not enough?
         torch.nn.Linear(kwargs['arch_width'], self.classes),
         torch.nn.LogSoftmax(dim=-1),
     )
