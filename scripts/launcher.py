@@ -58,7 +58,7 @@ def parse_args():
   parser.add_argument('--task', default='classify', choices=set("next_token classify classify_patient".split()), help='training target / loss')
   parser.add_argument('--history', default='none', choices=set("none train val".split()), help='Plot history of loss')
 
-  parser.add_argument('--disk', default='none', choices=set("none load save".split()), help='whether to persist the model (or use persisted)')
+  parser.add_argument('--disk', default='none', choices=set("none load save freeze".split()), help='whether to persist the model (or use persisted)')
   parser.add_argument('--log', action=LogAction, default='', help='filename to log metrics and parameters')
   args = parser.parse_args()
   return args

@@ -41,7 +41,7 @@ def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, tra
 def setup_model(params, model_factory_fn, task="classify", disk="none"):
   assert isinstance(model_factory_fn, models.base.Base)
   assert task in "classify classify_patient next_token".split()
-  assert disk in "none load save".split()
+  assert disk in "none load save freeze".split()
   overlay_params = {
     k: params[k]
     for k in params.keys()
@@ -54,11 +54,11 @@ def setup_model(params, model_factory_fn, task="classify", disk="none"):
   else:
     model = model_factory_fn.get_classifier_architecture(**overlay_params)
 
-  if disk == "load":
+  if disk in "load freeze".split():
     network_state_dict = torch.load('./results/model.pth')
     missing_keys, unexpected_keys = model.load_state_dict(network_state_dict, strict=False)
     # TODO: set a flag for whether the parameters are frozen
-    freeze_loaded_params(missing_keys, unexpected_keys, model)
+    freeze_loaded_params(missing_keys, unexpected_keys, model, freeze=disk == "freeze")
   else:
     for layer in model.children():
       if hasattr(layer, 'reset_parameters'):
@@ -69,7 +69,7 @@ def setup_model(params, model_factory_fn, task="classify", disk="none"):
   #   model = torch.compile(model)
   return model
 
-def freeze_loaded_params(missing_keys, unexpected_keys, model):
+def freeze_loaded_params(missing_keys, unexpected_keys, model, freeze=True):
     sorted_keys = defaultdict(list)
     loaded_params = dict(model.named_parameters())
     for k in missing_keys:
@@ -84,8 +84,9 @@ def freeze_loaded_params(missing_keys, unexpected_keys, model):
       sorted_keys[kk] += [v]
     unexpected_keys = dict(sorted_keys)
     print(f"loading.{missing_keys=}\nloading.{unexpected_keys=}\nfreezing: {list(loaded_params.keys())=}")
-    for v in loaded_params.values():
-      v.requires_grad = False
+    if freeze:
+      for v in loaded_params.values():
+        v.requires_grad = False
 
 def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=None,
                        task="classify", disk="none",
