@@ -14,7 +14,8 @@ class Cnn(models.base.SequenceBase):
 
   def get_causal_cnn(self, arch_width, arch_kernel, arch_depth, arch_dropout, downsample=False):
     layers = [
-      models.util.CausalConv1d(self.inputs, arch_width, kernel_size=arch_kernel, dilation=2, downsample=downsample),
+      models.util.SineProjection(self.inputs, arch_width, 1), # why is this 1?
+      models.util.CausalConv1d(arch_width, arch_width, kernel_size=arch_kernel, dilation=2, downsample=downsample),
     ]
     for i in range(2, arch_depth + 1):
       d = int(np.power(2, i))
@@ -46,7 +47,7 @@ class Cnn(models.base.SequenceBase):
   def translate_state_dict(self, next_token_state_dict):
     classifier_state_dict = {}
     for k, v in next_token_state_dict.items():
-      if "causal_conv" in k:
+      if "causal_conv" in k or "projection" in k:
         kk = k.replace("1.residual.", "")
         classifier_state_dict[kk] = v
     return classifier_state_dict
@@ -68,7 +69,7 @@ class Cnn(models.base.SequenceBase):
 
   def get_next_token_parameters(self):
     return dict(
-      scheduler='warmup',
+      scheduler='onecycle',
       optimizer='samadam',
       warmup_epochs=2,
       max_epochs=10,
@@ -77,13 +78,13 @@ class Cnn(models.base.SequenceBase):
 
   def get_classifier_parameters(self, **kwargs):
     return dict(
-      scheduler='warmup',
+      scheduler='warmup', # TODO: try this with a scheduler
       optimizer='samadam',
       weight_decay=0,
       momentum=0.9,
       conditioning_smoother=0.999,
       warmup_epochs=2,
-      max_epochs=40,
+      max_epochs=20,
       learning_rate=1e-3,
 
       arch_width=192,
