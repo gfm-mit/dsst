@@ -81,3 +81,11 @@ class ResidualBlock(torch.nn.Module):
 
     def forward(self, inputs):
         return self.residual(inputs) + inputs
+
+class Sine(torch.nn.Module):
+  def __init__(self, scale=1):
+    super().__init__()
+    self.scale = scale
+
+  def forward(self, x):
+    return torch.sin(self.scale*x)
