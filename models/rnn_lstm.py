@@ -1,11 +1,9 @@
-import numpy as np
 import torch
 from einops import rearrange
 from einops.layers.torch import Rearrange
 import re
 
 import models.base
-from models.util import PrintfModule, CausalConv1d
 
 class GetLastStepHiddenState(torch.nn.Module):
   def forward(self, input):
