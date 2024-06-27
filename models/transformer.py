@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-from einops import rearrange
 from einops.layers.torch import Rearrange
 import re
 
@@ -28,11 +27,13 @@ class Decoder(torch.nn.Module):
       self.causal = causal
 
   def forward(self, input):
+    #print(f"{input.shape=}")
     mask = None
     if self.causal:
       seq_len = input.shape[1]
       # tgt, src
       mask = torch.Tensor(np.tril(np.ones((seq_len, seq_len)), k=-1).astype(bool)).to(input.device)
+    #print(f"{mask.shape=}")
     return self.decoder(input, memory=None, tgt_mask=mask)
 
 class Transformer(models.base.SequenceBase):
@@ -44,6 +45,7 @@ class Transformer(models.base.SequenceBase):
   def get_next_token_architecture(self, **kwargs):
     model = torch.nn.Sequential(
         # b n c
+        models.util.SineProjection(self.inputs, kwargs['arch_width'], scale=1, axis=-1), # why is scale 1?
         Decoder(causal=True, **kwargs), # TODO: try False
         torch.nn.SiLU(),
         torch.nn.LayerNorm(normalized_shape=kwargs['arch_width']),
@@ -81,7 +83,7 @@ class Transformer(models.base.SequenceBase):
       optimizer='samadam',
       warmup_epochs=2,
       max_epochs=10,
-      learning_rate=3e-2,
+      learning_rate=1e-2,
     )
 
   def get_classifier_parameters(self, **kwargs):
@@ -95,9 +97,9 @@ class Transformer(models.base.SequenceBase):
       max_epochs=50,
       learning_rate=3e-3,
 
-      arch_depth=2,
-      arch_width=12,
+      arch_depth=1,
+      arch_width=192,
       arch_ff_width=12,
-      arch_dropout=0.1,
-      arch_head=2,
+      arch_dropout=0.05,
+      arch_head=4,
     )
