@@ -24,7 +24,6 @@ def classify(model, optimizer, train_loader):
   return loss.item()
 
 def next_token(model, optimizer, train_loader, offset=1):
-  print(f"{offset=}")
   DEVICE = next(model.parameters()).device
   model.train()
   loader_has_batches = False
