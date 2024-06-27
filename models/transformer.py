@@ -57,7 +57,7 @@ class Transformer(models.base.SequenceBase):
   def translate_state_dict(self, next_token_state_dict):
     classifier_state_dict = {}
     for k, v in next_token_state_dict.items():
-      if re.match("0[.](weight|bias)_[ih][ih]_l\d", k):
+      if re.match("0.projection.*|1.decoder.*", k):
         kk = k.replace("1.residual.", "") # unused
         print(f"saving param {k=} {kk=}")
         classifier_state_dict[kk] = v
@@ -66,6 +66,7 @@ class Transformer(models.base.SequenceBase):
   def get_classifier_architecture(self, **kwargs):
     model = torch.nn.Sequential(
         # b n c
+        models.util.SineProjection(self.inputs, kwargs['arch_width'], scale=1, axis=-1), # why is scale 1?
         Decoder(causal=True, **kwargs), # TODO: try False
         Rearrange('b n c -> b c n'),
         torch.nn.AdaptiveMaxPool1d(1),
@@ -95,7 +96,7 @@ class Transformer(models.base.SequenceBase):
       conditioning_smoother=0.999,
       warmup_epochs=2,
       max_epochs=50,
-      learning_rate=3e-3,
+      learning_rate=2e-3,
 
       arch_depth=1,
       arch_width=192,
