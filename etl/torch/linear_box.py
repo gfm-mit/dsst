@@ -7,12 +7,6 @@ import pandas as pd
 import torch
 
 
-def linear_combiner(logits, targets, groups):
-  df = pd.DataFrame(dict(logits=logits, targets=targets, groups=groups))
-  df = df.groupby("groups").mean()
-  logits, targets = df.logits, df.targets
-  return logits, targets
-
 def get_minmax(data):
   return pd.Series(np.concatenate([
       np.nanmax(data.values[:, 3:], axis=0),

@@ -4,7 +4,6 @@ import sys
 from matplotlib import pyplot as plt
 
 import etl.torch.bitmap
-import etl.torch.util
 import core.train
 import wrappers.tune
 import plot.calibration
@@ -43,7 +42,7 @@ if __name__ == "__main__":
         train_loader=train_loader, val_loader=val_loader)
     pr.dump_stats('results/output_file.prof')
     model.eval()
-    logits, targets = core.metrics.get_combined_roc(model, test_loader, combine_fn=etl.torch.util.linear_combiner)
+    logits, targets = core.metrics.get_combined_roc(model, test_loader, combine_fn=core.metrics.linear_combiner)
 
     roc = plot.calibration.get_full_roc_table(logits, targets)
     axs = plot.metrics.plot_palette(roc, axs)

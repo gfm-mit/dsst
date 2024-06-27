@@ -1,13 +1,21 @@
 import numpy as np
 import pandas as pd
+import sklearn
 import torch
 from sklearn.metrics import roc_auc_score
 
+import core.batch_eval
+
 def evaluate(model, val_loader, task, offset=1):
   if task == "next_token":
-    return next_token_metrics(model, val_loader, offset=offset)
+    predicted, data = core.batch_eval.next_token(model, val_loader, offset=offset)
+    if False:
+      verbose_next_token_metrics(predicted, data)
+    rmse = np.sqrt(float(np.mean((predicted - data)**2)))
+    return rmse
   else:
-    return binary_classifier_metrics(model, val_loader)
+    logits, targets = core.batch_eval.binary_classifier(model, val_loader)
+    return float(roc_auc_score(targets, logits[:, 1]))
 
 def early_stop(history, task):
   if task == "next_token":
@@ -15,28 +23,7 @@ def early_stop(history, task):
   else:
     return np.max(history)
 
-def next_token_metrics(model, val_loader, verbose=False, offset=1):
-  DEVICE = next(model.parameters()).device
-  results = []
-  model.eval()
-  with torch.no_grad():
-    for data, target in val_loader:
-      output = model(data.to(DEVICE)).to('cpu')
-      if offset == 0:
-        results += [(
-            output.detach().numpy(),
-            data.detach().to('cpu').numpy(),
-        )]
-      else:
-        results += [(
-            output.detach().numpy()[:, :-offset, :],
-            data.detach().to('cpu').numpy()[:, offset:, :],
-        )]
-  predicted, data = zip(*results)
-  predicted = np.concatenate(predicted)
-  data = np.concatenate(data)
-
-  if verbose:
+def verbose_next_token_metrics(predicted, data):
     var = np.mean((data)**2, axis=(0, 1))
     mse = np.mean((predicted - data)**2, axis=(0, 1))
     r2 = np.mean(np.reshape(mse / var, [6, 2]), axis=1)
@@ -45,44 +32,15 @@ def next_token_metrics(model, val_loader, verbose=False, offset=1):
                       index="t v_mag2 a_mag2 dv_mag2 cw j_mag2".split(),
                       name="Verbose MSE components"
                       ))
-  rmse = np.sqrt(float(np.mean((predicted - data)**2)))
-  return rmse
-
-def binary_classifier_metrics(model, val_loader):
-  DEVICE = next(model.parameters()).device
-  results = []
-  model.eval()
-  with torch.no_grad():
-    for data, target in val_loader:
-      output = model(data.to(DEVICE)).to('cpu')
-      results += [(
-          output.detach().numpy(),
-          target.detach().to('cpu').numpy(),
-      )]
-  logits, targets = zip(*results)
-  logits = np.concatenate(logits)
-  # only needed for accuracy
-  #predictions = np.argmax(logits, axis=1)
-  targets = np.concatenate(targets)
-  return float(roc_auc_score(targets, logits[:, 1]))
 
 def get_combined_roc(model, test_loader, combine_fn=None, calibration_loader=None):
-  logits = []
-  targets = []
-  groups = []
-  DEVICE = next(model.parameters()).device
-  with torch.no_grad():
-    for idx, (data, target, g) in enumerate(test_loader):
-      #print(target)
-      output = model(data.to(DEVICE)).to('cpu')
-      logits += [output.detach().numpy()[:, 1]]
-      targets += [target.detach().to('cpu').numpy()[:, 0]]
-      groups += [g]
-      if idx % 100 == 0 and idx > 0:
-        print(f"metrics.get_combined_roc()[{idx}]")
-  logits = np.concatenate(logits)
-  targets = np.concatenate(targets)
-  groups = np.concatenate(groups)
+  logits, targets, groups = core.batch_eval.binary_classifier_with_groups(model, test_loader)
   if combine_fn is not None:
-    logits, targets = combine_fn(logits, targets, groups, calibration_loader)
+    logits, targets = combine_fn(logits, targets, groups)
+  return logits, targets
+
+def linear_combiner(logits, targets, groups, calibration_loader=None):
+  df = pd.DataFrame(dict(logits=logits, targets=targets, groups=groups))
+  df = df.groupby("groups").mean()
+  logits, targets = df.logits, df.targets
   return logits, targets

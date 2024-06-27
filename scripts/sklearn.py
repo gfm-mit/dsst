@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 
+import core.metrics
 import etl.torch.linear_box
 import etl.torch.linear_patient
 import etl.torch.synthetic
-import etl.torch.util
 import util.excepthook
 import plot.metrics
 import plot.calibration
@@ -75,7 +75,7 @@ if __name__ == "__main__":
   lines = []
   sys.excepthook = util.excepthook.custom_excepthook
   train_loader, val_loader, test_loader = etl.torch.linear_box.get_loaders()
-  main(train_loader, val_loader, test_loader, axs=axs, random_state=42, solver=args.solver, combine_fn=etl.torch.util.linear_combiner)
+  main(train_loader, val_loader, test_loader, axs=axs, random_state=42, solver=args.solver, combine_fn=core.metrics.linear_combiner)
   plt.suptitle("linear_box.combiner")
   plt.tight_layout()
   plt.show()
