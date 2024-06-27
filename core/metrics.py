@@ -66,7 +66,7 @@ def binary_classifier_metrics(model, val_loader):
   targets = np.concatenate(targets)
   return float(roc_auc_score(targets, logits[:, 1]))
 
-def get_combined_roc(model, test_loader, combine_fn=None):
+def get_combined_roc(model, test_loader, combine_fn=None, calibration_loader=None):
   logits = []
   targets = []
   groups = []
@@ -84,5 +84,5 @@ def get_combined_roc(model, test_loader, combine_fn=None):
   targets = np.concatenate(targets)
   groups = np.concatenate(groups)
   if combine_fn is not None:
-    logits, targets = combine_fn(logits, targets, groups)
+    logits, targets = combine_fn(logits, targets, groups, calibration_loader)
   return logits, targets

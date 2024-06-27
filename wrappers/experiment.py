@@ -1,5 +1,5 @@
 import json
-import etl.torch.linear_box
+import etl.torch.util
 import wrappers.lr_finder
 import plot.lr_finder
 import core.train
@@ -51,7 +51,8 @@ class Experiment:
     self.model.eval()
     logits, targets = core.metrics.get_combined_roc(
       self.model, self.test_loader,
-      combine_fn=None if self.args.task == "classify" else etl.torch.linear_box.combiner)
+      calibration_loader=self.val_loader,
+      combine_fn=None if self.args.task == "classify" else etl.torch.util.linear_combiner)
     roc = plot.calibration.get_full_roc_table(logits, targets)
     axs = plot.metrics.plot_palette(roc, axs, label=label)
     return axs

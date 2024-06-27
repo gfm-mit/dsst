@@ -7,7 +7,7 @@ import pandas as pd
 import torch
 
 
-def combiner(logits, targets, groups):
+def linear_combiner(logits, targets, groups):
   df = pd.DataFrame(dict(logits=logits, targets=targets, groups=groups))
   df = df.groupby("groups").mean()
   logits, targets = df.logits, df.targets
