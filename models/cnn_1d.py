@@ -6,51 +6,51 @@ import models.util
 
 
 class Cnn(models.base.Base):
-  def __init__(self, n_features=12, n_classes=2, device='cpu'):
+  def __init__(self, arch_width=12, n_classes=2, device='cpu'):
     self.classes = n_classes
-    n_features = n_features
+    arch_width = arch_width
     super().__init__(device=device)
 
-  def get_classifier_architecture(self, n_features=None, kernel_split=None, activation=None):
-    kernels = [int(k) for k in kernel_split.split(',')]
+  def get_classifier_architecture(self, arch_width=None, arch_kernel_list=None, arch_activation=None):
+    kernels = [int(k) for k in arch_kernel_list.split(',')]
     assert len(kernels) == 3
-    if activation == "relu":
-      activation = torch.nn.ReLU
-    elif activation == "gelu":
-      activation = torch.nn.GELU
-    elif activation == "none":
-      activation = torch.nn.Identity
-    elif activation == "swish":
-      activation = torch.nn.SiLU
+    if arch_activation == "relu":
+      arch_activation = torch.nn.ReLU
+    elif arch_activation == "gelu":
+      arch_activation = torch.nn.GELU
+    elif arch_activation == "none":
+      arch_activation = torch.nn.Identity
+    elif arch_activation == "swish":
+      arch_activation = torch.nn.SiLU
     model = torch.nn.Sequential(
         # b n c
         Rearrange('b n c -> b c n'),
         torch.nn.Conv1d(
           12,
-          n_features,
+          arch_width,
           kernel_size=kernels[0],
           stride=kernels[0]),
-        activation(),
-        torch.nn.BatchNorm1d(num_features=n_features),
+        arch_activation(),
+        torch.nn.BatchNorm1d(num_features=arch_width),
         torch.nn.Conv1d(
-          n_features,
-          n_features,
+          arch_width,
+          arch_width,
           kernel_size=kernels[1],
           stride=kernels[1]),
-        activation(),
-        torch.nn.BatchNorm1d(num_features=n_features),
+        arch_activation(),
+        torch.nn.BatchNorm1d(num_features=arch_width),
         torch.nn.Conv1d(
-          n_features,
-          n_features,
+          arch_width,
+          arch_width,
           kernel_size=kernels[2],
           stride=kernels[2]),
-        activation(),
-        torch.nn.BatchNorm1d(num_features=n_features),
+        arch_activation(),
+        torch.nn.BatchNorm1d(num_features=arch_width),
         #PrintfModule('After 64x down'),
         torch.nn.AdaptiveMaxPool1d(1),
         Rearrange('b c 1 -> b c'),
-        torch.nn.BatchNorm1d(num_features=n_features),
-        torch.nn.Linear(n_features, self.classes),
+        torch.nn.BatchNorm1d(num_features=arch_width),
+        torch.nn.Linear(arch_width, self.classes),
         torch.nn.LogSoftmax(dim=-1),
     )
     model = model.to(self.device)
@@ -69,7 +69,7 @@ class Cnn(models.base.Base):
 
       learning_rate=1e-2,
 
-      n_features=32,
-      kernel_split='2,2,16',
-      activation="swish",
+      arch_width=32,
+      arch_kernel_list='2,2,16',
+      arch_activation="swish",
     )
