@@ -16,7 +16,7 @@ def get_trunc_minmax(trunc):
   return get_minmax
 
 class SeqDataset(torch.utils.data.Dataset):
-    def __init__(self, metadata, test_split=False, device=None):
+    def __init__(self, metadata, test_split=False, device=None, task=None):
         self.device = device
         self.test_split = test_split
         uniq_splits = np.unique(metadata.index)
@@ -31,8 +31,14 @@ class SeqDataset(torch.utils.data.Dataset):
           data = pd.DataFrame(data, columns="symbol task box t v_mag2 a_mag2 dv_mag2 cw j_mag2".split())
           data = data.groupby("symbol task box".split()).apply(get_trunc_minmax(128))
           features += [data.values]
-          labels += [coarse] * data.shape[0]
+
           idx = data.index.to_frame()
+          if task == "classify_section":
+            labels += idx.task.values.tolist()
+          elif task == "next_token":
+            labels += [0] * data.shape[0]
+          else:
+            labels += [coarse] * data.shape[0]
           idx["pkey"] = pkey
           groups += idx.values.tolist()
         assert len(features)
@@ -72,7 +78,7 @@ class SeqDataset(torch.utils.data.Dataset):
     def __len__(self):
         return self.labels.shape[0]
 
-def get_loaders(device=None):
+def get_loaders(device=None, task=None):
   labels = pd.read_csv(pathlib.Path("/Users/abe/Desktop/meta.csv")).set_index("AnonymizedID")
   #assert(features.index.difference(labels.index).empty), (features.index, labels.index)
   labels = labels.Diagnosis[labels.Diagnosis.isin(["Healthy Control", "Dementia-AD senile onset"])] == "Dementia-AD senile onset"
@@ -83,10 +89,10 @@ def get_loaders(device=None):
     "test val2 val1".split(),
     default="train")
   labels = labels.set_index("split")
-  train_data = SeqDataset(labels.loc["train"], device=device)
-  val_data = SeqDataset(labels.loc["val1"], device=device)
-  calibration_data = SeqDataset(labels.loc["val1"], device=device, test_split=True)
-  test_data = SeqDataset(labels.loc["val2"], device=device, test_split=True)
+  train_data = SeqDataset(labels.loc["train"], device=device, task=task)
+  val_data = SeqDataset(labels.loc["val1"], device=device, task=task)
+  calibration_data = SeqDataset(labels.loc["val1"], device=device, test_split=True, task=task)
+  test_data = SeqDataset(labels.loc["val2"], device=device, test_split=True, task=task)
   # pin_memory is maybe a 30% speedup
   train_loader = torch.utils.data.DataLoader(train_data, batch_size=1000, shuffle=False, collate_fn=lambda x: x)
   val_loader = torch.utils.data.DataLoader(val_data, batch_size=1000, shuffle=False, collate_fn=lambda x: x)

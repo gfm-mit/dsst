@@ -55,7 +55,7 @@ def parse_args():
 
   parser.add_argument('--device', default='cpu', help='torch device')
   parser.add_argument('--model', default='linear', help='which model class to use')
-  parser.add_argument('--task', default='classify', choices=set("next_token classify classify_patient".split()), help='training target / loss')
+  parser.add_argument('--task', default='classify', choices=set("next_token classify classify_patient classify_section".split()), help='training target / loss')
   parser.add_argument('--history', default='none', choices=set("none train val".split()), help='Plot history of loss')
 
   parser.add_argument('--disk', default='none', choices=set("none load save freeze".split()), help='whether to persist the model (or use persisted)')
@@ -75,7 +75,7 @@ def main():
     BUILDER = models.cnn_2d.Cnn
     train_loader, val_loader, test_loader = etl.torch.bitmap.get_loaders()
   else:
-    train_loader, val_loader, calibration_loader, test_loader = etl.torch.dataset.get_loaders(device=args.device)
+    train_loader, val_loader, calibration_loader, test_loader = etl.torch.dataset.get_loaders(device=args.device, task=args.task)
     BUILDER = models.registry.lookup_model(args.model)
   if args.test:
     for model_class, train_batch, val_batch in zip(
@@ -142,7 +142,7 @@ def compare(args, experiment):
         if args.history != "none":
           axs = plot.tune.plot_epoch_loss_history(args, epoch_loss_history, axs=axs, label=k)
           running_loss_history += [epoch_loss_history]
-        elif args.task in 'classify classify_patient'.split():
+        elif args.task in 'classify classify_patient classify_section'.split():
           axs = experiment.plot_trained(axs, label=k)
         plt.pause(0.1)
       plt.ioff()

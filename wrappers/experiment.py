@@ -18,10 +18,13 @@ class Experiment:
     self.model = None
     self.last_train_params = None
     self.last_metric = None
+    self.n_classes = 2
+    if args.task == "classify_section":
+      self.n_classes = 6
 
   def train(self, **kwargs):
     #torch.manual_seed(42)
-    builder = self.model_class(n_classes=2, device=self.args.device)
+    builder = self.model_class(n_classes=self.n_classes, device=self.args.device)
     base_params = builder.get_parameters(task=self.args.task) | self.args.config | kwargs
     metric, epoch_loss_history, self.model = core.train.setup_training_run(
         base_params, model_factory_fn=builder,
@@ -47,7 +50,7 @@ class Experiment:
 
   def plot_trained(self, axs, label=None):
     assert self.model is not None
-    assert self.args.task in 'classify classify_patient'.split()
+    assert self.args.task in 'classify classify_patient classify_section'.split()
     self.model.eval()
     logits, targets = core.metrics.get_combined_roc(
       self.model, self.test_loader,
@@ -58,7 +61,7 @@ class Experiment:
     return axs
 
   def tune(self, **kwargs):
-    builder = self.model_class(n_classes=2, device=self.args.device)
+    builder = self.model_class(n_classes=self.n_classes, device=self.args.device)
     base_params = builder.get_parameters(task=self.args.task) | self.args.config | kwargs
     wrappers.tune.main(
       self.train_loader, self.val_loader,
@@ -67,7 +70,7 @@ class Experiment:
       tuning_ranges=self.args.tune)
 
   def find_lr(self, axs=None, params=None, label=None):
-    builder = self.model_class(n_classes=2, device=self.args.device)
+    builder = self.model_class(n_classes=self.n_classes, device=self.args.device)
     base_params = builder.get_parameters(task=self.args.task) | params
     lrs, losses, conds = wrappers.lr_finder.find_lr(
         base_params,
