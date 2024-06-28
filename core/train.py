@@ -69,21 +69,37 @@ def setup_model(params, model_factory_fn, task="classify", disk="none"):
   #   model = torch.compile(model)
   return model
 
+def nest_param_list(flat_list):
+  result = {}
+  for key in flat_list:
+    parts = [y for x in key.split(".") for y in x.split("_")]
+    d = result
+    for part in parts[:-1]:
+      if part not in d:
+        d[part] = {}
+      d = d[part]
+    d[parts[-1]] = None
+  for key in flat_list:
+    parts = [y for x in key.split(".") for y in x.split("_")]
+    d = result
+    for part in parts[:-2]:
+      if part not in d:
+        d[part] = {}
+      d = d[part]
+    part = parts[-2]
+    if isinstance(d[part], dict) and all([x is None for x in d[part].values()]):
+      d[part] = set(d[part].keys())
+  return result
+
 def freeze_loaded_params(missing_keys, unexpected_keys, model, freeze=True):
-    sorted_keys = defaultdict(list)
     loaded_params = dict(model.named_parameters())
     for k in missing_keys:
-      kk, v = k.split(".", 1)
-      sorted_keys[kk] += [v]
       if k in loaded_params:
         del loaded_params[k]
-    missing_keys = dict(sorted_keys)
-    sorted_keys = defaultdict(list)
-    for k in unexpected_keys:
-      kk, v = k.split(".", 1)
-      sorted_keys[kk] += [v]
-    unexpected_keys = dict(sorted_keys)
-    print(f"loading.{missing_keys=}\nloading.{unexpected_keys=}\nfreezing: {list(loaded_params.keys())=}")
+    missing_keys = nest_param_list(missing_keys)
+    unexpected_keys = nest_param_list(unexpected_keys)
+    frozen_keys = nest_param_list(loaded_params.keys())
+    print(f"loading.{missing_keys=}\nloading.{unexpected_keys=}\nloading.{frozen_keys=}")
     if freeze:
       for v in loaded_params.values():
         v.requires_grad = False
