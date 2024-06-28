@@ -17,6 +17,14 @@ class Base(ABC):
   def get_coefficients(self, model):
     assert "get_coefficients not implemented in {}".format(self.__class__.__name__)
 
+  def translate_state_dict(self, state_dict):
+    print("falling back on default state_dict translation: cutting off last tunable layer")
+    z = max([int(x.split(".")[0]) for x in state_dict.keys()])
+    z = f"{z}."
+    for k in list(state_dict.keys()):
+      if k.startswith(z):
+        del state_dict[k]
+    return state_dict
 
 class SequenceBase(Base):
   @abstractmethod

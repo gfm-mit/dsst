@@ -40,7 +40,7 @@ def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, tra
 
 def setup_model(params, model_factory_fn, task="classify", disk="none"):
   assert isinstance(model_factory_fn, models.base.Base)
-  assert task in "classify classify_patient next_token".split()
+  assert task in "classify classify_patient classify_section next_token".split()
   assert disk in "none load save freeze".split()
   overlay_params = {
     k: params[k]
@@ -104,7 +104,7 @@ def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=N
                                    loss_history_loader=val_loader if history == "val" else None, offset=offset)
   if disk == "save":
     state_dict = model.state_dict()
-    if task == "next_token":
+    if task in "next_token classify_section".split():
       state_dict = model_factory_fn.translate_state_dict(state_dict)
     torch.save(state_dict, './results/model.pth')
   metric = core.metrics.evaluate(model, val_loader, task, offset=offset)
