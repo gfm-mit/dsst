@@ -40,6 +40,16 @@ def get_optimizer(params, model):
                                           growth_rate=1.3,
                                           weight_decouple=True,
                                           weight_decay=params["weight_decay"])
+  elif params["optimizer"] == "samprodigy":
+    assert params["scheduler"] == "none"
+    optimizer = pytorch_optimizer.SAM(model.parameters(),
+                                      base_optimizer=pytorch_optimizer.Prodigy,
+                                      lr=1,
+                                      betas=[
+                                          params["momentum"],
+                                          params["conditioning_smoother"],
+                                      ],
+                                      weight_decay=params["weight_decay"])
   elif params["optimizer"] == "sfsgd":
     optimizer = pytorch_optimizer.ScheduleFreeSGD(model.parameters(),
                                                   lr=params["learning_rate"],
