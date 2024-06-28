@@ -32,7 +32,9 @@ class SeqDataset(torch.utils.data.Dataset):
           data = data.groupby("symbol task box".split()).apply(get_trunc_minmax(128))
           features += [data.values]
           labels += [coarse] * data.shape[0]
-          groups += [pkey] * data.shape[0]
+          idx = data.index.to_frame()
+          idx["pkey"] = pkey
+          groups += idx.values.tolist()
         assert len(features)
         self.features = np.concatenate(features)
         self.labels = np.array(labels)
@@ -83,9 +85,11 @@ def get_loaders(device=None):
   labels = labels.set_index("split")
   train_data = SeqDataset(labels.loc["train"], device=device)
   val_data = SeqDataset(labels.loc["val1"], device=device)
+  calibration_data = SeqDataset(labels.loc["val1"], device=device, test_split=True)
   test_data = SeqDataset(labels.loc["val2"], device=device, test_split=True)
   # pin_memory is maybe a 30% speedup
   train_loader = torch.utils.data.DataLoader(train_data, batch_size=1000, shuffle=False, collate_fn=lambda x: x)
   val_loader = torch.utils.data.DataLoader(val_data, batch_size=1000, shuffle=False, collate_fn=lambda x: x)
+  calibration_loader = torch.utils.data.DataLoader(calibration_data, batch_size=1000, shuffle=False, collate_fn=lambda x: x)
   test_loader = torch.utils.data.DataLoader(test_data, batch_size=1000, shuffle=False, collate_fn=lambda x: x)
-  return train_loader, val_loader, test_loader
+  return train_loader, val_loader, calibration_loader, test_loader

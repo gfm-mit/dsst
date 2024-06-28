@@ -11,11 +11,20 @@ def plot_palette(roc, axs=None, label_alternatives=False, label=None):
   if axs is None:
     fig, axs = plt.subplots(1, 3, width_ratios=[1, 2, 1], figsize=(12, 5))
   plt.sca(axs[0])
-  color = plot_roc(roc, label_alternatives=label_alternatives)
+  try:
+    color = plot_roc(roc, label_alternatives=label_alternatives)
+  except OverflowError:
+    plt.title("ROC plot failed")
   plt.sca(axs[1])
-  plot_brier(roc, color, label_alternatives=label_alternatives)
+  try:
+    plot_brier(roc, color, label_alternatives=label_alternatives)
+  except OverflowError:
+    plt.title("Brier plot failed")
   plt.sca(axs[2])
-  plot_calibration(roc, color, label=label)
+  try:
+    plot_calibration(roc, color, label=label)
+  except OverflowError:
+    plt.title("Calibration plot failed")
   return axs
 
 def plot_calibration(roc, color, label=None):

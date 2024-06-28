@@ -75,7 +75,7 @@ def main():
     BUILDER = models.cnn_2d.Cnn
     train_loader, val_loader, test_loader = etl.torch.bitmap.get_loaders()
   else:
-    train_loader, val_loader, test_loader = etl.torch.dataset.get_loaders(device=args.device)
+    train_loader, val_loader, calibration_loader, test_loader = etl.torch.dataset.get_loaders(device=args.device)
     BUILDER = models.registry.lookup_model(args.model)
   if args.test:
     for model_class, train_batch, val_batch in zip(
@@ -97,13 +97,14 @@ def main():
       train_loader=train_loader,
       val_loader=val_loader)
   else:
-    use_experiment(args, BUILDER, train_loader, val_loader, test_loader)
+    use_experiment(args, BUILDER, train_loader, val_loader, calibration_loader, test_loader)
 
-def use_experiment(args, BUILDER, train_loader, val_loader, test_loader):
+def use_experiment(args, BUILDER, train_loader, val_loader, calibration_loader, test_loader):
     experiment = wrappers.experiment.Experiment(
       model_class=BUILDER,
       train_loader=train_loader,
       val_loader=val_loader,
+      calibration_loader=calibration_loader,
       test_loader=test_loader,
       args=args)
     if args.tune:
@@ -149,7 +150,10 @@ def compare(args, experiment):
         plot.tune.set_ylim(np.concatenate(running_loss_history))
       suptitle = "Aggregated at the Box Level, not Patient" if args.task == "classify" else "Aggregated at Patient Level, not Box"
       plt.suptitle(suptitle)
-      plt.tight_layout()
+      try:
+        plt.tight_layout()
+      except OverflowError:
+        print("OverflowError in tight_layout")
       plt.show()
 
 if __name__ == "__main__":

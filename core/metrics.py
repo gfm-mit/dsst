@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
+import scipy
 import sklearn
+import sklearn.linear_model
 import torch
 from sklearn.metrics import roc_auc_score
 
@@ -34,13 +36,34 @@ def verbose_next_token_metrics(predicted, data):
                       ))
 
 def get_combined_roc(model, test_loader, combine_fn=None, calibration_loader=None):
+  regression = None
+  if combine_fn == symbol_box_combiner:
+    assert calibration_loader is not None
+    logits, targets, groups = core.batch_eval.binary_classifier_with_groups(model, test_loader)
+    logits, targets = combine_fn(logits, targets, groups)
+    regression = sklearn.linear_model.LogisticRegression()
+    regression.fit(logits.values, targets)
   logits, targets, groups = core.batch_eval.binary_classifier_with_groups(model, test_loader)
   if combine_fn is not None:
     logits, targets = combine_fn(logits, targets, groups)
+    if regression is not None:
+      logits = regression.predict_proba(logits.values)[:, 1]
   return logits, targets
 
 def linear_combiner(logits, targets, groups, calibration_loader=None):
-  df = pd.DataFrame(dict(logits=logits, targets=targets, groups=groups))
-  df = df.groupby("groups").mean()
+  df = pd.DataFrame(groups, columns="symbol task box pkey".split()).drop(columns="symbol task box".split())
+  df["logits"] = logits
+  df["targets"] = targets
+  df = df.groupby("pkey").mean()
   logits, targets = df.logits, df.targets
   return logits, targets
+
+def symbol_box_combiner(logits, targets, groups, calibration_loader=None):
+  grouped_logits = pd.DataFrame(groups, columns="symbol task box pkey".split()).drop(columns="box")
+  grouped_logits["logits"] = logits
+  grouped_logits["targets"] = targets
+  task = grouped_logits.groupby("pkey targets task".split()).logits.mean().unstack()
+  symbol = grouped_logits.groupby("pkey targets symbol".split()).logits.mean().unstack()
+  grouped_logits = pd.concat([task, symbol], axis=1).reset_index().set_index("pkey")
+  targets = grouped_logits.pop("targets")
+  return grouped_logits, targets

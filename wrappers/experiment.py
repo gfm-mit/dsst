@@ -8,10 +8,11 @@ import plot.calibration
 import plot.metrics
 
 class Experiment:
-  def __init__(self, model_class, train_loader, val_loader, test_loader, args):
+  def __init__(self, model_class, train_loader, val_loader, calibration_loader, test_loader, args):
     self.model_class = model_class
     self.train_loader = train_loader
     self.val_loader = val_loader
+    self.calibration_loader = calibration_loader
     self.test_loader = test_loader
     self.args = args
     self.model = None
@@ -50,7 +51,7 @@ class Experiment:
     self.model.eval()
     logits, targets = core.metrics.get_combined_roc(
       self.model, self.test_loader,
-      calibration_loader=self.val_loader,
+      calibration_loader=self.calibration_loader,
       combine_fn=None if self.args.task == "classify" else core.metrics.linear_combiner)
     roc = plot.calibration.get_full_roc_table(logits, targets)
     axs = plot.metrics.plot_palette(roc, axs, label=label)
