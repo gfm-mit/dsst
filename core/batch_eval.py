@@ -23,39 +23,22 @@ def next_token(model, val_loader, verbose=False, offset=1):
   data = np.concatenate(data)
   return predicted, data
 
-def binary_classifier(model, val_loader):
-  DEVICE = next(model.parameters()).device
-  results = []
-  model.eval()
-  with torch.no_grad():
-    for data, target in val_loader:
-      output = model(data.to(DEVICE)).to('cpu')
-      results += [(
-          output.detach().numpy(),
-          target.detach().to('cpu').numpy(),
-      )]
-  logits, targets = zip(*results)
-  logits = np.concatenate(logits)
-  # only needed for accuracy
-  #predictions = np.argmax(logits, axis=1)
-  targets = np.concatenate(targets)
-  return logits, targets
-
-def binary_classifier_with_groups(model, loader):
+def binary_classifier(model, loader):
   logits = []
   targets = []
   groups = []
   DEVICE = next(model.parameters()).device
   with torch.no_grad():
-    for idx, (data, target, g) in enumerate(loader):
-      #print(target)
-      output = model(data.to(DEVICE)).to('cpu')
-      logits += [output.detach().numpy()[:, 1]]
-      targets += [target.detach().to('cpu').numpy()[:, 0]]
-      groups += [g]
-      if idx % 100 == 0 and idx > 0:
-        print(f"metrics.get_combined_roc()[{idx}]")
+    for _, (data, target, *g) in enumerate(loader):
+      output = model(data.to(DEVICE)).detach().to('cpu').numpy()
+      label = target.detach().to('cpu').numpy()
+      logits += [output[:, 1]]
+      targets += [label[:, 0]]
+      if len(g) > 0:
+        groups += g
   logits = np.concatenate(logits)
   targets = np.concatenate(targets)
-  groups = np.concatenate(groups)
-  return logits, targets, groups
+  if len(groups) > 0:
+    groups = np.concatenate(groups)
+    return logits, targets, groups
+  return logits, targets

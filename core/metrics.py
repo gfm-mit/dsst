@@ -17,7 +17,7 @@ def evaluate(model, val_loader, task, offset=1):
     return rmse
   else:
     logits, targets = core.batch_eval.binary_classifier(model, val_loader)
-    return float(roc_auc_score(targets, logits[:, 1]))
+    return float(roc_auc_score(targets, logits))
 
 def early_stop(history, task):
   if task == "next_token":
@@ -36,19 +36,23 @@ def verbose_next_token_metrics(predicted, data):
                       ))
 
 def get_combined_roc(model, test_loader, combine_fn=None, calibration_loader=None):
-  regression = None
-  if combine_fn == symbol_box_combiner:
-    assert calibration_loader is not None
-    logits, targets, groups = core.batch_eval.binary_classifier_with_groups(model, test_loader)
-    logits, targets = combine_fn(logits, targets, groups)
-    regression = sklearn.linear_model.LogisticRegression()
-    regression.fit(logits.values, targets)
-  logits, targets, groups = core.batch_eval.binary_classifier_with_groups(model, test_loader)
+  regression = get_regressor(model, test_loader, combine_fn, calibration_loader)
+  logits, targets, groups = core.batch_eval.binary_classifier(model, test_loader)
   if combine_fn is not None:
     logits, targets = combine_fn(logits, targets, groups)
-    if regression is not None:
-      logits = regression.predict_proba(logits.values)[:, 1]
+  if regression is not None:
+    logits = regression.predict_proba(logits.values)[:, 1]
   return logits, targets
+
+def get_regressor(model, test_loader, combine_fn, calibration_loader):
+  if combine_fn != symbol_box_combiner:
+    return None
+  assert calibration_loader is not None
+  logits, targets, groups = core.batch_eval.binary_classifier(model, test_loader)
+  logits, targets = combine_fn(logits, targets, groups)
+  regression = sklearn.linear_model.LogisticRegression()
+  regression.fit(logits.values, targets)
+  return regression
 
 def linear_combiner(logits, targets, groups, calibration_loader=None):
   df = pd.DataFrame(groups, columns="symbol task box pkey".split()).drop(columns="symbol task box".split())
