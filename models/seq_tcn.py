@@ -1,5 +1,6 @@
 import torch
 from einops.layers.torch import Rearrange
+import re
 
 import models.base
 from pytorch_tcn import TCN
@@ -38,9 +39,11 @@ class Cnn(models.base.SequenceBase):
   def translate_state_dict(self, next_token_state_dict):
     classifier_state_dict = {}
     for k, v in next_token_state_dict.items():
-      if "causal_conv" in k or "projection" in k:
-        kk = k.replace("1.residual.", "")
-        classifier_state_dict[kk] = v
+      if re.match("1[.]network[.]0[.]", k):
+        print(f"saving param {k}")
+        classifier_state_dict[k] = v
+      else:
+        print(f"not saving param {k}")
     return classifier_state_dict
 
   def get_classifier_architecture(self, **kwargs):
