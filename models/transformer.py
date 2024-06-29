@@ -5,6 +5,7 @@ import re
 from x_transformers import Decoder
 
 import models.base
+from models.util import PrintfModule
 
 class DecoderWrapper(Decoder):
   def __init__(self, arch_width, arch_depth, arch_head, arch_dropout):
@@ -49,7 +50,10 @@ class Transformer(models.base.SequenceBase):
         # b n c
         models.util.SineProjection(self.inputs, kwargs['arch_width'], scale=1, axis=-1),
         DecoderWrapper(**kwargs),
+        torch.nn.SiLU(),
+        torch.nn.LayerNorm(normalized_shape=kwargs['arch_width']),
         Rearrange('b n c -> b c n'),
+        # TODO: surely this can be improved?
         torch.nn.AdaptiveMaxPool1d(1),
         Rearrange('b c 1 -> b c'),
         torch.nn.Linear(kwargs['arch_width'], self.classes),
@@ -74,8 +78,8 @@ class Transformer(models.base.SequenceBase):
       weight_decay=0,
       momentum=0.9,
       conditioning_smoother=0.999,
-      warmup_epochs=3,
-      max_epochs=10,
+      warmup_epochs=5,
+      max_epochs=20,
       learning_rate=6e-3,
 
       arch_depth=1,
