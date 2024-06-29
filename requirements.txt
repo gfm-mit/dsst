@@ -3,7 +3,6 @@ lxml
 matplotlib
 pandas
 pytorch-optimizer
-random-fourier-features-pytorch
 scikit-image
 scikit-learn
 scipy
@@ -11,3 +10,4 @@ tomli
 torch
 torchvision
 tqdm
+x_transformers
