@@ -37,10 +37,11 @@ class Transformer(models.base.SequenceBase):
   def translate_state_dict(self, next_token_state_dict):
     classifier_state_dict = {}
     for k, v in next_token_state_dict.items():
-      if re.match("0.projection.*|1.decoder.*", k):
-        kk = k.replace("1.residual.", "") # unused
-        print(f"saving param {k=} {kk=}")
-        classifier_state_dict[kk] = v
+      if re.match("0[.]projection[.]*|1[.](final_norm|layers)[.]*", k):
+        print(f"saving param {k}")
+        classifier_state_dict[k] = v
+      else:
+        print(f"not saving param {k}")
     return classifier_state_dict
 
   def get_classifier_architecture(self, **kwargs):
