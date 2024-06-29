@@ -8,22 +8,25 @@ from models.util import NoopAttention
 
 
 class RelativeMultiheadAttention(torch.nn.MultiheadAttention):
-  def __init__(self, embed_dim, num_heads, decay_rate=1.0, content_scale=1.0, **kwargs):
+  def __init__(self, embed_dim, num_heads, pos_scale=1.0, pos_weight=1.0, **kwargs):
     super().__init__(embed_dim, num_heads, **kwargs)
-    self.decay_rate = decay_rate
-    self.content_scale = content_scale
+    self.pos_scale = pos_scale
+    self.pos_weight = pos_weight
 
   def forward(self, query, key, value, **kwargs):
     kwargs['need_weights'] = True
     attn_output, attn_weights = super().forward(query, key, value, **kwargs)
+    if self.pos_scale == 0 or self.pos_weight == 0:
+      return attn_output, attn_weights
     positions = torch.arange(query.shape[1], device=query.device)
-    rel_pos = torch.exp(-torch.abs(positions.unsqueeze(1) - positions.unsqueeze(0)) / self.decay_rate)
-    new_weights = torch.nn.functional.softmax(attn_weights * self.content_scale + rel_pos.unsqueeze(0), dim=-1)
+    rel_pos = torch.exp(-torch.abs(positions.unsqueeze(1) - positions.unsqueeze(0)) * self.pos_scale)
+    rel_pos[torch.tril(rel_pos, diagonal=-1).to(bool)] = -np.inf
+    new_weights = torch.nn.functional.softmax(attn_weights + self.pos_weight * rel_pos.unsqueeze(0), dim=-1)
     return torch.bmm(new_weights, value), new_weights
 
 class Decoder(torch.nn.Module):
-  def __init__(self, arch_width, arch_ff_width, arch_depth, arch_head, arch_dropout, arch_decay, arch_content_scale,
-               arch_next_width='unused', arch_next_depth='unused', causal=False):
+  def __init__(self, arch_width, arch_ff_width, arch_depth, arch_head, arch_dropout, arch_pos_scale, arch_pos_weight,
+               arch_next_width='unused', arch_next_depth='unused', causal='unused'):
       super(Decoder, self).__init__()
       decoder_layer = torch.nn.TransformerDecoderLayer(
         d_model=arch_width,
@@ -37,23 +40,12 @@ class Decoder(torch.nn.Module):
         dropout=arch_dropout,
         batch_first=True,
         bias=True)
-      if arch_decay > 0:
-        decoder_layer.self_attn = RelativeMultiheadAttention(decay_rate=arch_decay, content_scale=arch_content_scale, **attn_args)
-      else:
-        decoder_layer.self_attn = torch.nn.MultiheadAttention(**attn_args)
+      decoder_layer.self_attn = RelativeMultiheadAttention(pos_scale=arch_pos_scale, pos_weight=arch_pos_weight, **attn_args)
       decoder_layer.multihead_attn = NoopAttention() # this is used on the memory
       self.decoder = torch.nn.TransformerDecoder(decoder_layer=decoder_layer, num_layers=arch_depth)
-      self.causal = causal
 
   def forward(self, input):
-    #print(f"{input.shape=}")
-    mask = None
-    if self.causal:
-      seq_len = input.shape[1]
-      # tgt, src
-      mask = torch.Tensor(np.tril(np.ones((seq_len, seq_len)), k=-1).astype(bool)).to(input.device)
-    #print(f"{mask.shape=}")
-    return self.decoder(input, memory=None, tgt_mask=mask)
+    return self.decoder(input, memory=None)
   
 class TokenResid(torch.nn.Module):
     def __init__(self, arch_next_width, arch_next_depth, arch_width):
@@ -162,6 +154,6 @@ class Transformer(models.base.SequenceBase):
 
       #arch_next_width=8,
       #arch_next_depth=0,
-      arch_decay=3,
-      arch_content_scale=3e-2,
+      arch_pos_scale=1/3,
+      arch_pos_weight=1/3e-2,
     )
