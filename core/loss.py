@@ -19,6 +19,9 @@ def get_task_loss(model, optimizer, train_loader, task, offset=1):
   if optimizer.__module__ == "pytorch_optimizer.optimizer.prodigy":
     loss = optimizer.param_groups[0]["d"]
     description = 'D={:.2e}  {}'.format(loss, description)
+  elif hasattr(optimizer, "base_optimizer") and optimizer.base_optimizer.__module__ == "pytorch_optimizer.optimizer.prodigy":
+    loss = optimizer.base_optimizer.param_groups[0]["d"]
+    description = 'D={:.2e}  {}'.format(loss, description)
   return loss, description
 
 def balance_class_weights(target):
