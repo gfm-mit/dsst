@@ -25,7 +25,7 @@ class Transformer(models.base.SequenceBase):
   def get_next_token_architecture(self, **kwargs):
     model = torch.nn.Sequential(
         # b n c
-        models.util.SineProjection(self.inputs, kwargs['arch_width'], scale=1, axis=-1), # why is scale 1?
+        models.util.SineProjection(self.inputs, kwargs['arch_width'], scale=1, axis=-1),
         DecoderWrapper(**kwargs),
         torch.nn.SiLU(),
         torch.nn.LayerNorm(normalized_shape=kwargs['arch_width']),
@@ -46,12 +46,11 @@ class Transformer(models.base.SequenceBase):
   def get_classifier_architecture(self, **kwargs):
     model = torch.nn.Sequential(
         # b n c
-        models.util.SineProjection(self.inputs, kwargs['arch_width'], scale=1, axis=-1), # why is scale 1?
-        DecoderWrapper(**kwargs), # TODO: try False
+        models.util.SineProjection(self.inputs, kwargs['arch_width'], scale=1, axis=-1),
+        DecoderWrapper(**kwargs),
         Rearrange('b n c -> b c n'),
         torch.nn.AdaptiveMaxPool1d(1),
         Rearrange('b c 1 -> b c'),
-        # TODO: why does this work better than adding more layers?  and why is taking the last hidden state not enough?
         torch.nn.Linear(kwargs['arch_width'], self.classes),
         torch.nn.LogSoftmax(dim=-1),
     )
@@ -63,24 +62,23 @@ class Transformer(models.base.SequenceBase):
       scheduler='warmup',
       optimizer='samadam',
       warmup_epochs=2,
-      max_epochs=5,
+      max_epochs=20,
       learning_rate=1e-2,
     )
 
   def get_classifier_parameters(self, **kwargs):
     return dict(
-      # this gets like 84% AUC, surprisingly enough
-      scheduler='warmup', # TODO: try this with a scheduler
+      scheduler='warmup',
       optimizer='samadam',
       weight_decay=0,
       momentum=0.9,
       conditioning_smoother=0.999,
-      warmup_epochs=5,
-      max_epochs=50,
-      learning_rate=3e-2,
+      warmup_epochs=3,
+      max_epochs=10,
+      learning_rate=6e-3,
 
       arch_depth=1,
-      arch_width=64,
+      arch_width=96,
       arch_dropout=0.05,
       arch_head=4,
     )
