@@ -20,6 +20,10 @@ def get_spaces(**kwargs):
   return spaces
 
 def postprocess_tuning_ranges(tuning_ranges):
+  overlay = {}
+  multiple = 1
+  if "multiple" in tuning_ranges:
+    multiple = tuning_ranges.pop("multiple")
   for k in tuning_ranges.keys():
     if isinstance(tuning_ranges[k], dict):
       if tuning_ranges[k].keys() == set("low high steps".split()):
@@ -28,13 +32,24 @@ def postprocess_tuning_ranges(tuning_ranges):
           tuning_ranges[k]["high"],
           tuning_ranges[k]["steps"]
         ).tolist()
+      elif tuning_ranges[k].keys() == set("low high steps int".split()):
+        tuning_ranges[k] = np.geomspace(
+          tuning_ranges[k]["low"],
+          tuning_ranges[k]["high"],
+          tuning_ranges[k]["steps"]
+        ).astype(int).tolist()
       elif tuning_ranges[k].keys() == set("multiple values".split()):
         tuning_ranges[k] = tuning_ranges[k]["values"] * tuning_ranges[k]["multiple"]
       else:
         assert False, tuning_ranges[k]
+    elif isinstance(tuning_ranges[k], list):
+      pass
     else:
-      assert isinstance(tuning_ranges[k], list)
-  return tuning_ranges
+      overlay[k] = tuning_ranges.pop(k)
+  if multiple != 1:
+    for k, v in tuning_ranges.items():
+      tuning_ranges[k] = tuning_ranges[k] * multiple
+  return overlay, tuning_ranges
 
 def pprint_dict(d):
   str_dict = {}
@@ -57,14 +72,13 @@ def main(train_loader, val_loader, builder=None, base_params=None, task="classif
   torch.manual_seed(42)
   assert isinstance(builder, models.base.Base)
   assert tuning_ranges
-  tuning_ranges = postprocess_tuning_ranges(tuning_ranges)
+  overlay, tuning_ranges = postprocess_tuning_ranges(tuning_ranges)
+  print(f"{tuning_ranges=}")
   assert tuning_ranges
   spaces = get_spaces(**tuning_ranges)
   results = []
   for i in spaces.index:
-    params = dict(**base_params)
-    for k in spaces.columns:
-      params[k] = spaces.loc[i, k]
+    params = dict(**base_params) | spaces.loc[i].to_dict() | overlay
     case_label = pprint_dict(spaces.loc[i].to_dict())
     metric, epoch_loss_history, model = core.train.setup_training_run(
       params, model_factory_fn=builder, train_loader=train_loader, val_loader=val_loader,
