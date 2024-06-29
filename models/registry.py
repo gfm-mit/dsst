@@ -8,6 +8,7 @@ import models.linear_bc
 import models.linear_bnc
 import models.rnn_lstm
 import models.seq_cnn
+import models.seq_tcn
 import models.transformer
 
 def lookup_model(name):
@@ -31,6 +32,8 @@ def lookup_model(name):
     return models.seq_cnn.Cnn
   elif name == "fft":
     return models.cnn_1d_fft.Cnn
+  elif name == "tcn":
+    return models.seq_tcn.Cnn
   assert False
 
 def get_all_1d_models():

@@ -3,6 +3,7 @@ lxml
 matplotlib
 pandas
 pytorch-optimizer
+pytorch-tcn
 scikit-image
 scikit-learn
 scipy
