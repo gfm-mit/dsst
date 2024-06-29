@@ -9,7 +9,7 @@ from models.util import NoopAttention
 
 class Decoder(torch.nn.Module):
   def __init__(self, arch_width, arch_ff_width, arch_depth, arch_head, arch_dropout,
-               arch_token_resid_width='unused', arch_token_resid_depth='unused', causal=False):
+               arch_next_width='unused', arch_next_depth='unused', causal=False):
       super(Decoder, self).__init__()
       decoder_layer = torch.nn.TransformerDecoderLayer(
         d_model=arch_width,
@@ -38,32 +38,33 @@ class Decoder(torch.nn.Module):
     return self.decoder(input, memory=None, tgt_mask=mask)
   
 class TokenResid(torch.nn.Module):
-    def __init__(self, arch_token_resid_width, arch_token_resid_depth, arch_width):
-      self.arch_token_resid_width = arch_token_resid_width
-      self.arch_token_resid_depth = arch_token_resid_depth
+    def __init__(self, arch_next_width, arch_next_depth, arch_width):
+      super().__init__()
+      self.arch_next_width = arch_next_width
+      self.arch_next_depth = arch_next_depth
       self.arch_width = arch_width
       self.stack = self.get_outer_stack()
     
     def get_inner_stack(self):
       return models.util.ResidualBlock(torch.nn.Sequential(
-        torch.nn.LayerNorm(normalized_shape=self.arch_token_resid_width),
-        torch.nn.Linear(self.arch_token_resid_width, self.arch_token_resid_width),
+        torch.nn.LayerNorm(normalized_shape=self.arch_next_width),
+        torch.nn.Linear(self.arch_next_width, self.arch_next_width),
         torch.nn.SiLU()))
     
     def get_outer_stack(self):
       return models.util.ResidualBlock(torch.nn.Sequential(
         torch.nn.SiLU(),
         torch.nn.LayerNorm(normalized_shape=self.arch_width),
-        torch.nn.Linear(self.arch_width, self.arch_token_resid_width),
+        torch.nn.Linear(self.arch_width, self.arch_next_width),
         torch.nn.SiLU(),
-        *[self.get_inner_stack() for _ in range(self.arch_token_resid_depth)],
-        torch.nn.LayerNorm(normalized_shape=self.arch_token_resid_width),
-        torch.nn.Linear(self.arch_token_resid_width, self.arch_width),
+        *[self.get_inner_stack() for _ in range(self.arch_next_depth)],
+        torch.nn.LayerNorm(normalized_shape=self.arch_next_width),
+        torch.nn.Linear(self.arch_next_width, self.arch_width),
         torch.nn.SiLU(),
       ))
     
     def forward(self, input):
-      if self.arch_token_resid_width == 0:
+      if self.arch_next_width == 0:
         return input
       return self.stack(input)
 
@@ -80,10 +81,10 @@ class Transformer(models.base.SequenceBase):
         Decoder(causal=True, **kwargs), # TODO: try False
         torch.nn.SiLU(),
         TokenResid(
-          arch_token_resid_depth=kwargs['arch_token_resid_depth'],
-          arch_token_resid_width=kwargs['arch_token_resid_width'],
+          arch_next_depth=kwargs['arch_next_depth'],
+          arch_next_width=kwargs['arch_next_width'],
           arch_width=kwargs['arch_width']
-          ) if kwargs['arch_token_resid_width'] > 0 else torch.nn.Identity(),
+          ) if kwargs['arch_next_width'] > 0 else torch.nn.Identity(),
         torch.nn.LayerNorm(normalized_shape=kwargs['arch_width']),
         torch.nn.Linear(kwargs['arch_width'], self.inputs),
     )
@@ -119,7 +120,7 @@ class Transformer(models.base.SequenceBase):
       scheduler='warmup',
       optimizer='samadam',
       warmup_epochs=5,
-      max_epochs=15,
+      max_epochs=20,
       learning_rate=2e-2,
     )
 
@@ -141,6 +142,6 @@ class Transformer(models.base.SequenceBase):
       arch_dropout=0.05,
       arch_head=4,
 
-      arch_token_resid_width=0,
-      arch_token_resid_depth=1,
+      arch_next_width=8,
+      arch_next_depth=0,
     )
