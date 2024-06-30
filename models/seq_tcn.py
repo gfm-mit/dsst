@@ -85,8 +85,8 @@ class Cnn(models.base.SequenceBase):
       max_epochs=30,
       learning_rate=1e-3,
 
-      arch_width=96,
-      arch_kernel=3, # worse than 1, though
-      arch_depth=1, # probably a fluke
+      arch_width=128,
+      arch_kernel=5, # worse than 1, though
+      arch_depth=3, # probably a fluke
       arch_dropout=0.05,
     )
