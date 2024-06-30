@@ -39,7 +39,7 @@ class Cnn(models.base.SequenceBase):
   def translate_state_dict(self, next_token_state_dict):
     classifier_state_dict = {}
     for k, v in next_token_state_dict.items():
-      if re.match("1[.]network[.]0[.]", k):
+      if re.match("1[.]network[.]", k):
         print(f"saving param {k}")
         classifier_state_dict[k] = v
       else:
