@@ -25,6 +25,8 @@ def custom_excepthook(type, value, tb):
     
     # Filter the traceback
     filtered_tb = filter_traceback(tb_lines)
+    if len(filtered_tb) <= 1:
+       filtered_tb = tb_lines
     
     # Print the filtered traceback
     print("\n*********************")
