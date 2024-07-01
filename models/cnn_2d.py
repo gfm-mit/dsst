@@ -5,18 +5,17 @@ import models.base
 
 
 class Cnn(models.base.Base):
-  def __init__(self, n_features=12, n_classes=2, device='cpu'):
+  def __init__(self, n_classes=2, device='cpu'):
     self.classes = n_classes
-    self.features = n_features
     super().__init__(device=device)
 
-  def get_classifier_architecture(self):
+  def get_classifier_architecture(self, arch_channels=12):
     model = torch.nn.Sequential(
         # b c h w
         torch.nn.LayerNorm([28, 28]),
         torch.nn.Conv2d(
             in_channels=1,
-            out_channels=self.features,
+            out_channels=arch_channels,
             kernel_size=5,
             stride=3,
             padding=3,
@@ -24,8 +23,8 @@ class Cnn(models.base.Base):
         ),
         torch.nn.LayerNorm([10, 10]),
         torch.nn.Conv2d(
-            in_channels=self.features,
-            out_channels=self.features,
+            in_channels=arch_channels,
+            out_channels=arch_channels,
             kernel_size=5,
             stride=3,
             padding=3,
@@ -34,7 +33,7 @@ class Cnn(models.base.Base):
         torch.nn.LayerNorm([4, 4]),
         torch.nn.AdaptiveAvgPool2d((1, 1)),
         Rearrange('b c 1 1 -> b c'),
-        torch.nn.Linear(self.features, self.classes),
+        torch.nn.Linear(arch_channels, self.classes),
         torch.nn.LogSoftmax(dim=-1),
     )
     model = model.to(self.device)
@@ -48,8 +47,9 @@ class Cnn(models.base.Base):
       momentum=0.9,
       conditioning_smoother=0.999,
 
-      max_epochs=20,
-      warmup_epochs=2,
+      max_epochs=15,
+      warmup_epochs=5,
 
-      learning_rate=3e-2, # stupid edge of stability!!
+      learning_rate=1e-1,
+      arch_channels=64,
     )
