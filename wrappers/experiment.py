@@ -6,6 +6,7 @@ import wrappers.tune
 import core.metrics
 import plot.calibration
 import plot.metrics
+import models.registry
 
 class Experiment:
   def __init__(self, model_class, train_loader, val_loader, calibration_loader, test_loader, args):
@@ -24,6 +25,8 @@ class Experiment:
 
   def train(self, **kwargs):
     #torch.manual_seed(42)
+    if "model" in kwargs:
+      self.model_class = models.registry.lookup_model(kwargs["model"])
     builder = self.model_class(n_classes=self.n_classes, device=self.args.device)
     base_params = builder.get_parameters(task=self.args.task) | self.args.config | kwargs
     metric, epoch_loss_history, self.model = core.train.setup_training_run(
