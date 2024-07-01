@@ -34,7 +34,7 @@ def lookup_model(name):
     return models.cnn_1d_fft.Cnn
   elif name == "tcn":
     return models.seq_tcn.Cnn
-  assert False
+  assert False, name
 
 def get_all_1d_models():
   return [
