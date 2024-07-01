@@ -8,17 +8,18 @@ import deepdiff
 def get_setups(config):
   vv = parse_config(config)
   dd = {}
-  for v in vv:
-    k = pprint_dict(v)
+  for k, v in vv.iterrows():
     while k in dd:
       k += "#"
     dd[k] = v
   return dd
 
 
-def pprint_dict(d):
+def pprint_dict(d, omit=None):
   str_dict = {}
   for k, v in d.items():
+      if omit is not None and k in omit:
+        continue
       if isinstance(v, str):
         str_dict[k] = v
       elif isinstance(v, int):
@@ -147,13 +148,18 @@ def parse_config(config):
   if meta_shuffle:
     for k in param_sets.columns:
       param_sets.loc[:, k] = np.random.permutation(param_sets.loc[:, k].values)
-  return [row.to_dict() for _, row in param_sets.iterrows()]
+  param_sets.index = [
+    pprint_dict(row.to_dict(), omit=scalar.columns)
+    for _, row in param_sets.iterrows()
+  ]
+  return param_sets
 
 # no, bad, don't do testing this way!
 if __name__ == "__main__":
   with open('./util/test_in.toml', 'rb') as stream:
     config = tomli.load(stream)
     parsed = parse_config(config)
+    parsed = [row.to_dict() for _, row in parsed.iterrows()]
     for p in parsed:
       print(p)
   with open('./util/test_out.toml', 'rb') as stream:
