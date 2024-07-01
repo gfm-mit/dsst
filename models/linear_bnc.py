@@ -27,13 +27,13 @@ class Linear(models.base.Base):
 
   def get_parameters(self, **kwargs):
     return dict(
-      scheduler='none',
+      scheduler='warmup',
       optimizer='samsgd', # maybe adam doesn't have time to warm up?
       weight_decay=0,
       momentum=0.999,
       conditioning_smoother=0.999,
-      max_epochs=30,
-      warmup_epochs=2,
+      max_epochs=10,
+      warmup_epochs=5,
 
       learning_rate=7e-2,
     )
