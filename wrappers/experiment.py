@@ -23,10 +23,9 @@ class Experiment:
     if args.task == "classify_section":
       self.n_classes = 6
 
-  def train(self, **kwargs):
+  def train(self, tqdm_prefix=None, **kwargs):
     #torch.manual_seed(42)
-    if "model" in kwargs:
-      self.model_class = models.registry.lookup_model(kwargs["model"])
+    self.model_class = models.registry.lookup_model(self.args.model or kwargs.get("model", "linear"))
     builder = self.model_class(n_classes=self.n_classes, device=self.args.device)
     base_params = builder.get_parameters(task=self.args.task) | self.args.config | kwargs
     metric, epoch_loss_history, self.model = core.train.setup_training_run(
@@ -36,6 +35,7 @@ class Experiment:
         task=self.args.task,
         disk=self.args.disk,
         use_loss_history=self.args.history == "loss",
+        tqdm_prefix=tqdm_prefix,
         offset=self.args.offset)
     if self.args.log != "":
       self.log_params = base_params
