@@ -47,15 +47,19 @@ class Experiment:
     )
     with open(self.args.log + "/{label}.json".format(label=label), "w") as f:
       json.dump(log_content, f, indent=2)
-
-  def plot_trained(self, axs, label=None):
-    assert self.model is not None
-    assert self.args.task in 'classify classify_patient classify_section'.split()
+  
+  def batch_eval_test(self):
     self.model.eval()
     logits, targets = core.metrics.get_combined_roc(
       self.model, self.test_loader,
       calibration_loader=self.calibration_loader,
       combine_fn=None if self.args.task == "classify" else core.metrics.linear_combiner)
+    return logits, targets
+
+  def plot_trained(self, axs, label=None):
+    assert self.model is not None
+    assert self.args.task in 'classify classify_patient classify_section'.split()
+    logits, targets = self.batch_eval_test()
     roc = plot.calibration.get_full_roc_table(logits, targets)
     axs = plot.metrics.plot_palette(roc, axs, label=label)
     return axs
