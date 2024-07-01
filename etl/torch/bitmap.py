@@ -78,8 +78,8 @@ def get_loaders(device=None, task=None):
   calibration_data = SeqDataset(labels.loc["val1"], device=device, test_split=True, task=task)
   test_data = SeqDataset(labels.loc["val2"], device=device, test_split=True, task=task)
   # pin_memory is maybe a 30% speedup
-  train_loader = torch.utils.data.DataLoader(train_data, batch_size=32, shuffle=False, collate_fn=lambda x: x)
-  val_loader = torch.utils.data.DataLoader(val_data, batch_size=32, shuffle=False, collate_fn=lambda x: x)
-  calibration_loader = torch.utils.data.DataLoader(calibration_data, batch_size=32, shuffle=False, collate_fn=lambda x: x)
-  test_loader = torch.utils.data.DataLoader(test_data, batch_size=32, shuffle=False, collate_fn=lambda x: x)
+  train_loader = torch.utils.data.DataLoader(train_data, batch_size=64, shuffle=True, collate_fn=lambda x: x)
+  val_loader = torch.utils.data.DataLoader(val_data, batch_size=64, shuffle=True, collate_fn=lambda x: x)
+  calibration_loader = torch.utils.data.DataLoader(calibration_data, batch_size=64, shuffle=True, collate_fn=lambda x: x)
+  test_loader = torch.utils.data.DataLoader(test_data, batch_size=64, shuffle=True, collate_fn=lambda x: x)
   return train_loader, val_loader, calibration_loader, test_loader

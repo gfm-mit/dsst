@@ -42,13 +42,14 @@ class Cnn(models.base.Base):
 
   def get_parameters(self, **kwargs):
     return dict(
-      scheduler='onecycle',
+      scheduler='warmup',
+      optimizer='samadam',
       weight_decay=0,
-      momentum=0,
-      conditioning_smoother=0.9,
+      momentum=0.9,
+      conditioning_smoother=0.999,
 
-      max_epochs=10,
-      warmup_epochs=0,
+      max_epochs=20,
+      warmup_epochs=2,
 
-      learning_rate=5e-1, # stupid edge of stability!!
+      learning_rate=3e-2, # stupid edge of stability!!
     )
