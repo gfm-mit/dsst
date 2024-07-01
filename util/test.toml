@@ -1,0 +1,16 @@
+[[row_major]]
+  scheduler='none'
+  optimizer='samprodigy'
+[[row_major]]
+  scheduler='warmup'
+  optimizer='samadam'
+[[row_major]]
+  scheduler='onecycle'
+  optimizer='sgd'
+[column_major]
+  learning_rate={low=1e-3, high=1e-1, steps=3}
+  conditioning_smoother=[0.9, 0.99, 0.999]
+[scalar]
+  momentum=0.9
+[options]
+  multiple=2
