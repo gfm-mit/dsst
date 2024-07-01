@@ -12,5 +12,6 @@
   conditioning_smoother=[0.9, 0.99, 0.999]
 [scalar]
   momentum=0.9
-[options]
-  multiple=2
+[meta]
+  repeat=2
+  shuffle=false
