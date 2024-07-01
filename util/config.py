@@ -3,7 +3,31 @@ import numpy as np
 import pandas as pd
 import tomli
 import deepdiff
-import pprint
+
+
+def get_setups(config):
+  return {
+    pprint_dict(v):v
+    for v in parse_config(config)
+  }
+
+
+def pprint_dict(d):
+  str_dict = {}
+  for k, v in d.items():
+      if isinstance(v, str):
+        str_dict[k] = v
+      elif isinstance(v, int):
+        str_dict[k] = str(v)
+      elif 0 < v < .1:
+        str_dict[k] = f"{v:.1e}"
+      elif 0.9 < v < 1:
+        str_dict[k] = f"1 - {1- v:.0e}"
+      elif 0.1 <= v <= .9 or v == 0:
+        str_dict[k] = f"{v:.2f}"
+      else:
+        str_dict[k] = f"{v:.2e}"
+  return str(str_dict)
 
 
 def get_spaces(**kwargs):
@@ -89,11 +113,14 @@ def parse_config(config):
     param_sets += [row_major]
   if column_major is not None:
     column_major = [parse_column(k, v) for k, v in column_major.items()]
-    column_lengths = {kv.name: kv.shape[0] for kv in column_major}
-    any_length = list(column_lengths.values())[0]
-    assert all([x == any_length for x in column_lengths.values()]), column_lengths
-    column_major = pd.DataFrame(column_major).transpose()
-    param_sets += [column_major]
+    if column_major:
+      column_lengths = {kv.name: kv.shape[0] for kv in column_major}
+      any_length = list(column_lengths.values())[0]
+      assert all([x == any_length for x in column_lengths.values()]), column_lengths
+      column_major = pd.DataFrame(column_major).transpose()
+      param_sets += [column_major]
+    else:
+      column_major = None
   if row_major is not None and column_major is not None:
     assert row_major.shape[0] == column_major.shape[0], f"{row_major.shape=} != {column_major.shape=}"
   row_count = row_major.shape[0] if row_major is not None else column_major.shape[0] if column_major is not None else 1
