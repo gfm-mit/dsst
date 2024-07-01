@@ -6,10 +6,14 @@ import deepdiff
 
 
 def get_setups(config):
-  return {
-    pprint_dict(v):v
-    for v in parse_config(config)
-  }
+  vv = parse_config(config)
+  dd = {}
+  for v in vv:
+    k = pprint_dict(v)
+    while k in dd:
+      k += "#"
+    dd[k] = v
+  return dd
 
 
 def pprint_dict(d):
