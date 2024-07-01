@@ -12,7 +12,7 @@ import core.metrics
 from core.optimizer import get_optimizer_and_scheduler
 
 Path('./results').mkdir(parents=True, exist_ok=True)
-def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, train_loader, task=None, tqdm_prefix=None, loss_history_loader=None, offset=1):
+def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, train_loader, task=None, tqdm_prefix=None, early_stopping_loader=None, offset=1):
   loss_upper_bound = 8 # only for the first step
   progress = tqdm(range(max_epochs), desc=tqdm_prefix or "")
   epoch_loss_history = []
@@ -31,14 +31,14 @@ def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, tra
     loss_upper_bound = 10 * train_loss
     torch.cuda.empty_cache()
     progress.set_postfix_str(" " + loss_description)
-    if loss_history_loader is not None:
-      val_loss = core.metrics.evaluate(model, loss_history_loader, task, offset=offset)
+    if early_stopping_loader is None:
+      epoch_loss_history += [train_loss]
+    else:
+      val_loss = core.metrics.evaluate(model, early_stopping_loader, task, offset=offset)
+      epoch_loss_history += [val_loss]
       # TODO: flag to disable saving early, but only when needed
       if core.metrics.best_so_far(epoch_loss_history, task):
         torch.save(model.state_dict(), './results/early.pth')
-      epoch_loss_history += [val_loss]
-    else:
-      epoch_loss_history += [train_loss]
   return model, epoch_loss_history
 
 def setup_model(params, model_factory_fn, task="classify", disk="none"):
@@ -109,7 +109,7 @@ def freeze_loaded_params(missing_keys, unexpected_keys, model, freeze=True):
 
 def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=None,
                        task="classify", disk="none",
-                       tqdm_prefix=None, history='none', offset=1):
+                       tqdm_prefix=None, use_loss_history=False, offset=1):
   model = setup_model(params, model_factory_fn, task, disk)
   optimizer, scheduler = get_optimizer_and_scheduler(params, model)
 
@@ -120,9 +120,9 @@ def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=N
                                    train_loader=train_loader,
                                    task=task,
                                    tqdm_prefix=tqdm_prefix,
-                                   loss_history_loader=val_loader if history == "val" else None,
+                                   early_stopping_loader=None if use_loss_history else val_loader,
                                    offset=offset)
-  if history == "val":
+  if not use_loss_history:
     network_state_dict = torch.load('./results/early.pth')
     model.load_state_dict(network_state_dict, strict=True)
   if disk == "save":

@@ -5,7 +5,7 @@ import pandas as pd
 
 # TODO: unify tuning vs compare plots
 def plot_epoch_loss_history(args, epoch_loss_history, axs=None, label=None):
-  ylabel = 'validation metric' if args.history == "val" else 'training loss'
+  ylabel = 'training loss' if args.history == "loss" else 'validation metric'
   results = pd.Series(dict(history=epoch_loss_history, label=label)).to_frame().transpose()
   return plot_tuning_history(keys="label".split(), results=results, ylabel=ylabel, axs=axs)
 
