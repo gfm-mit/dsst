@@ -33,6 +33,9 @@ def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, tra
     progress.set_postfix_str(" " + loss_description)
     if loss_history_loader is not None:
       val_loss = core.metrics.evaluate(model, loss_history_loader, task, offset=offset)
+      # TODO: flag to disable saving early, but only when needed
+      if core.metrics.best_so_far(epoch_loss_history, task):
+        torch.save(model.state_dict(), './results/early.pth')
       epoch_loss_history += [val_loss]
     else:
       epoch_loss_history += [train_loss]
@@ -117,7 +120,11 @@ def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=N
                                    train_loader=train_loader,
                                    task=task,
                                    tqdm_prefix=tqdm_prefix,
-                                   loss_history_loader=val_loader if history == "val" else None, offset=offset)
+                                   loss_history_loader=val_loader if history == "val" else None,
+                                   offset=offset)
+  if history == "val":
+    network_state_dict = torch.load('./results/early.pth')
+    model.load_state_dict(network_state_dict, strict=True)
   if disk == "save":
     state_dict = model.state_dict()
     if task in "next_token classify_section".split():

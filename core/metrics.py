@@ -25,6 +25,14 @@ def early_stop(history, task):
   else:
     return np.max(history)
 
+def best_so_far(history, task):
+  if not history:
+    return True
+  if task == "next_token":
+    return np.argmin(history) == history.shape[0] - 1
+  else:
+    return np.argmax(history) == history.shape[0] - 1
+
 def verbose_next_token_metrics(predicted, data):
     var = np.mean((data)**2, axis=(0, 1))
     mse = np.mean((predicted - data)**2, axis=(0, 1))
