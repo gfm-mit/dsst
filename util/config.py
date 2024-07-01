@@ -64,8 +64,7 @@ class TomlAction(argparse.Action):
         config = config[self.key]
       setattr(namespace, self.dest, config)
 
-def parse_column(kv):
-  k, v = kv
+def parse_column(k, v):
   if isinstance(v, list):
     return pd.Series(v, name=k)
   assert isinstance(v, dict)
@@ -80,6 +79,7 @@ def parse_column(kv):
 
 def parse_config(config):
   param_sets = []
+  assert not config.keys() - "row_major column_major scalar meta".split()
   row_major = config.get("row_major", None)
   column_major = config.get("column_major", None)
   scalar = config.get("scalar", None)
@@ -88,10 +88,14 @@ def parse_config(config):
     row_major = pd.DataFrame(row_major)
     param_sets += [row_major]
   if column_major is not None:
-    column_major = map(parse_column, column_major.items())
+    column_major = [parse_column(k, v) for k, v in column_major.items()]
+    column_lengths = {kv.name: kv.shape[0] for kv in column_major}
+    any_length = list(column_lengths.values())[0]
+    assert all([x == any_length for x in column_lengths.values()]), column_lengths
     column_major = pd.DataFrame(column_major).transpose()
     param_sets += [column_major]
-  assert row_major is None or column_major is None or row_major.shape[0] == column_major.shape[0]
+  if row_major is not None and column_major is not None:
+    assert row_major.shape[0] == column_major.shape[0], f"{row_major.shape=} != {column_major.shape=}"
   row_count = row_major.shape[0] if row_major is not None else column_major.shape[0] if column_major is not None else 1
   if scalar is not None:
     scalar = pd.DataFrame([scalar] * row_count)
@@ -100,8 +104,18 @@ def parse_config(config):
     scalar = pd.DataFrame([{}])
     param_sets += [scalar]
   param_sets = pd.concat(param_sets, axis=1)
-  if (meta | {}).get("repeat", None):
-    param_sets = pd.concat([param_sets] * meta["repeat"], axis=0, ignore_index=True)
+
+  if meta is not None:
+    assert not meta.keys() - "repeat shuffle".split()
+  meta_repeat = meta.get("repeat", None) if meta is not None else None
+  meta_shuffle = meta.get("shuffle", None) if meta is not None else None
+  assert meta_repeat is None or isinstance(meta_repeat, int)
+  assert meta_shuffle is None or isinstance(meta_shuffle, bool)
+  if meta_repeat:
+    param_sets = pd.concat([param_sets] * meta_repeat, axis=0, ignore_index=True)
+  if meta_shuffle:
+    for k in param_sets.columns:
+      param_sets.loc[:, k] = np.random.permutation(param_sets.loc[:, k].values)
   return [row.to_dict() for _, row in param_sets.iterrows()]
 
 # no, bad, don't do testing this way!
@@ -109,6 +123,8 @@ if __name__ == "__main__":
   with open('./util/test_in.toml', 'rb') as stream:
     config = tomli.load(stream)
     parsed = parse_config(config)
+    for p in parsed:
+      print(p)
   with open('./util/test_out.toml', 'rb') as stream:
     expected = tomli.load(stream)['params']
-  pprint.pprint(deepdiff.DeepDiff(expected, parsed, ignore_order=False))
+  print(deepdiff.DeepDiff(expected, parsed, ignore_order=False).pretty() or "NO DIFF")
