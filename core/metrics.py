@@ -29,9 +29,9 @@ def best_so_far(history, task):
   if not history:
     return True
   if task == "next_token":
-    return np.argmin(history) == history.shape[0] - 1
+    return np.argmin(history) == len(history) - 1
   else:
-    return np.argmax(history) == history.shape[0] - 1
+    return np.argmax(history) == len(history) - 1
 
 def verbose_next_token_metrics(predicted, data):
     var = np.mean((data)**2, axis=(0, 1))
