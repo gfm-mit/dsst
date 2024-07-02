@@ -44,7 +44,7 @@ def parse_args():
   parser.add_argument('--device', default='cpu', help='torch device')
   parser.add_argument('--model', default='linear', help='which model class to use')
   parser.add_argument('--task', default='classify', choices=set("next_token classify classify_patient classify_section".split()), help='training target / loss')
-  parser.add_argument('--history', default='none', choices=set("none train val variance".split()), help='Plot history of loss')
+  parser.add_argument('--stats', default='train_loss', choices=set("train_loss thresholds epochs params".split()), help='Output types to generate')
 
   parser.add_argument('--disk', default='none', choices=set("none load save freeze".split()), help='whether to persist the model (or use persisted)')
   parser.add_argument('--log', action=LogAction, default='', help='filename to log metrics and parameters')
@@ -107,37 +107,38 @@ def compare(args, experiment):
         metric, epoch_loss_history = experiment.train(tqdm_prefix=tqdm_prefix, **v)
         if args.log != "":
           experiment.log_training(epoch_loss_history, k)
-        if args.history == "variance":
+        if args.stats == "params":
           logits, targets = experiment.batch_eval_test()
           auc = sklearn.metrics.roc_auc_score(targets, logits)
           probs = scipy.special.expit(logits)
           brier = sklearn.metrics.brier_score_loss(targets, probs)
           metric_history += [dict(auc=auc, brier=brier)]
           tuning_history += [v]
-        elif args.history in "train val".split():
+        elif args.stats in "train_loss epochs".split():
           axs = plot.history.plot_history(args, epoch_loss_history, axs=axs, label=k)
           y_axis_history += [epoch_loss_history]
-        elif args.task in 'classify classify_patient classify_section'.split():
+        #elif args.task in 'classify classify_patient classify_section'.split():
+        elif args.stats == "thresholds":
           axs = experiment.plot_trained(axs, label=k)
+        else:
+          assert False
         plt.pause(0.1)
       plt.ioff()
-      if args.history in "train val".split():
-        plot.tune.set_ylim(np.concatenate(y_axis_history))
-      elif args.history == "variance":
-        #print(metric_history)
+      if args.stats == "params":
         metrics = pd.DataFrame(metric_history)
-        #print(metrics)
         auc = metrics.auc.copy()
         #print(auc)
-        metrics = metrics.aggregate(["mean", "std"], axis=0).transpose()
-        print(" & ".join(metrics.columns))
-        metrics = [
+        latex = metrics.aggregate(["mean", "std"], axis=0).transpose()
+        print("LaTeX & " + " & ".join(latex.columns))
+        latex = [
           f"${v['mean']:.3f} \pm {v['std']:.3f}$"
-          for _, v in metrics.iterrows()
+          for _, v in latex.iterrows()
         ]
-        print(" & ".join(metrics))
+        print(" & ".join(latex))
         plot.history.plot_best_values(pd.DataFrame(tuning_history), auc, task=args.task)
-        exit(0)
+        return
+      if args.stats in "train_loss epochs".split():
+        plot.tune.set_ylim(np.concatenate(y_axis_history))
       suptitle = "Aggregated at the Box Level, not Patient" if args.task == "classify" else "Aggregated at Patient Level, not Box"
       plt.suptitle(suptitle)
       try:

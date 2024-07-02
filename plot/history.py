@@ -10,7 +10,7 @@ def set_ylim(data):
   plt.ylim([y_min, y_max])
 
 def plot_history(args, epoch_loss_history, axs=None, label=None):
-  ylabel = 'training loss' if args.history == "loss" else 'validation metric'
+  ylabel = 'training loss' if args.stats == "train_loss" else 'validation auc' if args.task in "classify classify_patient classify_section".split() else 'validation rmse'
   if axs is None:
     fig, axs = plt.subplots(1, 1)
   plt.sca(axs)
@@ -29,8 +29,9 @@ def plot_best_values(X, y, task, verbose=True):
   if verbose:
     display_only = X.copy()
     display_only["metric"] = y.values
+    print("\nALL VALUES\n")
     print(display_only)
-  N = int(np.ceil(np.sqrt(X.shape[1])))
+  N = max(1, int(np.ceil(np.sqrt(X.shape[1]))))
   fig, axs = plt.subplots(N, N)
   if not isinstance(axs, np.ndarray):
     axs = [axs]

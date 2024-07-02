@@ -27,7 +27,7 @@ def main(train_loader, val_loader, builder=None, base_params=None, task="classif
     metric, epoch_loss_history, model = core.train.setup_training_run(
       params, model_factory_fn=builder, train_loader=train_loader, val_loader=val_loader,
       task=task, disk=disk, tqdm_prefix=f"Tuning[{i+1}/{spaces.shape[0]}]={case_label}",
-      use_loss_history=False)
+      early_stopping=True)
     metric = core.metrics.early_stop(epoch_loss_history, task=task)
     results += [dict(**params, metric=metric, history=epoch_loss_history)]
   results = pd.DataFrame(results)

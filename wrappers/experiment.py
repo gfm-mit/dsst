@@ -34,7 +34,7 @@ class Experiment:
         val_loader=self.val_loader,
         task=self.args.task,
         disk=self.args.disk,
-        use_loss_history=self.args.history == "loss",
+        early_stopping=self.args.stats != "train_loss",
         tqdm_prefix=tqdm_prefix,
         offset=self.args.offset)
     if self.args.log != "":

@@ -115,7 +115,7 @@ def freeze_loaded_params(missing_keys, unexpected_keys, model, freeze=True):
 
 def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=None,
                        task="classify", disk="none",
-                       tqdm_prefix=None, use_loss_history=False, offset=1):
+                       tqdm_prefix=None, early_stopping=True, offset=1):
   model = setup_model(params, model_factory_fn, task, disk)
   optimizer, scheduler = get_optimizer_and_scheduler(params, model)
 
@@ -126,9 +126,9 @@ def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=N
                                    train_loader=train_loader,
                                    task=task,
                                    tqdm_prefix=tqdm_prefix,
-                                   early_stopping_loader=None if use_loss_history else val_loader,
+                                   early_stopping_loader=val_loader if early_stopping else None,
                                    offset=offset)
-  if not use_loss_history:
+  if early_stopping:
     network_state_dict = torch.load('./results/early.pth')
     model.load_state_dict(network_state_dict, strict=True)
   if disk == "save":
