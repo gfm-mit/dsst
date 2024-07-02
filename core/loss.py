@@ -15,7 +15,10 @@ def get_task_loss(model, optimizer, train_loader, task, offset=1):
       loss = core.loss_sam.classify(model, optimizer, train_loader)
     else:
       loss = classify(model, optimizer, train_loader)
-    description = 'Last Batch Perplexity={:.2f}'.format(np.exp(loss))
+    
+    with np.errstate(over='ignore'):
+      exp_loss = np.exp(loss)
+    description = 'Last Batch Perplexity={:.2f}'.format(exp_loss)
   if optimizer.__module__ == "pytorch_optimizer.optimizer.prodigy":
     loss = optimizer.param_groups[0]["d"]
     description = 'D={:.2e}  {}'.format(loss, description)
