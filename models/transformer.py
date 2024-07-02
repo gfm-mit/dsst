@@ -69,7 +69,7 @@ class Transformer(models.base.SequenceBase):
       optimizer='samadam',
       warmup_epochs=2,
       max_epochs=20,
-      learning_rate=1e-2,
+      learning_rate=5e-3,
     )
 
   def get_classifier_parameters(self, **kwargs):
@@ -81,7 +81,7 @@ class Transformer(models.base.SequenceBase):
       conditioning_smoother=0.999,
       warmup_epochs=5,
       max_epochs=20,
-      learning_rate=6e-3,
+      learning_rate=1e-3,
 
       arch_depth=1,
       arch_width=96,
