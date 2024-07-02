@@ -12,6 +12,9 @@ import core.metrics
 from core.optimizer import get_optimizer_and_scheduler
 
 Path('./results').mkdir(parents=True, exist_ok=True)
+MAX_PERPLEXITY = 1e3
+MAX_RMSE = 1e3
+MAX_JUMP = 10
 def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, train_loader, task=None, tqdm_prefix=None, early_stopping_loader=None, offset=1):
   loss_upper_bound = 8 # only for the first step
   progress = tqdm(range(max_epochs), desc=tqdm_prefix or "")
@@ -28,7 +31,10 @@ def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, tra
       print("next_loss isnan")
       model.load_state_dict(state_dict)
       return model, epoch_loss_history
-    loss_upper_bound = 10 * train_loss
+    if task in "classify classify_patient classify_section".split():
+      loss_upper_bound = min(MAX_JUMP * train_loss, MAX_PERPLEXITY)
+    else:
+      loss_upper_bound = min(MAX_JUMP * train_loss, MAX_RMSE)
     torch.cuda.empty_cache()
     progress.set_postfix_str(" " + loss_description)
     if early_stopping_loader is None:
