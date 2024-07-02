@@ -4,9 +4,10 @@ import torch
 def next_token(model, val_loader, verbose=False, offset=1):
   DEVICE = next(model.parameters()).device
   results = []
+  groups = []
   model.eval()
   with torch.no_grad():
-    for data, target in val_loader:
+    for (data, target, *g) in val_loader:
       output = model(data.to(DEVICE)).to('cpu')
       if offset == 0:
         results += [(
@@ -18,9 +19,14 @@ def next_token(model, val_loader, verbose=False, offset=1):
             output.detach().numpy()[:, :-offset, :],
             data.detach().to('cpu').numpy()[:, offset:, :],
         )]
+      if len(g) > 0:
+        groups += g
   predicted, data = zip(*results)
   predicted = np.concatenate(predicted)
   data = np.concatenate(data)
+  if len(groups) > 0:
+    groups = np.concatenate(groups)
+    return predicted, data, groups
   return predicted, data
 
 def binary_classifier(model, loader):

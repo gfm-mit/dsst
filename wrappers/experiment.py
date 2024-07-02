@@ -4,6 +4,7 @@ import plot.lr_finder
 import core.train
 import wrappers.tune
 import core.metrics
+import core.batch_eval
 import plot.calibration
 import plot.metrics
 import models.registry
@@ -53,10 +54,13 @@ class Experiment:
   
   def batch_eval_test(self):
     self.model.eval()
-    logits, targets = core.metrics.get_combined_roc(
-      self.model, self.test_loader,
-      calibration_loader=self.calibration_loader,
-      combine_fn=None if self.args.task == "classify" else core.metrics.linear_combiner)
+    if self.args.task == "next_token":
+      logits, targets, groups = core.batch_eval.next_token(self.model, self.test_loader, offset=self.args.offset)
+    else:
+      logits, targets = core.metrics.get_combined_roc(
+        self.model, self.test_loader,
+        calibration_loader=self.calibration_loader,
+        combine_fn=core.metrics.linear_combiner if self.args.task == "classify_patient" else None)
     return logits, targets
 
   def plot_trained(self, axs, label=None):
