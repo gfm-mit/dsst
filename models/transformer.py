@@ -14,6 +14,7 @@ class DecoderWrapper(Decoder):
       depth=arch_depth,
       heads=arch_head,
       ff_dropout=arch_dropout,
+      attn_flash=True,
       alibi_pos_bias=True,
     )
 
