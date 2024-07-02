@@ -35,16 +35,16 @@ class LogAction(argparse.Action):
 
 def parse_args():
   parser = argparse.ArgumentParser(description='Run a linear pytorch model')
-  parser.add_argument('--config', action=TomlAction, help='read a config toml file')
+  parser.add_argument('--config', action=TomlAction, help='read a toml file specifying variants to run')
 
-  parser.add_argument('--coef', action='store_true', help='Plot coefficients')
-  parser.add_argument('--profile', action='store_true', help='Profile training')
-  parser.add_argument('--bitmap', action='store_true', help='Use bitmap data')
+  parser.add_argument('--coef', action='store_true', help='plot linear coefficients')
+  parser.add_argument('--profile', action='store_true', help='profile training with cProfile')
+  parser.add_argument('--bitmap', action='store_true', help='use bitmap (2d) data and 2d CNN')
 
   parser.add_argument('--device', default='cpu', help='torch device')
-  parser.add_argument('--model', default='linear', help='which model class to use')
+  parser.add_argument('--model', default='', help='which model class to use')
   parser.add_argument('--task', default='classify', choices=set("next_token classify classify_patient classify_section".split()), help='training target / loss')
-  parser.add_argument('--stats', default='train_loss', choices=set("train_loss thresholds epochs params".split()), help='Output types to generate')
+  parser.add_argument('--stats', default='train_loss', choices=set("train_loss thresholds epochs params".split()), help='output types to generate')
 
   parser.add_argument('--disk', default='none', choices=set("none load save freeze".split()), help='whether to persist the model (or use persisted)')
   parser.add_argument('--log', action=LogAction, default='', help='filename to log metrics and parameters')
