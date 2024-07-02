@@ -121,8 +121,8 @@ def setup_training_run(params, model_factory_fn, train_loader=None, val_loader=N
 
   torch.cuda.empty_cache()
   model, epoch_loss_history = one_training_run(model, optimizer, scheduler,
-                                   warmup_epochs=params["warmup_epochs"],
-                                   max_epochs=params["max_epochs"],
+                                   warmup_epochs=int(params["warmup_epochs"]),
+                                   max_epochs=int(params["max_epochs"]),
                                    train_loader=train_loader,
                                    task=task,
                                    tqdm_prefix=tqdm_prefix,
