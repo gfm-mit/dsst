@@ -97,7 +97,7 @@ def compare(args, experiment):
       if args.config:
         setups = util.config.get_setups(args.config)
       else:
-        setups = {"nonce": {}}
+        setups = {"<no config>": {}}
       plt.ion()
       y_axis_history = []
       tuning_history = []
