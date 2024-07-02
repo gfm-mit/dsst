@@ -13,7 +13,7 @@ from core.optimizer import get_optimizer_and_scheduler
 
 Path('./results').mkdir(parents=True, exist_ok=True)
 MAX_ENTROPY = 80
-MAX_RMSE = 80
+MAX_MSE = 400
 MAX_JUMP = 10
 def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, train_loader, task=None, tqdm_prefix=None, early_stopping_loader=None, offset=1):
   loss_upper_bound = 8 # only for the first step
@@ -34,7 +34,7 @@ def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, tra
     if task in "classify classify_patient classify_section".split():
       loss_upper_bound = min(MAX_JUMP * train_loss, MAX_ENTROPY)
     else:
-      loss_upper_bound = min(MAX_JUMP * train_loss, MAX_RMSE)
+      loss_upper_bound = min(MAX_JUMP * train_loss, MAX_MSE)
     torch.cuda.empty_cache()
     progress.set_postfix_str(" " + loss_description)
     if early_stopping_loader is None:
