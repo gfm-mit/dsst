@@ -56,10 +56,10 @@ def parse_args():
   return args
 
 def main():
-  #sys.excepthook = util.excepthook.custom_excepthook
+  sys.excepthook = util.excepthook.custom_excepthook
   # will save stack traces from creation in components, makes error messages less stupid
   #torch.autograd.set_detect_anomaly(True)
-  #os.environ['PYTORCH_DEBUG'] = '1'
+  #os.environ["TORCH_SHOW_CPP_STACKTRACES"] = "1"
 
   args = parse_args()
 
