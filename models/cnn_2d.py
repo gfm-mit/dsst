@@ -21,7 +21,8 @@ class Cnn(models.base.Base):
             padding=3,
             bias=False,
         ),
-        torch.nn.LayerNorm([10, 10]),
+        torch.nn.SiLU(),
+        torch.nn.BatchNorm2d(num_features=arch_channels),
         torch.nn.Conv2d(
             in_channels=arch_channels,
             out_channels=arch_channels,
@@ -30,7 +31,8 @@ class Cnn(models.base.Base):
             padding=3,
             bias=False,
         ),
-        torch.nn.LayerNorm([4, 4]),
+        torch.nn.SiLU(),
+        torch.nn.BatchNorm2d(num_features=arch_channels),
         torch.nn.AdaptiveAvgPool2d((1, 1)),
         Rearrange('b c 1 1 -> b c'),
         torch.nn.Linear(arch_channels, self.classes),
@@ -42,6 +44,7 @@ class Cnn(models.base.Base):
   def get_parameters(self, **kwargs):
     return dict(
       scheduler='warmup',
+      # this model absolutely doesn't work with prodigy for some reason
       optimizer='samadam',
       weight_decay=0,
       momentum=0.9,
@@ -50,6 +53,6 @@ class Cnn(models.base.Base):
       max_epochs=15,
       warmup_epochs=5,
 
-      learning_rate=1e-1,
-      arch_channels=64,
+      learning_rate=2e-2,
+      arch_channels=128,
     )
