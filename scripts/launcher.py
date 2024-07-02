@@ -3,10 +3,13 @@ import pathlib
 import pstats
 import sys
 import cProfile
+import os
+import torch
 
 import pandas as pd
 import scipy
 import sklearn
+import sklearn.metrics
 import models.cnn_2d
 import models.linear_bnc
 from util.config import TomlAction
@@ -53,10 +56,10 @@ def parse_args():
   return args
 
 def main():
-  sys.excepthook = util.excepthook.custom_excepthook
+  #sys.excepthook = util.excepthook.custom_excepthook
   # will save stack traces from creation in components, makes error messages less stupid
-  import torch
-  torch.autograd.set_detect_anomaly(True)
+  #torch.autograd.set_detect_anomaly(True)
+  #os.environ['PYTORCH_DEBUG'] = '1'
 
   args = parse_args()
 
@@ -109,11 +112,16 @@ def compare(args, experiment):
           experiment.log_training(epoch_loss_history, k)
         if args.stats == "params":
           logits, targets = experiment.batch_eval_test()
-          auc = sklearn.metrics.roc_auc_score(targets, logits)
-          probs = scipy.special.expit(logits)
-          brier = sklearn.metrics.brier_score_loss(targets, probs)
-          metric_history += [dict(auc=auc, brier=brier)]
           tuning_history += [v]
+          if args.task == "next_token":
+            # dumb that sklearn RMSE doesn't work for 3 tensors
+            rmse = np.sqrt(np.mean((targets - logits) ** 2))
+            metric_history += [dict(rmse=rmse)]
+          else:
+            plot_metric = sklearn.metrics.roc_auc_score(targets, logits)
+            probs = scipy.special.expit(logits)
+            brier = sklearn.metrics.brier_score_loss(targets, probs)
+            metric_history += [dict(auc=plot_metric, brier=brier)]
         elif args.stats in "train_loss epochs".split():
           axs = plot.history.plot_history(args, epoch_loss_history, axs=axs, label=k)
           y_axis_history += [epoch_loss_history]
@@ -125,17 +133,17 @@ def compare(args, experiment):
         plt.pause(0.1)
       plt.ioff()
       if args.stats == "params":
-        metrics = pd.DataFrame(metric_history)
-        auc = metrics.auc.copy()
-        #print(auc)
-        latex = metrics.aggregate(["mean", "std"], axis=0).transpose()
+        metric_history = pd.DataFrame(metric_history)
+        plot_metric = "rmse" if args.task == "next_token" else "auc"
+        plot_metric = metric_history.loc[:, plot_metric].copy()
+        latex = metric_history.aggregate(["mean", "std"], axis=0).transpose()
         print("LaTeX & " + " & ".join(latex.columns))
         latex = [
           f"${v['mean']:.3f} \pm {v['std']:.3f}$"
           for _, v in latex.iterrows()
         ]
         print(" & ".join(latex))
-        plot.history.plot_best_values(pd.DataFrame(tuning_history), auc, task=args.task)
+        plot.history.plot_best_values(pd.DataFrame(tuning_history), plot_metric, task=args.task)
         return
       if args.stats in "train_loss epochs".split():
         plot.tune.set_ylim(np.concatenate(y_axis_history))
