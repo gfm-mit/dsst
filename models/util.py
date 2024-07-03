@@ -82,6 +82,17 @@ class ResidualBlock(torch.nn.Module):
     def forward(self, inputs):
         return self.residual(inputs) + inputs
 
+class ResidualBlock2(torch.nn.Module):
+    def __init__(self, module1, module2):
+        super().__init__()
+        self.module1 = module1
+        self.module2 = module2
+
+    def forward(self, inputs):
+        output1 = self.module1(inputs)
+        output2 = self.module2(inputs)
+        return output1 + output2[:, :, :output1.shape[2]]
+
 class SineProjection(torch.nn.Module):
   def __init__(self, in_width, out_width, scale=1, axis=-2):
     super().__init__()
