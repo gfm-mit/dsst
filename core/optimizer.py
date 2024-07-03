@@ -10,6 +10,8 @@ def get_optimizer_and_scheduler(params, model):
 
 def get_optimizer(params, model):
   assert "optimizer" in params
+  if "effective_lr_batch" in params:
+    params["learning_rate"] *= params["effective_lr_batch"] / params["batch"]
   if params["optimizer"] == "adam":
     optimizer = torch.optim.AdamW(model.parameters(),
                                   lr=params["learning_rate"],

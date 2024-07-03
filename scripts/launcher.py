@@ -66,9 +66,11 @@ def main():
   if args.bitmap:
     args.model = "2d"
     BUILDER = models.cnn_2d.Cnn
-    train_loader, val_loader, calibration_loader, test_loader = etl.torch.bitmap.get_loaders(device=args.device, task=args.task)
+    loader_fn = etl.torch.bitmap.get_loaders
+    train_loader, val_loader, calibration_loader, test_loader = etl.torch.bitmap.get_loaders(device=args.device, task=args.task, batch_size=64)
   else:
-    train_loader, val_loader, calibration_loader, test_loader = etl.torch.dataset.get_loaders(device=args.device, task=args.task)
+    loader_fn = etl.torch.dataset.get_loaders
+    train_loader, val_loader, calibration_loader, test_loader = etl.torch.dataset.get_loaders(device=args.device, task=args.task, batch_size=1000)
   if args.coef:
     # check coefficients
     BUILDER = models.linear_bnc.Linear
@@ -80,6 +82,7 @@ def main():
     BUILDER = models.linear_bnc.Linear
     experiment = wrappers.experiment.Experiment(
       model_class=BUILDER,
+      loader_fn=loader_fn,
       train_loader=train_loader,
       val_loader=val_loader,
       calibration_loader=calibration_loader,
@@ -107,6 +110,8 @@ def compare(args, experiment):
       metric_history = []
       for i, (k, v) in enumerate(setups.items()):
         tqdm_prefix=f"Tuning[{i+1}/{len(setups)}]={k}"
+        if 'batch' in v:
+          experiment.redefine_loaders(v['batch'])
         metric, epoch_loss_history = experiment.train(tqdm_prefix=tqdm_prefix, **v)
         if args.log != "":
           experiment.log_training(epoch_loss_history, k)

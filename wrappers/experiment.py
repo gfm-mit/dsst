@@ -10,8 +10,9 @@ import plot.metrics
 import models.registry
 
 class Experiment:
-  def __init__(self, model_class, train_loader, val_loader, calibration_loader, test_loader, args):
+  def __init__(self, model_class, loader_fn, train_loader, val_loader, calibration_loader, test_loader, args):
     self.model_class = model_class
+    self.loader_fn = loader_fn
     self.train_loader = train_loader
     self.val_loader = val_loader
     self.calibration_loader = calibration_loader
@@ -23,6 +24,13 @@ class Experiment:
     self.n_classes = 2
     if args.task == "classify_section":
       self.n_classes = 6
+  
+  def redefine_loaders(self, batch_size=None):
+    self.train_loader, self.val_loader, self.calibration_loader, self.test_loader = self.loader_fn(
+      device=self.args.device,
+      task=self.args.task,
+      batch_size=int(batch_size),
+    )
 
   def train(self, tqdm_prefix=None, **kwargs):
     #torch.manual_seed(42)
