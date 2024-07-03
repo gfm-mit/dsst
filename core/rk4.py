@@ -1,7 +1,8 @@
 import torch
+import torch.optim
 import pytorch_optimizer
 
-class RK4(torch.optim.optimizer.Optimizer, pytorch_optimizer.base.optimizer.BaseOptimizer):
+class RK4(torch.optim.Optimizer, pytorch_optimizer.base.optimizer.BaseOptimizer):
     def __init__(self, params, lr=1e-2):
         super().__init__(params)
         self.learning_rate = lr
