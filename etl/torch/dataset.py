@@ -79,6 +79,7 @@ class SeqDataset(torch.utils.data.Dataset):
         return self.labels.shape[0]
 
 def get_loaders(device=None, task=None, batch_size=1000, shuffle=True):
+  # note full batch of data is 4833
   labels = pd.read_csv(pathlib.Path("/Users/abe/Desktop/meta.csv")).set_index("AnonymizedID")
   #assert(features.index.difference(labels.index).empty), (features.index, labels.index)
   labels = labels.Diagnosis[labels.Diagnosis.isin(["Healthy Control", "Dementia-AD senile onset"])] == "Dementia-AD senile onset"
