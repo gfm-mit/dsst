@@ -54,17 +54,21 @@ def get_optimizer(params, model):
                                       ],
                                       weight_decay=params["weight_decay"])
   elif params["optimizer"] == "sfsgd":
+    assert params["scheduler"] == "none"
     optimizer = pytorch_optimizer.ScheduleFreeSGD(model.parameters(),
                                                   lr=params["learning_rate"],
                                                   momentum=params["momentum"],
+                                                  warmup_steps=params["warmup_epochs"],
                                                   weight_decay=params["weight_decay"])
   elif params["optimizer"] == "sfadam":
+    assert params["scheduler"] == "none"
     optimizer = pytorch_optimizer.ScheduleFreeAdamW(model.parameters(),
                                                     lr=params["learning_rate"],
                                                     betas=[
                                                         params["momentum"],
                                                         params["conditioning_smoother"],
                                                     ],
+                                                    warmup_steps=params["warmup_epochs"],
                                                     weight_decay=params["weight_decay"])
   elif params["optimizer"] == "samsgd":
     optimizer = pytorch_optimizer.SAM(model.parameters(),
