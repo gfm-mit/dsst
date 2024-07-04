@@ -1,5 +1,6 @@
 from collections import defaultdict
 from pathlib import Path
+import pprint
 
 import numpy as np
 import torch
@@ -97,6 +98,7 @@ def nest_param_list(flat_list):
     part = parts[-2]
     if isinstance(d[part], dict) and all([x is None for x in d[part].values()]):
       d[part] = set(d[part].keys())
+  result = pprint.pformat(result).replace("\n", "\n     ")
   return result
 
 def freeze_loaded_params(missing_keys, unexpected_keys, model, freeze=True):
@@ -107,7 +109,7 @@ def freeze_loaded_params(missing_keys, unexpected_keys, model, freeze=True):
     missing_keys = nest_param_list(missing_keys)
     unexpected_keys = nest_param_list(unexpected_keys)
     frozen_keys = nest_param_list(loaded_params.keys())
-    print(f"loading.{missing_keys=}\nloading.{unexpected_keys=}\nloading.{frozen_keys=}")
+    print(f"loading.missing_keys={missing_keys}\nloading.unexpected_keys={unexpected_keys}\nloading.frozen_keys={frozen_keys}")
     if freeze:
       for v in loaded_params.values():
         v.requires_grad = False
