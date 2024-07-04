@@ -16,12 +16,18 @@
 #  batch=500
 #  momentum=0
 #  max_epochs=30
-[[row_major]] # SGDM
-  optimizer='sgd'
-  learning_rate=5e-5
+#[[row_major]] # SGDM
+#  optimizer='sgd'
+#  learning_rate=5e-5
+#  batch=250
+#  momentum=0.5
+#  max_epochs=50
+[[row_major]] # LION
+  optimizer='lion'
+  learning_rate=2e-5
   batch=250
   momentum=0.5
-  max_epochs=50
+  max_epochs=30
 [scalar]
   model='causal'
   scheduler='none'
