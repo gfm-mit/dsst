@@ -1,0 +1,25 @@
+#[[row_major]] # GF
+#  optimizer='rk4'
+#  learning_rate=1e-2
+#  batch=4833
+#  momentum=0
+#  max_epochs=50
+#[[row_major]] # GD
+#  optimizer='sgd'
+#  learning_rate=3e-3
+#  batch=4833
+#  momentum=0
+#  max_epochs=30
+[[row_major]] # SGD
+  optimizer='sgd'
+  learning_rate=1e-3
+  batch=500
+  momentum=0
+  max_epochs=30
+[scalar]
+  model='causal'
+  scheduler='none'
+  warmup_epochs=0
+[meta]
+  repeat=10
+  shuffle=false
