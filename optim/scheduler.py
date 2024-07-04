@@ -106,5 +106,6 @@ def get_scheduler(params, model, optimizer):
         epochs=int(params["max_epochs"]))
   else:
     assert key not in params or params[key] is None or params[key] == "none", params[key]
+    assert "warmup_epochs" not in params or params["warmup_epochs"] == 0
     scheduler = FakeOptimizer(model, verbose=False)
   return optimizer, scheduler
