@@ -15,6 +15,7 @@ class SAM(pytorch_optimizer.optimizer.sam.SAM):
       loss = closure()
     self.first_step(zero_grad=True)
 
+    # TODO: figure out how to do this using only params, not model
     models.bn_utils.disable_running_stats(self.params)
     with torch.enable_grad():
       closure()
