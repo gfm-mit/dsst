@@ -113,8 +113,6 @@ def compare(args, experiment):
         if 'batch' in v:
           experiment.redefine_loaders(v['batch'])
         metric, epoch_loss_history = experiment.train(tqdm_prefix=tqdm_prefix, **v)
-        if args.log != "":
-          experiment.log_training(epoch_loss_history, k)
         if args.stats == "params":
           logits, targets = experiment.batch_eval_test()
           tuning_history += [v]
