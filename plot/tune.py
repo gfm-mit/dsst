@@ -4,9 +4,8 @@ import pandas as pd
 
 
 def set_ylim(data):
-  low, med, high = np.quantile(data, (0.25, 0.95, 1))
-  y_min, y_max = 2.5 * low - 1.5 * high, 2 * high - med
-  y_min = np.maximum(y_min, 0.5)
+  q1, q3, p95, max = np.quantile(data, (0.25, 0.75, 0.95, 1))
+  y_min, y_max = 2.5 * q1 - 1.5 * q3, 2 * max - p95
   plt.ylim([y_min, y_max])
 
 def get_varying_params(X):
@@ -58,3 +57,21 @@ def plot_best_values(X, y, task):
       pass
   plt.tight_layout()
   plt.show()
+
+def print_and_plot_params(args, tuning_history, metric_history):
+  plot_metric = "rmse" if args.task == "next_token" else "auc"
+  plot_metric = metric_history.loc[:, plot_metric].copy()
+  latex = metric_history.aggregate(["mean", "std"], axis=0).transpose()
+  print("LaTeX & " + " & ".join(latex.columns))
+  latex = [
+    f"${v['mean']:.3f} \pm {v['std']:.3f}$"
+    for _, v in latex.iterrows()
+  ]
+  print(" & ".join(latex))
+
+  tuning_history = get_varying_params(tuning_history)
+  metric_history.index = tuning_history.index
+  display_only = pd.concat([tuning_history, metric_history], axis=1)
+  display_only.to_csv("results/params.csv")
+  print(display_only)
+  plot_best_values(tuning_history, plot_metric, task=args.task)

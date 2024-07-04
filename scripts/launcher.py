@@ -12,6 +12,7 @@ import sklearn
 import sklearn.metrics
 import models.cnn_2d
 import models.linear_bnc
+from plot.tune import print_and_plot_params
 from util.config import TomlAction
 import util.excepthook
 import matplotlib.pyplot as plt
@@ -139,23 +140,7 @@ def compare(args, experiment):
       if args.stats == "params":
         tuning_history = pd.DataFrame(tuning_history)
         metric_history = pd.DataFrame(metric_history)
-
-        plot_metric = "rmse" if args.task == "next_token" else "auc"
-        plot_metric = metric_history.loc[:, plot_metric].copy()
-        latex = metric_history.aggregate(["mean", "std"], axis=0).transpose()
-        print("LaTeX & " + " & ".join(latex.columns))
-        latex = [
-          f"${v['mean']:.3f} \pm {v['std']:.3f}$"
-          for _, v in latex.iterrows()
-        ]
-        print(" & ".join(latex))
-
-        tuning_history = plot.tune.get_varying_params(tuning_history)
-        metric_history.index = tuning_history.index
-        display_only = pd.concat([tuning_history, metric_history], axis=1)
-        display_only.to_csv("results/params.csv")
-        print(display_only)
-        plot.tune.plot_best_values(tuning_history, plot_metric, task=args.task)
+        print_and_plot_params(args, tuning_history, metric_history)
         return
       if args.stats in "train_loss epochs".split():
         plot.tune.set_ylim(np.concatenate(y_axis_history))
