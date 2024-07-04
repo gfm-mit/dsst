@@ -2,6 +2,7 @@ import torch
 import pytorch_optimizer
 
 import core.scheduler
+import core.rk4
 
 
 def get_optimizer_and_scheduler(params, model):
@@ -97,6 +98,8 @@ def get_optimizer(params, model):
                                           params["conditioning_smoother"],
                                       ],
                                       weight_decay=params["weight_decay"])
+  elif params["optimizer"] == "rk4":
+    optimizer = core.rk4.RK4(model.parameters(), named=model.named_parameters(), lr=params["learning_rate"])
   elif params["optimizer"] == "sgd":
     optimizer = torch.optim.SGD(model.parameters(),
                                 lr=params["learning_rate"],
