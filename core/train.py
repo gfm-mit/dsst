@@ -14,7 +14,7 @@ from core.optimizer import get_optimizer_and_scheduler
 Path('./results').mkdir(parents=True, exist_ok=True)
 MAX_ENTROPY = 80
 MAX_MSE = 400
-MAX_JUMP = 5
+MAX_JUMP = 10
 def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, train_loader, task=None, tqdm_prefix=None, early_stopping_loader=None, offset=1):
   absolute_upper_bound = MAX_MSE if task == "next_token" else MAX_ENTROPY
   relative_upper_bound = absolute_upper_bound
