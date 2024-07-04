@@ -97,6 +97,10 @@ def parse_column(k, v):
   if isinstance(v, list):
     return pd.Series(v, name=k)
   assert isinstance(v, dict)
+  if v.keys() == set("mid steps".split()):
+    v["range"] = 10
+  if v.keys() == set("mid steps range".split()):
+    v = dict(low=v["mid"] / np.sqrt(v["range"]), high=v["mid"] * np.sqrt(v["range"]), steps=v["steps"])
   assert "low" in v.keys()
   assert "high" in v.keys()
   assert "steps" in v.keys()
@@ -136,6 +140,9 @@ def parse_config(config):
     scalar = pd.DataFrame([{}])
     param_sets += [scalar]
   param_sets = pd.concat(param_sets, axis=1)
+
+  duplicate_columns = param_sets.columns[param_sets.columns.duplicated()].values
+  assert not duplicate_columns, duplicate_columns
 
   if meta is not None:
     assert not meta.keys() - "repeat shuffle".split()
