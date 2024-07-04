@@ -31,7 +31,6 @@ class RK4(torch.optim.Optimizer, pytorch_optimizer.base.optimizer.BaseOptimizer)
             if p.grad is None:
               continue
             self.state[p]['x0'] = p.clone()
-            self.state[p]['dx0'] = p.grad * group['lr']
 
             self.state[p]['dx'] = 1 / 6 * p.grad * group['lr']
             p.add_(-0.5 * p.grad * group['lr'])
