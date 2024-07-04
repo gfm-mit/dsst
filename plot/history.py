@@ -34,6 +34,8 @@ def plot_best_values(X, y, task):
     axs = axs.flatten()
   metric_name = "RMSE" if task == "next_token" else "AUC-ROC-C"
   for e, k in enumerate(X.columns):
+    if X[k].unique().shape[0] == 1: # yes, yes, inefficient
+      continue
     plt.sca(axs[e])
     plt.scatter(X[k], y)
     plt.ylabel(metric_name)
