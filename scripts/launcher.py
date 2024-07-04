@@ -23,10 +23,9 @@ import etl.torch.linear_box
 import etl.torch.linear_patient
 import wrappers.coef
 import wrappers.experiment
-import wrappers.tune
 import plot.lr_finder
 import plot.tune
-import plot.history
+import plot.tune
 import models.registry
 import util.config
 
@@ -127,7 +126,7 @@ def compare(args, experiment):
             metric_history += [dict(auc=plot_metric, brier=brier)]
         elif args.stats in "train_loss epochs".split():
           pd.Series(epoch_loss_history).to_csv(f"results/loss/{v}.csv")
-          axs = plot.history.plot_history(args, epoch_loss_history, axs=axs, label=k)
+          axs = plot.tune.plot_history(args, epoch_loss_history, axs=axs, label=k)
           y_axis_history += [epoch_loss_history]
         #elif args.task in 'classify classify_patient classify_section'.split():
         elif args.stats == "thresholds":
@@ -150,14 +149,14 @@ def compare(args, experiment):
         ]
         print(" & ".join(latex))
 
-        display_only = plot.history.get_varying_params(tunning_history)
+        display_only = plot.tune.get_varying_params(tunning_history)
         display_only["metric"] = plot_metric.values
         display_only.to_csv("results/params.csv")
         print(display_only)
-        plot.history.plot_best_values(tunning_history, plot_metric, task=args.task)
+        plot.tune.plot_best_values(tunning_history, plot_metric, task=args.task)
         return
       if args.stats in "train_loss epochs".split():
-        plot.history.set_ylim(np.concatenate(y_axis_history))
+        plot.tune.set_ylim(np.concatenate(y_axis_history))
       suptitle = "Aggregated at the Box Level, not Patient" if args.task == "classify" else "Aggregated at Patient Level, not Box"
       plt.suptitle(suptitle)
       try:
