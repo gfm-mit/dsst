@@ -45,9 +45,6 @@ class Experiment:
         early_stopping=self.args.stats != "train_loss",
         tqdm_prefix=tqdm_prefix,
         offset=self.args.offset)
-    if self.args.log:
-      import numpy as np
-      print(np.argmax(epoch_loss_history), np.argmin(epoch_loss_history))
     return metric, epoch_loss_history
   
   def batch_eval_test(self):
