@@ -22,8 +22,14 @@
 #  batch=250
 #  momentum=0.5
 #  max_epochs=50
-[[row_major]] # LION
-  optimizer='lion'
+#[[row_major]] # LION
+#  optimizer='lion'
+#  learning_rate=2e-5
+#  batch=250
+#  momentum=0.5
+#  max_epochs=30
+[[row_major]] # ADAM
+  optimizer='adam'
   learning_rate=2e-5
   batch=250
   momentum=0.5
