@@ -124,7 +124,7 @@ def compare(args, experiment):
             brier = sklearn.metrics.brier_score_loss(targets, probs)
             metric_history += [dict(auc=plot_metric, brier=brier)]
         elif args.stats in "train_loss epochs".split():
-          pd.Series(epoch_loss_history).to_csv(f"results/loss/{v}.csv")
+          pd.Series(epoch_loss_history).to_csv(f"results/epoch/{i}.csv")
           axs = plot.tune.plot_history(args, epoch_loss_history, axs=axs, label=k)
           y_axis_history += [epoch_loss_history]
         #elif args.task in 'classify classify_patient classify_section'.split():
