@@ -46,19 +46,10 @@ class Experiment:
         early_stopping=self.args.stats != "train_loss",
         tqdm_prefix=tqdm_prefix,
         offset=self.args.offset)
-    if self.args.log != "":
-      self.log_params = base_params
+    if self.args.log:
+      import numpy as np
+      print(np.argmax(epoch_loss_history), np.argmin(epoch_loss_history))
     return metric, epoch_loss_history
-
-  def log_training(self, history, label):
-    log_content = dict(
-      args=vars(self.args),
-      model_class=self.model_class.__name__,
-      params=self.log_params,
-      epoch_loss_history=history,
-    )
-    with open(self.args.log + "/{label}.json".format(label=label), "w") as f:
-      json.dump(log_content, f, indent=2)
   
   def batch_eval_test(self):
     self.model.eval()
