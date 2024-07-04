@@ -117,12 +117,14 @@ def compare(args, experiment):
           if args.task == "next_token":
             # dumb that sklearn RMSE doesn't work for 3 tensors
             rmse = np.sqrt(np.mean((targets - logits) ** 2))
-            metric_history += [dict(rmse=rmse)]
+            best_epoch = np.argmin(epoch_loss_history)
+            metric_history += [dict(rmse=rmse, best_epoch=best_epoch)]
           else:
             plot_metric = sklearn.metrics.roc_auc_score(targets, logits)
             probs = scipy.special.expit(logits)
             brier = sklearn.metrics.brier_score_loss(targets, probs)
-            metric_history += [dict(auc=plot_metric, brier=brier)]
+            best_epoch = np.argmin(epoch_loss_history)
+            metric_history += [dict(auc=plot_metric, brier=brier, best_epoch=best_epoch)]
         elif args.stats in "train_loss epochs".split():
           pd.Series(epoch_loss_history).to_csv(f"results/epoch/{i}.csv")
           axs = plot.tune.plot_history(args, epoch_loss_history, axs=axs, label=k)
@@ -149,8 +151,8 @@ def compare(args, experiment):
         print(" & ".join(latex))
 
         tuning_history = plot.tune.get_varying_params(tuning_history)
-        display_only = tuning_history.copy()
-        display_only["metric"] = plot_metric.values
+        metric_history.index = tuning_history.index
+        display_only = pd.concat([tuning_history, metric_history], axis=1)
         display_only.to_csv("results/params.csv")
         print(display_only)
         plot.tune.plot_best_values(tuning_history, plot_metric, task=args.task)
