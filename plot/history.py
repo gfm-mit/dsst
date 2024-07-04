@@ -9,6 +9,14 @@ def set_ylim(data):
   y_min = np.maximum(y_min, 0.5)
   plt.ylim([y_min, y_max])
 
+def get_varying_params(X):
+  constant = [
+    k for k in X.columns
+    if (X[k].iloc[0] == X[k]).all()
+  ]
+  XX = X.drop(columns=constant)
+  return XX
+
 def plot_history(args, epoch_loss_history, axs=None, label=None):
   ylabel = 'training loss' if args.stats == "train_loss" else 'validation auc' if args.task in "classify classify_patient classify_section".split() else 'validation rmse'
   if axs is None:
