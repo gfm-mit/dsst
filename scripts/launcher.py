@@ -135,7 +135,7 @@ def compare(args, experiment):
         plt.pause(0.1)
       plt.ioff()
       if args.stats == "params":
-        tunning_history = pd.DataFrame(tuning_history)
+        tuning_history = pd.DataFrame(tuning_history)
         metric_history = pd.DataFrame(metric_history)
 
         plot_metric = "rmse" if args.task == "next_token" else "auc"
@@ -148,11 +148,12 @@ def compare(args, experiment):
         ]
         print(" & ".join(latex))
 
-        display_only = plot.tune.get_varying_params(tunning_history)
+        tuning_history = plot.tune.get_varying_params(tuning_history)
+        display_only = tuning_history.copy()
         display_only["metric"] = plot_metric.values
         display_only.to_csv("results/params.csv")
         print(display_only)
-        plot.tune.plot_best_values(tunning_history, plot_metric, task=args.task)
+        plot.tune.plot_best_values(tuning_history, plot_metric, task=args.task)
         return
       if args.stats in "train_loss epochs".split():
         plot.tune.set_ylim(np.concatenate(y_axis_history))
