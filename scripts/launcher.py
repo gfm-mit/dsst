@@ -50,7 +50,7 @@ def parse_args():
   parser.add_argument('--stats', default='train_loss', choices=set("train_loss thresholds epochs params".split()), help='output types to generate')
 
   parser.add_argument('--disk', default='none', choices=set("none load save freeze".split()), help='whether to persist the model (or use persisted)')
-  parser.add_argument('--log', action=LogAction, default='', help='filename to log metrics and parameters')
+  parser.add_argument('--log', action='store_true', help='filename to log metrics and parameters')
   parser.add_argument('--offset', type=int, default=1, help='how far in advance to pretrain')
   args = parser.parse_args()
   return args
@@ -126,6 +126,7 @@ def compare(args, experiment):
             brier = sklearn.metrics.brier_score_loss(targets, probs)
             metric_history += [dict(auc=plot_metric, brier=brier)]
         elif args.stats in "train_loss epochs".split():
+          pd.Series(epoch_loss_history).to_csv(f"results/loss/{v}.csv")
           axs = plot.history.plot_history(args, epoch_loss_history, axs=axs, label=k)
           y_axis_history += [epoch_loss_history]
         #elif args.task in 'classify classify_patient classify_section'.split():
@@ -136,7 +137,9 @@ def compare(args, experiment):
         plt.pause(0.1)
       plt.ioff()
       if args.stats == "params":
+        tunning_history = pd.DataFrame(tuning_history)
         metric_history = pd.DataFrame(metric_history)
+
         plot_metric = "rmse" if args.task == "next_token" else "auc"
         plot_metric = metric_history.loc[:, plot_metric].copy()
         latex = metric_history.aggregate(["mean", "std"], axis=0).transpose()
@@ -146,10 +149,15 @@ def compare(args, experiment):
           for _, v in latex.iterrows()
         ]
         print(" & ".join(latex))
-        plot.history.plot_best_values(pd.DataFrame(tuning_history), plot_metric, task=args.task)
+
+        display_only = plot.history.get_varying_params(tunning_history)
+        display_only["metric"] = plot_metric.values
+        display_only.to_csv("results/params.csv")
+        print(display_only)
+        plot.history.plot_best_values(tunning_history, plot_metric, task=args.task)
         return
       if args.stats in "train_loss epochs".split():
-        plot.tune.set_ylim(np.concatenate(y_axis_history))
+        plot.history.set_ylim(np.concatenate(y_axis_history))
       suptitle = "Aggregated at the Box Level, not Patient" if args.task == "classify" else "Aggregated at Patient Level, not Box"
       plt.suptitle(suptitle)
       try:
