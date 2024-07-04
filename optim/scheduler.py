@@ -94,8 +94,9 @@ def get_scheduler(params, model, optimizer):
   elif key in params and params[key] == "warmup":
     scheduler = pytorch_optimizer.lr_scheduler.linear_warmup.LinearScheduler(
         optimizer,
+        init_lr=params["init_lr"],
         max_lr=params["learning_rate"],
-        min_lr=params["learning_rate"],
+        min_lr=params["learning_rate"], # this is final_lr, annoying hack to get constant LR after warmup
         warmup_steps=params["warmup_epochs"],
         t_max=int(params["max_epochs"]))
   elif key in params and params[key] == "ramp":
