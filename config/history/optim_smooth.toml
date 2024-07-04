@@ -18,10 +18,10 @@
 #  max_epochs=30
 [[row_major]] # SGDM
   optimizer='sgd'
-  learning_rate=1e-4
-  batch=500
+  learning_rate=5e-5
+  batch=250
   momentum=0.5
-  max_epochs=35
+  max_epochs=50
 [scalar]
   model='causal'
   scheduler='none'
