@@ -40,7 +40,7 @@ def get_optimizer(params, model):
                                               params["momentum"],
                                               params["conditioning_smoother"],
                                           ],
-                                          growth_rate=1.3,
+                                          lr=1e-1, # hack for --model=causal
                                           weight_decouple=True,
                                           weight_decay=params["weight_decay"])
   elif params["optimizer"] == "samprodigy":
