@@ -1,18 +1,18 @@
 import torch
 import numpy as np
 
-import core.loss_sam
+import optim.loss_sam
 
 def get_task_loss(model, optimizer, train_loader, task, offset=1):
   if task == "next_token":
     if optimizer.__module__ == "pytorch_optimizer.optimizer.sam":
-      loss = core.loss_sam.next_token(model, optimizer, train_loader, offset=offset)
+      loss = optim.loss_sam.next_token(model, optimizer, train_loader, offset=offset)
     else:
       loss = next_token(model, optimizer, train_loader, offset=offset)
     description = 'Last Batch RMSE={:.2f}'.format(np.sqrt(loss))
   else:
     if optimizer.__module__ == "pytorch_optimizer.optimizer.sam":
-      loss = core.loss_sam.classify(model, optimizer, train_loader)
+      loss = optim.loss_sam.classify(model, optimizer, train_loader)
     else:
       loss = classify(model, optimizer, train_loader)
     

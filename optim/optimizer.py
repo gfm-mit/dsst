@@ -1,13 +1,13 @@
 import torch
 import pytorch_optimizer
 
-import core.scheduler
-import core.rk4
+import optim.scheduler
+import optim.rk4
 
 
 def get_optimizer_and_scheduler(params, model):
   optimizer = get_optimizer(params, model)
-  return core.scheduler.get_scheduler(params, model, optimizer)
+  return optim.scheduler.get_scheduler(params, model, optimizer)
 
 def get_optimizer(params, model):
   assert "optimizer" in params
@@ -99,7 +99,7 @@ def get_optimizer(params, model):
                                       ],
                                       weight_decay=params["weight_decay"])
   elif params["optimizer"] == "rk4":
-    optimizer = core.rk4.RK4(model.parameters(), named=model.named_parameters(), lr=params["learning_rate"])
+    optimizer = optim.rk4.RK4(model.parameters(), named=model.named_parameters(), lr=params["learning_rate"])
   elif params["optimizer"] == "sgd":
     optimizer = torch.optim.SGD(model.parameters(),
                                 lr=params["learning_rate"],

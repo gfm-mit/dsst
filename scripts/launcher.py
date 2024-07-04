@@ -121,7 +121,7 @@ def compare(args, experiment):
           else:
             plot_metric = sklearn.metrics.roc_auc_score(targets, logits)
             probs = scipy.special.expit(logits)
-            brier = sklearn.metrics.brier_score_loss(targets, probs)
+            brier = sklearn.metrics.brier_score.loss(targets, probs)
             metric_history += [dict(auc=plot_metric, brier=brier)]
         elif args.stats in "train_loss epochs".split():
           pd.Series(epoch_loss_history).to_csv(f"results/loss/{v}.csv")

@@ -4,9 +4,9 @@ from tqdm import trange
 
 import models.base
 import core.train
-import core.loss
-import core.scheduler
-from core.optimizer import get_optimizer_and_scheduler
+import optim.loss
+import optim.scheduler
+from optim.optimizer import get_optimizer_and_scheduler
 
 
 def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="none", tqdm_desc=""):
@@ -17,11 +17,11 @@ def find_lr(params, model_factory_fn, train_loader=None, task="classify", disk="
   conds = []
   assert new_params['optimizer'] != 'prodigy'  # prodigy LR is weird
   optimizer, scheduler = get_optimizer_and_scheduler(new_params, model)
-  assert isinstance(scheduler, core.scheduler.LogRampScheduler)
+  assert isinstance(scheduler, optim.scheduler.LogRampScheduler)
   last_grads = None
   progress = trange(new_params["max_epochs"], desc=tqdm_desc)
   for e, batch in zip(progress, itertools.cycle(train_loader)):
-    losses += [core.loss.get_task_loss(model, optimizer, [batch], task)[0]]
+    losses += [optim.loss.get_task_loss(model, optimizer, [batch], task)[0]]
     scheduler.step()
     grads = np.concatenate([t.detach().cpu().numpy().flatten() for t in model.parameters()])
     if last_grads is not None:

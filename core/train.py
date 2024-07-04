@@ -7,10 +7,10 @@ import torch
 from tqdm import tqdm
 
 import models.base
-import core.optimizer
-import core.loss
+import optim.optimizer
+import optim.loss
 import core.metrics
-from core.optimizer import get_optimizer_and_scheduler
+from optim.optimizer import get_optimizer_and_scheduler
 
 Path('./results').mkdir(parents=True, exist_ok=True)
 MAX_ENTROPY = 80
@@ -23,7 +23,7 @@ def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, tra
   epoch_loss_history = []
   for epoch in progress:
     state_dict = dict(**model.state_dict())
-    train_loss, loss_description = core.loss.get_task_loss(model, optimizer, train_loader, task=task, offset=offset)
+    train_loss, loss_description = optim.loss.get_task_loss(model, optimizer, train_loader, task=task, offset=offset)
     scheduler.step()
     if epoch > warmup_epochs and (train_loss > absolute_upper_bound
                                   or train_loss > relative_upper_bound):
