@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import scipy
 
 
 def set_ylim(data):
@@ -19,15 +20,22 @@ def get_varying_params(X):
 def plot_history(args, epoch_loss_history, axs=None, label=None):
   ylabel = 'training loss' if args.stats == "train_loss" else 'validation auc' if args.task in "classify classify_patient classify_section".split() else 'validation rmse'
   if axs is None:
-    fig, axs = plt.subplots(1, 1)
-  plt.sca(axs)
-  plt.plot(epoch_loss_history, label=label)
+    fig, axs = plt.subplots(3, 1)
+  plt.sca(axs[0])
+  plt.plot(epoch_loss_history, alpha=0.1)
+  plt.sca(axs[1])
+  plt.plot(scipy.ndimage.gaussian_filter1d(epoch_loss_history, sigma=2))
+  plt.sca(axs[2])
+  plt.plot(np.maximum.accumulate(epoch_loss_history), label=label)
   plt.legend()
-  plt.axhline(y=.715, color="lightgray", linestyle=":", zorder=-10)
-  plt.axhline(y=.785, color="lightgray", linestyle=":", zorder=-10)
-  plt.xlabel('epoch')
-  plt.ylabel(ylabel)
-  set_ylim(epoch_loss_history)
+
+  for ax, label in zip(axs, "raw smooth max".split()):
+    plt.sca(ax)
+    plt.axhline(y=.715, color="lightgray", linestyle=":", zorder=-10)
+    plt.axhline(y=.785, color="lightgray", linestyle=":", zorder=-10)
+    plt.xlabel('epoch')
+    plt.ylabel(label + ylabel)
+    set_ylim(epoch_loss_history)
   return axs
 
 def plot_best_values(X, y, task):
