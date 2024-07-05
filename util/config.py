@@ -76,7 +76,7 @@ def parse_column_group(group, cartesian=False):
   assert isinstance(group, dict)
   column_group = [parse_single_column(k, v) for k, v in group.items()]
   if not column_group:
-    return None
+    return []
 
   if cartesian:
     column_group = cross_reduce(*column_group)
@@ -86,10 +86,9 @@ def parse_column_group(group, cartesian=False):
     assert all([x == any_length for x in column_lengths.values()]), column_lengths
 
     column_group = pd.DataFrame(column_group).transpose()
-  return column_group
+  return column_group.to_dict(orient='records')
 
 def parse_config(config):
-  param_sets = []
   assert not config.keys() - "row_major column_major scalar meta".split()
   row_major = config.get("row_major", [])
   column_major = config.get("column_major", {})
@@ -102,40 +101,32 @@ def parse_config(config):
   meta_cartesian = meta.get("cartesian", None)
   meta_overlay = meta.get("overlay", None)
   meta_append = meta.get("append", None)
-  assert not (meta_overlay and meta_append)
-
-  row_count = None
 
   column_major = parse_column_group(column_major, cartesian=meta_cartesian)
-  if column_major is not None:
-    param_sets += [column_major]
-    row_count = column_major.shape[0]
 
   if meta_append:
-    assert row_major and row_count > 0
-    param_sets = [pd.concat([column_major, pd.DataFrame(row_major)], axis=0)]
-    if scalar:
-      scalar = pd.DataFrame([scalar] * row_count)
-      param_sets += [scalar]
-  elif row_major:
-    if row_count is not None:
-      assert len(row_major) == row_count, f"{len(row_major)=} != {column_major.shape=}"
-    else:
-      if not row_major:
-        row_major = [{}]
-      row_count = len(row_major)
+    assert not meta_overlay
+    assert row_major and column_major
+    row_major = column_major + row_major
+    column_major = []
 
-    if meta_overlay:
-      row_major = pd.DataFrame([scalar | row for row in row_major])
-    else:
-      row_major = pd.DataFrame([dict(**scalar, **row) for row in row_major])
-    param_sets += [row_major]
-  elif scalar is not None:
-    if row_count is None:
-      row_count = 1
-    scalar = pd.DataFrame([scalar] * row_count)
-    param_sets += [scalar]
-  param_sets = pd.concat(param_sets, axis=1)
+  if meta_overlay:
+    row_major = [scalar | row for row in row_major]
+  elif row_major:
+    row_major = [dict(**scalar, **row) for row in row_major]
+  elif column_major:
+    row_major = [scalar] * len(column_major)
+  else:
+    row_major = [scalar]
+
+  if column_major:
+    assert len(row_major) == len(column_major), f"{len(row_major)=} != {len(column_major)}"
+    row_major = [
+      dict(**row, **column)
+      for row, column in zip(row_major, column_major)
+    ]
+  param_sets = pd.DataFrame(row_major)
+  row_count = param_sets.shape[0]
 
   duplicate_columns = param_sets.columns[param_sets.columns.duplicated()].values
   assert not duplicate_columns.shape[0], duplicate_columns
