@@ -25,13 +25,17 @@ def early_stop(history, task):
   else:
     return np.max(history)
 
+def argbest(history, task):
+  assert history
+  if task == "next_token":
+    return np.argmin(history)
+  else:
+    return np.argmax(history)
+
 def best_so_far(history, task):
   if not history:
     return True
-  if task == "next_token":
-    return np.argmin(history) == len(history) - 1
-  else:
-    return np.argmax(history) == len(history) - 1
+  return argbest(history, task) == len(history) - 1
 
 def verbose_next_token_metrics(predicted, data):
     var = np.mean((data)**2, axis=(0, 1))
