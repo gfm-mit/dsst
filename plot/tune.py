@@ -20,7 +20,7 @@ def get_varying_params(X):
 def plot_history(args, epoch_loss_history, axs=None, label=None):
   ylabel = 'training loss' if args.stats == "train_loss" else 'validation auc' if args.task in "classify classify_patient classify_section".split() else 'validation rmse'
   if axs is None:
-    fig, axs = plt.subplots(3, 1)
+    fig, axs = plt.subplots(3, 1, sharex=True, sharey=True)
   plt.sca(axs[0])
   plt.plot(epoch_loss_history)
   plt.sca(axs[1])
