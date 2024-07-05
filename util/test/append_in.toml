@@ -1,0 +1,10 @@
+[[row_major]]
+  learning_rate=0
+  conditioning_smoother=0
+[column_major]
+  learning_rate={low=1e-3, high=1e-1, steps=3}
+  conditioning_smoother=[0.9, 0.99, 0.999]
+[scalar]
+  momentum=0.9
+[meta]
+  append=true

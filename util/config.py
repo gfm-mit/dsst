@@ -73,8 +73,6 @@ def cross_reduce(*dfs):
   return accum
 
 def parse_column_group(group, cartesian=False):
-  if group is None:
-    return None
   assert isinstance(group, dict)
   column_group = [parse_single_column(k, v) for k, v in group.items()]
   if not column_group:
@@ -93,18 +91,19 @@ def parse_column_group(group, cartesian=False):
 def parse_config(config):
   param_sets = []
   assert not config.keys() - "row_major column_major scalar meta".split()
-  row_major = config.get("row_major", None)
-  column_major = config.get("column_major", None)
-  scalar = config.get("scalar", None)
-  meta_repeat, meta_shuffle, meta_cartesian = None, None, None
-  if "meta" in config:
-    meta = config["meta"]
-    assert isinstance(meta, dict)
-    assert not meta.keys() - "repeat shuffle cartesian overlay".split()
-    meta_repeat = meta.get("repeat", None)
-    meta_shuffle = meta.get("shuffle", None)
-    meta_cartesian = meta.get("cartesian", None)
-    meta_overlay = meta.get("overlay", None)
+  row_major = config.get("row_major", [])
+  column_major = config.get("column_major", {})
+  scalar = config.get("scalar", {})
+  meta = config.get("meta", {})
+  assert isinstance(meta, dict)
+  assert not meta.keys() - "repeat shuffle cartesian overlay append".split()
+  meta_repeat = meta.get("repeat", None)
+  meta_shuffle = meta.get("shuffle", None)
+  meta_cartesian = meta.get("cartesian", None)
+  meta_overlay = meta.get("overlay", None)
+  meta_append = meta.get("append", None)
+  assert not (meta_overlay and meta_append)
+
   row_count = None
 
   column_major = parse_column_group(column_major, cartesian=meta_cartesian)
@@ -112,28 +111,29 @@ def parse_config(config):
     param_sets += [column_major]
     row_count = column_major.shape[0]
 
-  if row_major is not None:
-    assert isinstance(row_major, list)
+  if meta_append:
+    assert row_major and row_count > 0
+    param_sets = [pd.concat([column_major, pd.DataFrame(row_major)], axis=0)]
+    if scalar:
+      scalar = pd.DataFrame([scalar] * row_count)
+      param_sets += [scalar]
+  elif row_major:
     if row_count is not None:
       assert len(row_major) == row_count, f"{len(row_major)=} != {column_major.shape=}"
     else:
+      if not row_major:
+        row_major = [{}]
       row_count = len(row_major)
 
     if meta_overlay:
-      assert scalar is not None
       row_major = pd.DataFrame([scalar | row for row in row_major])
-    elif scalar:
-      row_major = pd.DataFrame([dict(**scalar, **row) for row in row_major])
     else:
-      row_major = pd.DataFrame(row_major)
+      row_major = pd.DataFrame([dict(**scalar, **row) for row in row_major])
     param_sets += [row_major]
   elif scalar is not None:
     if row_count is None:
       row_count = 1
     scalar = pd.DataFrame([scalar] * row_count)
-    param_sets += [scalar]
-  elif row_major is None and column_major is None:
-    scalar = pd.DataFrame([{}])
     param_sets += [scalar]
   param_sets = pd.concat(param_sets, axis=1)
 
@@ -178,5 +178,6 @@ def test(f_in, f_out):
 
 # no, bad, don't do testing this way!
 if __name__ == "__main__":
-  test('./util/test/overlay_in.toml', './util/test/overlay_out.toml')
   test('./util/test/base_in.toml', './util/test/base_out.toml')
+  test('./util/test/overlay_in.toml', './util/test/overlay_out.toml')
+  test('./util/test/append_in.toml', './util/test/append_out.toml')

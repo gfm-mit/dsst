@@ -1,0 +1,16 @@
+[[params]]
+  learning_rate=1e-3
+  conditioning_smoother=0.9
+  momentum=0.9
+[[params]]
+  learning_rate=1e-2
+  conditioning_smoother=0.99
+  momentum=0.9
+[[params]]
+  learning_rate=1e-1
+  conditioning_smoother=0.999
+  momentum=0.9
+[[params]]
+  learning_rate=0.0
+  conditioning_smoother=0.0
+  momentum=0.9
