@@ -106,7 +106,7 @@ def parse_config(config):
     meta_cartesian = meta.get("cartesian", None)
 
   if row_major is not None:
-    assert isinstance(meta, list)
+    assert isinstance(row_major, list)
     row_major = pd.DataFrame(row_major)
     param_sets += [row_major]
   column_major = parse_column_group(column_major, cartesian=meta_cartesian)
