@@ -88,13 +88,15 @@ def get_scheduler(params, model, optimizer):
   elif key in params and params[key] == "cosine":
     scheduler = pytorch_optimizer.lr_scheduler.linear_warmup.CosineScheduler(
         optimizer,
+        init_lr=params["lr_0"],
         max_lr=params["learning_rate"],
+        min_lr=params["lr_cos"],
         warmup_steps=params["warmup_epochs"],
         t_max=int(params["max_epochs"]))
   elif key in params and params[key] == "warmup":
     scheduler = pytorch_optimizer.lr_scheduler.linear_warmup.LinearScheduler(
         optimizer,
-        init_lr=params["init_lr"],
+        init_lr=params["lr_0"],
         max_lr=params["learning_rate"],
         min_lr=params["learning_rate"], # this is final_lr, annoying hack to get constant LR after warmup
         warmup_steps=params["warmup_epochs"],
@@ -107,6 +109,5 @@ def get_scheduler(params, model, optimizer):
         epochs=int(params["max_epochs"]))
   else:
     assert key not in params or params[key] is None or params[key] == "none", params[key]
-    assert "warmup_epochs" not in params or params["warmup_epochs"] == 0
     scheduler = FakeOptimizer(model, verbose=False)
   return optimizer, scheduler
