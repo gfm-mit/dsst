@@ -22,7 +22,7 @@ def plot_history(args, epoch_loss_history, axs=None, label=None):
   if axs is None:
     fig, axs = plt.subplots(3, 1)
   plt.sca(axs[0])
-  plt.plot(epoch_loss_history, alpha=0.1)
+  plt.plot(epoch_loss_history)
   plt.sca(axs[1])
   plt.plot(scipy.ndimage.gaussian_filter1d(epoch_loss_history, sigma=2))
   plt.sca(axs[2])
