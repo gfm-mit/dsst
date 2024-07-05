@@ -3,6 +3,7 @@ import torch
 from einops.layers.torch import Rearrange
 import re
 from x_transformers import Decoder
+import warnings
 
 import models.base
 from models.util import PrintfModule
@@ -23,6 +24,8 @@ class Transformer(models.base.SequenceBase):
     self.classes = n_classes
     self.inputs = n_inputs
     super().__init__(device=device)
+    # dammit, torch ecosystem, this is terrible
+    warnings.simplefilter(action='ignore', category=FutureWarning)
 
   def get_next_token_architecture(self, **kwargs):
     model = torch.nn.Sequential(
