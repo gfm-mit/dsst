@@ -1,0 +1,12 @@
+[[params]]
+  scheduler='none'
+  optimizer='samprodigy'
+  momentum=0.9
+[[params]]
+  scheduler='warmup'
+  optimizer='samadam'
+  momentum=0.9
+[[params]]
+  scheduler='onecycle'
+  optimizer='sgd'
+  momentum=0.9

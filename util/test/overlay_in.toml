@@ -1,0 +1,13 @@
+[[row_major]]
+  optimizer='samprodigy'
+[[row_major]]
+  scheduler='warmup'
+  optimizer='samadam'
+[[row_major]]
+  scheduler='onecycle'
+[scalar]
+  scheduler='none'
+  optimizer='sgd'
+  momentum=0.9
+[meta]
+  overlay=true

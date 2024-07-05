@@ -100,31 +100,44 @@ def parse_config(config):
   if "meta" in config:
     meta = config["meta"]
     assert isinstance(meta, dict)
-    assert not meta.keys() - "repeat shuffle cartesian".split()
+    assert not meta.keys() - "repeat shuffle cartesian overlay".split()
     meta_repeat = meta.get("repeat", None)
     meta_shuffle = meta.get("shuffle", None)
     meta_cartesian = meta.get("cartesian", None)
+    meta_overlay = meta.get("overlay", None)
+  row_count = None
 
-  if row_major is not None:
-    assert isinstance(row_major, list)
-    row_major = pd.DataFrame(row_major)
-    param_sets += [row_major]
   column_major = parse_column_group(column_major, cartesian=meta_cartesian)
   if column_major is not None:
     param_sets += [column_major]
-  if row_major is not None and column_major is not None:
-    assert row_major.shape[0] == column_major.shape[0], f"{row_major.shape=} != {column_major.shape=}"
-  row_count = row_major.shape[0] if row_major is not None else column_major.shape[0] if column_major is not None else 1
+    row_count = column_major.shape[0]
+
+  if row_major is not None:
+    assert isinstance(row_major, list)
+    if row_count is not None:
+      assert len(row_major) == row_count, f"{len(row_major)=} != {column_major.shape=}"
+    else:
+      row_count = len(row_major)
+
+    if meta_overlay:
+      assert scalar is not None
+      row_major = pd.DataFrame([scalar | row for row in row_major])
+    else:
+      row_major = pd.DataFrame(row_major)
+    param_sets += [row_major]
   if scalar is not None:
+    if row_count is None:
+      row_count = 1
     scalar = pd.DataFrame([scalar] * row_count)
-    param_sets += [scalar]
+    if not meta_overlay:
+      param_sets += [scalar]
   elif row_major is None and column_major is None:
     scalar = pd.DataFrame([{}])
     param_sets += [scalar]
   param_sets = pd.concat(param_sets, axis=1)
 
   duplicate_columns = param_sets.columns[param_sets.columns.duplicated()].values
-  assert not duplicate_columns, duplicate_columns
+  assert not duplicate_columns.shape[0], duplicate_columns
   assert meta_repeat is None or isinstance(meta_repeat, int)
   assert meta_shuffle is None or isinstance(meta_shuffle, bool)
   if meta_repeat:
@@ -146,14 +159,18 @@ def parse_config(config):
   param_sets.index = param_sets.index + cum_idx
   return param_sets
 
-# no, bad, don't do testing this way!
-if __name__ == "__main__":
-  with open('./util/test_in.toml', 'rb') as stream:
+def test(f_in, f_out):
+  with open(f_in, 'rb') as stream:
     config = tomli.load(stream)
     parsed = parse_config(config)
     parsed = [row.to_dict() for _, row in parsed.iterrows()]
     for p in parsed:
       print(p)
-  with open('./util/test_out.toml', 'rb') as stream:
+  with open(f_out, 'rb') as stream:
     expected = tomli.load(stream)['params']
   print(deepdiff.DeepDiff(expected, parsed, ignore_order=False).pretty() or "NO DIFF")
+
+# no, bad, don't do testing this way!
+if __name__ == "__main__":
+  test('./util/test/overlay_in.toml', './util/test/overlay_out.toml')
+  test('./util/test/base_in.toml', './util/test/base_out.toml')
