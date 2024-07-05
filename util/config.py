@@ -75,6 +75,7 @@ def cross_reduce(*dfs):
 def parse_column_group(group, cartesian=False):
   if group is None:
     return None
+  assert isinstance(group, dict)
   column_group = [parse_single_column(k, v) for k, v in group.items()]
   if not column_group:
     return None
@@ -105,6 +106,7 @@ def parse_config(config):
     meta_cartesian = meta.get("cartesian", None)
 
   if row_major is not None:
+    assert isinstance(meta, list)
     row_major = pd.DataFrame(row_major)
     param_sets += [row_major]
   column_major = parse_column_group(column_major, cartesian=meta_cartesian)
