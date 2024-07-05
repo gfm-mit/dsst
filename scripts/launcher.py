@@ -48,7 +48,7 @@ def parse_args():
   parser.add_argument('--stats', default='train_loss', choices=set("train_loss thresholds epochs params".split()), help='output types to generate')
 
   parser.add_argument('--disk', default='none', choices=set("none load save freeze".split()), help='whether to persist the model (or use persisted)')
-  parser.add_argument('--log', action='store_true', help='filename to log metrics and parameters')
+  parser.add_argument('--ucb', type=int, default=0, help='adaptive experiments')
   parser.add_argument('--offset', type=int, default=1, help='how far in advance to pretrain')
   args = parser.parse_args()
   return args
@@ -93,8 +93,30 @@ def main():
       stats = pstats.Stats('results/output_file.prof')
       stats.sort_stats('cumulative')
       stats.print_stats(30)
+    elif args.ucb:
+      ucb(args, experiment)
     else:
       compare(args, experiment)
+
+def ucb(args, experiment):
+  assert args.config
+  setups = util.config.parse_config(args.config)
+  assert not setups.duplicated().any()
+  stats = pd.DataFrame(index=setups.index)
+  stats["n"] = 0
+  stats["mu"] = 0
+  stats["ucb"] = np.inf
+  ALPHA = 16 * .02 ** 2
+  for iter in range(args.ucb):
+    idx = stats.ucb.argmax()
+    n, mu, ucb = stats.iloc[idx]
+    params = setups.iloc[idx]
+    metric, epoch_loss_history = experiment.train(tqdm_prefix=f"UCB {iter}", **params.to_dict())
+    stats.loc[params.name, "mu"] = (n * mu + metric) / (n + 1)
+    stats.loc[params.name, "n"] = n + 1
+    stats.ucb = stats.mu + np.sqrt(ALPHA * np.log(iter-1) / stats.n)
+    stats.ucb = stats.ucb.fillna(np.inf)
+    print(stats)
 
 def compare(args, experiment):
       axs = None
