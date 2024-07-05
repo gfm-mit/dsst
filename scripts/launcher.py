@@ -106,14 +106,21 @@ def ucb(args, experiment):
   stats["n"] = 0
   stats["mu"] = 0
   stats["ucb"] = np.inf
+  stats["mu2"] = 0
+  stats["std"] = np.inf
   ALPHA = 16 * .02 ** 2
   for iter in range(args.ucb):
     idx = stats.ucb.argmax()
-    n, mu, ucb = stats.iloc[idx]
+    n, mu, ucb, mu2, std = stats.iloc[idx]
     params = setups.iloc[idx]
     metric, epoch_loss_history = experiment.train(tqdm_prefix=f"UCB {iter}", **params.to_dict())
     stats.loc[params.name, "mu"] = (n * mu + metric) / (n + 1)
+    stats.loc[params.name, "mu2"] = (n * mu2 + metric**2) / (n + 1)
     stats.loc[params.name, "n"] = n + 1
+    n, mu, ucb, mu2, std = stats.iloc[idx]
+    if n > 1:
+      stats.loc[params.name, "std"] = np.sqrt((mu2 - mu**2) / (n-1))
+
     stats.ucb = stats.mu + np.sqrt(ALPHA * np.log(iter-1) / stats.n)
     stats.ucb = stats.ucb.fillna(np.inf)
     print(stats)
