@@ -12,17 +12,19 @@ def update_mean(mean, n, value):
 
 def gp(args, experiment, K="learning_rate", scale="log", budget=None):
   assert args.config
-  to_gp_space = lambda x: x
-  if scale == "log":
-    to_gp_space = np.log
   setups = util.config.parse_config(args.config)
   assert not setups.duplicated().any()
   stats = pd.DataFrame(columns="X Y S".split())
   low, high = setups[K].min(), setups[K].max()
   if scale == "log":
     X_gpr = np.geomspace(low, high, 100)[:, None]
+    to_gp_space = np.log
+  elif scale == "log1p":
+    X_gpr = np.geomspace(low+1, high+1, 100)[:, None]-1
+    to_gp_space = np.log1p
   else:
     X_gpr = np.linspace(low, high, 100)[:, None]
+    to_gp_space = lambda x: x
   log, high = None, None
   kernel = sklearn.gaussian_process.kernels.RBF(length_scale_bounds=[3e-1,3e0]
     ) + sklearn.gaussian_process.kernels.WhiteKernel(noise_level_bounds=[1e-1,1e1])
@@ -32,7 +34,11 @@ def gp(args, experiment, K="learning_rate", scale="log", budget=None):
   plt.ion()
   for iter in range(budget):
     params = setups.iloc[iter % setups.shape[0]]
-    metric, epoch_loss_history = experiment.train(tqdm_prefix=None, **params.to_dict())
+    try:
+      metric, epoch_loss_history = experiment.train(tqdm_prefix=None, **params.to_dict())
+    except KeyboardInterrupt:
+      print("KeyboardInterrupt")
+      break
     steps = core.metrics.argbest(epoch_loss_history, args.task)
     stats.loc[stats.shape[0]] = params[K], metric, steps
     plt.sca(axs[1])
@@ -42,7 +48,7 @@ def gp(args, experiment, K="learning_rate", scale="log", budget=None):
 
     # Define the kernel: RBF for smooth changes, WhiteKernel for noise level
     gpr.fit(to_gp_space(stats.X.values)[:, None], stats.Y)
-    print(gpr.kernel_)
+    print(f"kernel[{iter+1}/{budget}]={gpr.kernel_}")
     Y_gpr, S_gpr = gpr.predict(to_gp_space(X_gpr), return_std=True)
     if high is None:
       high, = plt.plot(X_gpr, Y_gpr + 2 * S_gpr)
@@ -55,4 +61,4 @@ def gp(args, experiment, K="learning_rate", scale="log", budget=None):
       low.set_ydata(Y_gpr - 2 * S_gpr)
     plt.pause(0.1)
   plt.ioff()
-  plt.show()
+  print(stats.groupby("X").mean().sort_index())
