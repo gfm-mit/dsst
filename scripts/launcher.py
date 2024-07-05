@@ -7,7 +7,6 @@ import os
 import torch
 
 import pandas as pd
-import scipy
 import sklearn
 import sklearn.metrics
 import models.cnn_2d
@@ -113,24 +112,12 @@ def compare(args, experiment):
           experiment.redefine_loaders(v['batch'])
         metric, epoch_loss_history = experiment.train(tqdm_prefix=tqdm_prefix, **v)
         if args.stats == "params":
-          logits, targets = experiment.batch_eval_test()
           tuning_history += [v]
-          if args.task == "next_token":
-            # dumb that sklearn RMSE doesn't work for 3 tensors
-            rmse = np.sqrt(np.mean((targets - logits) ** 2))
-            best_epoch = np.argmin(epoch_loss_history)
-            metric_history += [dict(rmse=rmse, best_epoch=best_epoch)]
-          else:
-            plot_metric = sklearn.metrics.roc_auc_score(targets, logits)
-            probs = scipy.special.expit(logits)
-            brier = sklearn.metrics.brier_score_loss(targets, probs)
-            best_epoch = np.argmin(epoch_loss_history)
-            metric_history += [dict(auc=plot_metric, brier=brier, best_epoch=best_epoch)]
+          metric_history += [experiment.get_tuning_results(epoch_loss_history)]
         elif args.stats in "train_loss epochs".split():
           pd.Series(epoch_loss_history).to_csv(f"results/epoch/{i}.csv")
           axs = plot.tune.plot_history(args, epoch_loss_history, axs=axs, label=k)
           y_axis_history += [epoch_loss_history]
-        #elif args.task in 'classify classify_patient classify_section'.split():
         elif args.stats == "thresholds":
           axs = experiment.plot_trained(axs, label=k)
         else:

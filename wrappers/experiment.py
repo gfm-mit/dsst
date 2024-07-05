@@ -1,6 +1,7 @@
-import json
-import wrappers.lr_finder
-import plot.lr_finder
+import numpy as np
+import scipy
+import sklearn.metrics
+
 import core.train
 import core.metrics
 import core.batch_eval
@@ -65,3 +66,17 @@ class Experiment:
     roc = plot.calibration.get_full_roc_table(logits, targets)
     axs = plot.metrics.plot_palette(roc, axs, label=label)
     return axs
+
+  def get_tuning_results(self, epoch_loss_history):
+    logits, targets = self.batch_eval_test()
+    if self.args.task == "next_token":
+      # dumb that sklearn RMSE doesn't work for 3 tensors
+      rmse = np.sqrt(np.mean((targets - logits) ** 2))
+      best_epoch = np.argmin(epoch_loss_history)
+      return dict(rmse=rmse, best_epoch=best_epoch)
+    else:
+      plot_metric = sklearn.metrics.roc_auc_score(targets, logits)
+      probs = scipy.special.expit(logits)
+      brier = sklearn.metrics.brier_score_loss(targets, probs)
+      best_epoch = np.argmin(epoch_loss_history)
+      return dict(auc=plot_metric, brier=brier, best_epoch=best_epoch)
