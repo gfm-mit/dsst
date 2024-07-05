@@ -122,15 +122,16 @@ def parse_config(config):
     if meta_overlay:
       assert scalar is not None
       row_major = pd.DataFrame([scalar | row for row in row_major])
+    elif scalar:
+      row_major = pd.DataFrame([dict(**scalar, **row) for row in row_major])
     else:
       row_major = pd.DataFrame(row_major)
     param_sets += [row_major]
-  if scalar is not None:
+  elif scalar is not None:
     if row_count is None:
       row_count = 1
     scalar = pd.DataFrame([scalar] * row_count)
-    if not meta_overlay:
-      param_sets += [scalar]
+    param_sets += [scalar]
   elif row_major is None and column_major is None:
     scalar = pd.DataFrame([{}])
     param_sets += [scalar]
@@ -138,6 +139,11 @@ def parse_config(config):
 
   duplicate_columns = param_sets.columns[param_sets.columns.duplicated()].values
   assert not duplicate_columns.shape[0], duplicate_columns
+  constant_columns = [
+    k for k in param_sets.columns
+    if param_sets[k].nunique() == 1 # inefficient, but not load bearing
+  ]
+
   assert meta_repeat is None or isinstance(meta_repeat, int)
   assert meta_shuffle is None or isinstance(meta_shuffle, bool)
   if meta_repeat:
@@ -151,7 +157,7 @@ def parse_config(config):
     param_sets.index = ["{}"] * param_sets.shape[0]
   else:
     param_sets.index = [
-      pprint_dict(row.to_dict(), omit=scalar.columns)
+      pprint_dict(row.to_dict(), omit=constant_columns)
       for _, row in param_sets.iterrows()
     ]
   cum_idx = (param_sets.groupby(param_sets.index).cumcount() + 1).astype(str)
