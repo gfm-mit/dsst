@@ -83,7 +83,7 @@ def get_scheduler(params, model, optimizer):
         optimizer,
         max_lr=params["learning_rate"],
         steps_per_epoch=1,
-        pct_start=float(params["warmup_epochs"]) / params["max_epochs"],
+        pct_start=np.clip(float(params["warmup_epochs"]) / params["max_epochs"], 1e-8, 1-1e-8),
         epochs=int(params["max_epochs"]))
   elif key in params and params[key] == "cosine":
     scheduler = pytorch_optimizer.lr_scheduler.linear_warmup.CosineScheduler(
