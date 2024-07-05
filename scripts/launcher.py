@@ -12,7 +12,6 @@ import sklearn.metrics
 import models.cnn_2d
 import models.linear_bnc
 from plot.tune import print_and_plot_params
-import wrappers.ucb
 from util.config import TomlAction
 import util.excepthook
 import matplotlib.pyplot as plt
@@ -24,6 +23,8 @@ import etl.torch.linear_box
 import etl.torch.linear_patient
 import wrappers.coef
 import wrappers.experiment
+import wrappers.ucb
+import wrappers.gp
 import plot.lr_finder
 import plot.tune
 import models.registry
@@ -46,10 +47,9 @@ def parse_args():
   parser.add_argument('--device', default='cpu', help='torch device')
   parser.add_argument('--model', default='', help='which model class to use')
   parser.add_argument('--task', default='classify', choices=set("next_token classify classify_patient classify_section".split()), help='training target / loss')
-  parser.add_argument('--stats', default='train_loss', choices=set("train_loss thresholds epochs params".split()), help='output types to generate')
+  parser.add_argument('--stats', default='train_loss', choices=set("train_loss thresholds epochs params ucb gp".split()), help='output types to generate')
 
   parser.add_argument('--disk', default='none', choices=set("none load save freeze".split()), help='whether to persist the model (or use persisted)')
-  parser.add_argument('--ucb', type=int, default=0, help='adaptive experiments')
   parser.add_argument('--offset', type=int, default=1, help='how far in advance to pretrain')
   args = parser.parse_args()
   return args
@@ -94,8 +94,12 @@ def main():
       stats = pstats.Stats('results/output_file.prof')
       stats.sort_stats('cumulative')
       stats.print_stats(30)
-    elif args.ucb:
-      wrappers.ucb.ucb(args, experiment)
+    elif args.stats == "ucb":
+      settings = args.config["meta"].pop("bandit")
+      wrappers.ucb.ucb(args, experiment, **settings)
+    elif args.stats == "gp":
+      settings = args.config["meta"].pop("bandit")
+      wrappers.gp.gp(args, experiment, **settings)
     else:
       compare(args, experiment)
 

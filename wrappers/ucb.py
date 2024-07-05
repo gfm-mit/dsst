@@ -8,7 +8,7 @@ import core.metrics
 def update_mean(mean, n, value):
   return (n * mean + value) / (n + 1)
 
-def ucb(args, experiment):
+def ucb(args, experiment, budget):
   assert args.config
   setups = util.config.parse_config(args.config)
   assert not setups.duplicated().any()
@@ -20,7 +20,7 @@ def ucb(args, experiment):
   stats["mu"] = 0.0
   stats["ucb"] = np.inf
   SD_GUESS = .01
-  for iter in range(args.ucb):
+  for iter in range(budget):
     idx = stats.ucb.argmax()
     n, mu, mu2, steps = stats.iloc[idx]["n mu mu2 steps".split()]
     params = setups.iloc[idx]
@@ -44,7 +44,7 @@ def ucb(args, experiment):
     weight = stats.n - 1
     var = np.where(stats.n >= 2, stats['std']**2, 0)
     var = np.sum(var * weight) / np.sum(weight)
-    print(f"****** {iter+1}/{args.ucb}: {seconds:.2f}s, std: {np.sqrt(var):.5f} *******")
+    print(f"****** {iter+1}/{budget}: {seconds:.2f}s, std: {np.sqrt(var):.5f} *******")
     print(stats.sort_values(by="ucb").drop(columns="mu2"))
   print(f"****** FINAL *******")
   print(stats.mu.sort_values().tail(10))
