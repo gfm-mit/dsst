@@ -5,7 +5,6 @@ import sys
 import cProfile
 import os
 import torch
-import time
 
 import pandas as pd
 import sklearn
@@ -13,6 +12,7 @@ import sklearn.metrics
 import models.cnn_2d
 import models.linear_bnc
 from plot.tune import print_and_plot_params
+import wrappers.ucb
 from util.config import TomlAction
 import util.excepthook
 import matplotlib.pyplot as plt
@@ -95,44 +95,9 @@ def main():
       stats.sort_stats('cumulative')
       stats.print_stats(30)
     elif args.ucb:
-      ucb(args, experiment)
+      wrappers.ucb.ucb(args, experiment)
     else:
       compare(args, experiment)
-
-def ucb(args, experiment):
-  assert args.config
-  setups = util.config.parse_config(args.config)
-  assert not setups.duplicated().any()
-  stats = pd.DataFrame(index=setups.index)
-  stats["n"] = 0
-  stats["mu"] = 0.0
-  stats["ucb"] = np.inf
-  stats["mu2"] = 0.0
-  stats["std"] = np.inf
-  ALPHA = 16 * .02 ** 2
-  for iter in range(args.ucb):
-    idx = stats.ucb.argmax()
-    n, mu, ucb, mu2, std = stats.iloc[idx]
-    params = setups.iloc[idx]
-    seconds = time.time()
-    metric, epoch_loss_history = experiment.train(tqdm_prefix=None, **params.to_dict())
-    seconds = time.time() - seconds
-    stats.loc[params.name, "mu"] = (n * mu + metric) / (n + 1)
-    stats.loc[params.name, "mu2"] = (n * mu2 + metric**2) / (n + 1)
-    stats.loc[params.name, "n"] = n + 1
-    n, mu, ucb, mu2, std = stats.iloc[idx]
-    if n > 1:
-      stats.loc[params.name, "std"] = np.sqrt((mu2 - mu**2) / (n-1))
-
-    if stats.n.min() == 0:
-      stats.ucb = np.where(stats.n == 0, np.inf, -np.inf)
-    else:
-      stats.ucb = stats.mu + np.sqrt(ALPHA * np.log(iter-1) / stats.n)
-      stats.ucb = stats.ucb.fillna(np.inf)
-    print(f"****** {iter+1}/{args.ucb}: {seconds:.2f}s *******")
-    print(stats.sort_values(by="ucb"))
-  print(f"****** FINAL *******")
-  print(stats.mu.sort_values().tail(10))
 
 def compare(args, experiment):
       axs = None
