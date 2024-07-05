@@ -16,10 +16,12 @@ Path('./results').mkdir(parents=True, exist_ok=True)
 MAX_ENTROPY = 80
 MAX_MSE = 400
 MAX_JUMP = 10
-def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, train_loader, task=None, tqdm_prefix=None, early_stopping_loader=None, offset=1):
+def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, train_loader, task=None, tqdm_prefix="", early_stopping_loader=None, offset=1):
   absolute_upper_bound = MAX_MSE if task == "next_token" else MAX_ENTROPY
   relative_upper_bound = absolute_upper_bound
-  progress = tqdm(range(max_epochs), desc=tqdm_prefix or "")
+  progress = range(max_epochs)
+  if tqdm_prefix is not None:
+    progress = tqdm(progress, desc=tqdm_prefix)
   epoch_loss_history = []
   for epoch in progress:
     state_dict = dict(**model.state_dict())
@@ -36,7 +38,8 @@ def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, tra
       return model, epoch_loss_history
     relative_upper_bound = MAX_JUMP * train_loss
     torch.cuda.empty_cache()
-    progress.set_postfix_str(" " + loss_description)
+    if hasattr(progress, "set_postfix_str"):
+      progress.set_postfix_str(" " + loss_description)
     if early_stopping_loader is None:
       epoch_loss_history += [train_loss]
     else:
