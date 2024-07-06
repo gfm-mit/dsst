@@ -18,6 +18,7 @@ def get_varying_params(X):
   return XX
 
 def plot_history(args, epoch_loss_history, axs=None, label=None):
+  accum = np.minimum.accumulate if args.stats == "train_loss" or args.task == "next_token" else np.maximum.accumulate
   ylabel = 'training loss' if args.stats == "train_loss" else 'validation auc' if args.task in "classify classify_patient classify_section".split() else 'validation rmse'
   if axs is None:
     fig, axs = plt.subplots(3, 1, sharex=True, sharey=True)
@@ -26,7 +27,7 @@ def plot_history(args, epoch_loss_history, axs=None, label=None):
   plt.sca(axs[1])
   plt.plot(scipy.ndimage.gaussian_filter1d(epoch_loss_history, sigma=2))
   plt.sca(axs[2])
-  plt.plot(np.maximum.accumulate(epoch_loss_history), label=label)
+  plt.plot(accum(epoch_loss_history), label=label)
   plt.legend()
 
   for ax, label in zip(axs, "raw smooth max".split()):
