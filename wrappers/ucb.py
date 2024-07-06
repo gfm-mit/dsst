@@ -26,7 +26,7 @@ def ucb(args, experiment, budget):
     params = setups.iloc[idx]
     seconds = time.time()
     metric, epoch_loss_history = experiment.train(tqdm_prefix=None, **params.to_dict())
-    steps_idx = core.metrics.best_so_far(epoch_loss_history, args.task)
+    steps_idx = core.metrics.argbest(epoch_loss_history, args.task)
     seconds = time.time() - seconds
     stats.loc[params.name, "mu"] = update_mean(mu, n, metric)
     stats.loc[params.name, "mu2"] = update_mean(mu2, n, metric**2)
@@ -38,9 +38,12 @@ def ucb(args, experiment, budget):
 
     if stats.n.min() == 0:
       stats.ucb = np.where(stats.n == 0, np.inf, -np.inf)
+    elif args.task == "next_token":
+      stats.ucb = -stats.mu + 2 * SD_GUESS * np.sqrt(4 * np.log(iter-1) / stats.n)
+      #stats.ucb = stats.ucb.fillna(np.inf)
     else:
       stats.ucb = stats.mu + 2 * SD_GUESS * np.sqrt(4 * np.log(iter-1) / stats.n)
-      stats.ucb = stats.ucb.fillna(np.inf)
+      #stats.ucb = stats.ucb.fillna(np.inf)
     weight = stats.n - 1
     var = np.where(stats.n >= 2, stats['std']**2, 0)
     var = np.sum(var * weight) / np.sum(weight)
