@@ -98,9 +98,10 @@ def get_stroke_properties(df):
 
 # this should just return an assignment x, but the slow way is nice for debugging
 def assign_stroke(j):
-  # if the stroke is almost entirely in one literal box
+  # if the stroke is almost entirely in one literal box [even if it's all near the edge]
   if j.fraction_normal > .75 and j.width < 1.5:
     Z = pd.Series(dict(x=j.first_touch_box, color="lightgray"))
+
   # if the stroke is almost entirely in one box, ignoring points near the edge
   elif j.fraction_center > .75 and j.width < 1.5:
     Z = pd.Series(dict(x=j.first_touch_box, color="lightgray"))
@@ -108,10 +109,13 @@ def assign_stroke(j):
     Z = pd.Series(dict(x=j.first_touch_box - 1, color="lightgray"))
   elif j.fraction_right > .75 and j.width < 1.5:
     Z = pd.Series(dict(x=j.first_touch_box + 1, color="lightgray"))
+
+  # if the stroke is very close to another one but only on one side
   elif j.close_left and not j.close_right:
     Z = pd.Series(dict(x=np.floor(j.this_min), color="lightgray" if j.far_right else "red"))
   elif j.close_right and not j.close_left:
     Z = pd.Series(dict(x=np.floor(j.this_max), color="lightgray" if j.far_left else "green"))
+
   # if the stroke is almost entirely along one edge
   elif j.fraction_one > .75 and j.width < 1.5:
     Z = pd.Series(dict(x=j.first_touch_box, color="blue"))
