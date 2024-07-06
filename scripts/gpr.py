@@ -15,7 +15,6 @@ import wrappers.gpr
 
 while True:
   stats = pd.read_csv('results/gp.csv')
-  print(stats)
   with open('config/sop.toml', 'rb') as f:
     config = tomli.load(f)["meta"]["bandit"]
   gpr = wrappers.gpr.GPR(config['K'], config['scale'], config['budget'], stats.X.min(), stats.X.max())
