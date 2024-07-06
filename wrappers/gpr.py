@@ -11,11 +11,11 @@ class GPR:
     self.scale = scale
     self.budget = budget
     self.sd = sd
-    k1 = sklearn.gaussian_process.kernels.RationalQuadratic(length_scale_bounds=[.5, 2e0]
+    k1 = sklearn.gaussian_process.kernels.RationalQuadratic(length_scale=0.2, length_scale_bounds='fixed'
       ) + sklearn.gaussian_process.kernels.WhiteKernel(noise_level_bounds=[1e-1 * sd, 1e1 * sd])
     self.mean_gpr = sklearn.gaussian_process.GaussianProcessRegressor(
       kernel=k1, random_state=0, normalize_y=True, n_restarts_optimizer=10)
-    k2 = sklearn.gaussian_process.kernels.RBF(length_scale_bounds=[.1,1]
+    k2 = sklearn.gaussian_process.kernels.RBF(length_scale_bounds=[.1,2]
       ) + sklearn.gaussian_process.kernels.WhiteKernel(
       noise_level=1.23,
       noise_level_bounds="fixed"
@@ -24,10 +24,10 @@ class GPR:
       kernel=k2, random_state=0, n_restarts_optimizer=10)
 
     if scale == "log":
-      self.to_gp_space = np.log
+      self.to_gp_space = np.log10
       self.X = np.geomspace(min, max, 100)[:, None]
     elif scale == "log1p":
-      self.to_gp_space = np.log1p
+      self.to_gp_space = lambda x: np.log10(1+x)
       self.X = np.geomspace(min+1, max+1, 100)[:, None]-1
     else:
       self.to_gp_space = lambda x: x
