@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import sklearn.gaussian_process
 import matplotlib.pyplot as plt
@@ -10,12 +12,13 @@ class GPR:
     self.budget = budget
     self.sd = sd
     k1 = sklearn.gaussian_process.kernels.RationalQuadratic(length_scale_bounds=[.5, 2e0]
-      ) + sklearn.gaussian_process.kernels.WhiteKernel(noise_level_bounds=[3e-3,1])
+      ) + sklearn.gaussian_process.kernels.WhiteKernel(noise_level_bounds=[1e-1 * sd, 1e1 * sd])
     self.mean_gpr = sklearn.gaussian_process.GaussianProcessRegressor(
       kernel=k1, random_state=0, normalize_y=True, n_restarts_optimizer=10)
-    k2 = sklearn.gaussian_process.kernels.RBF(length_scale_bounds=[1,2]
+    k2 = sklearn.gaussian_process.kernels.RBF(length_scale_bounds=[.1,1]
       ) + sklearn.gaussian_process.kernels.WhiteKernel(
-      noise_level_bounds=[1e-2,3e-1]
+      noise_level=1.23,
+      noise_level_bounds="fixed"
       )
     self.var_gpr = sklearn.gaussian_process.GaussianProcessRegressor(
       kernel=k2, random_state=0, n_restarts_optimizer=10)
@@ -32,19 +35,22 @@ class GPR:
     self.interactive = False
  
   def fit(self, stats):
-    try:
-      self.mean_gpr.fit(self.to_gp_space(stats.X.values)[:, None], stats.Y)
-    except sklearn.gaussian_process.kernels.ConvergenceWarning as w:
-      print(w)
+    old_format = warnings.formatwarning
+    warnings.formatwarning = lambda message, category, filename, lineno, line: f"MEAN-GPR: {message}\n"
+
+    self.mean_gpr.fit(self.to_gp_space(stats.X.values)[:, None], stats.Y)
     self.Y, self.S = self.mean_gpr.predict(self.to_gp_space(self.X), return_std=True)
     E = self.mean_gpr.predict(self.to_gp_space(stats.X.values)[:, None])
     V = (stats.Y - E)**2
-    LV = np.log(V + 1e-12) - np.log(self.sd)
+    # TODO: consider fitting raw variance, but adding white kernel
+    LV = np.log(V / self.sd + 1e-2)
+    warnings.formatwarning = lambda message, category, filename, lineno, line: f"VAR-GPR: {message}\n"
     self.var_gpr.fit(self.to_gp_space(stats.X.values)[:, None], LV)
     self.LV = self.var_gpr.predict(self.to_gp_space(self.X))
     self.S2 = np.sqrt(self.sd * np.exp(self.LV))
-    print(self.S2)
     print(f"mean={self.mean_gpr.kernel_}\nvar={self.var_gpr.kernel_}")
+
+    warnings.formatwarning = old_format
 
   def make_plot(self, axs):
     plt.sca(axs[0])
@@ -59,7 +65,7 @@ class GPR:
       plt.xscale('symlog', linthresh=1)
     else:
       plt.xscale('linear')
-    plt.ylim([0.5, 2])
+    plt.ylim([1.0, 1.5])
   
   def update_plot(self, axs):
     if not self.interactive:
