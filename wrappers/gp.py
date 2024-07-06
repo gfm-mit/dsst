@@ -13,14 +13,17 @@ def update_mean(mean, n, value):
 
 def gp(
     args, experiment: wrappers.experiment.Experiment,
-    K="learning_rate", scale="log", budget=None):
+    K="learning_rate", scale="log", budget=None, resume=False):
   assert args.config
   setups = util.config.parse_config(args.config)
   assert not setups.duplicated().any()
-  stats = pd.DataFrame(columns="X Y S".split())
-  gpr = wrappers.gpr.GPR(args, K, scale, budget, setups[K].min(), setups[K].max())
-  fig, axs = plt.subplots(2, sharex=True)
-  plt.ion()
+  if resume:
+    stats = pd.read_csv("results/gp.csv", index_col=0)
+  else:
+    stats = pd.DataFrame(columns="X Y S".split())
+  #gpr = wrappers.gpr.GPR(K, scale, budget, setups[K].min(), setups[K].max())
+  #fig, axs = plt.subplots(2, sharex=True)
+  #plt.ion()
   for iter in range(budget):
     params = setups.iloc[iter % setups.shape[0]]
     try:
@@ -34,11 +37,10 @@ def gp(
     stats.loc[stats.shape[0]] = params[K], metric, steps
     stats.to_csv("results/gp.csv")
     print(f"kernel[{iter+1}/{budget}]={delay:.2f}s")
-    print(stats)
-    gpr.fit(stats)
-    gpr.update_plot(axs)
-    gpr.scatter(stats, axs) # this might actually leak.  dammit
-    plt.pause(0.1)
-  plt.ioff()
+    #gpr.fit(stats)
+    #gpr.update_plot(axs)
+    #gpr.scatter(stats, axs) # this might actually leak.  dammit
+    #plt.pause(0.1)
+  #plt.ioff()
   print(stats.groupby("X").mean().sort_index())
-  plt.show()
+  #plt.show()
