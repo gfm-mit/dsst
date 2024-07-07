@@ -94,12 +94,12 @@ class ResidualBlock2(torch.nn.Module):
         return output1 + output2[:, :, :output1.shape[2]]
 
 class SineProjection(torch.nn.Module):
-  def __init__(self, in_width, out_width, scale=1, axis=-2):
+  def __init__(self, in_width, out_width, scale=1, axis=-2, preserve_zeros=False):
     super().__init__()
     if axis == -2:
-      self.projection = torch.nn.Conv1d(in_width, out_width, kernel_size=1)
+      self.projection = torch.nn.Conv1d(in_width, out_width, kernel_size=1, bias=not preserve_zeros)
     elif axis == -1:
-      self.projection = torch.nn.Linear(in_width, out_width)
+      self.projection = torch.nn.Linear(in_width, out_width, bias=not preserve_zeros)
     else:
       assert False, f"SineProjection.{axis=}"
     self.projection.requires_grad_(False)
