@@ -16,6 +16,7 @@ def gp(
     K="learning_rate", scale="log", budget=None, resume=False):
   assert args.config
   setups = util.config.parse_config(args.config)
+  setups = setups.sample(frac=1)
   assert not setups.duplicated().any()
   if resume:
     stats = pd.read_csv("results/gp.csv", index_col=0)
