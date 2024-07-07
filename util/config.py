@@ -95,6 +95,8 @@ def parse_config(config):
   scalar = config.get("scalar", {})
   meta = config.get("meta", {})
   assert isinstance(meta, dict)
+  if "bandit" in meta:
+    del meta["bandit"]
   assert not meta.keys() - "repeat shuffle cartesian overlay append".split()
   meta_repeat = meta.get("repeat", None)
   meta_shuffle = meta.get("shuffle", None)
