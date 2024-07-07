@@ -2,6 +2,7 @@ import warnings
 
 import numpy as np
 import sklearn.gaussian_process
+import sklearn.metrics.pairwise
 import matplotlib.pyplot as plt
 
 
@@ -11,7 +12,7 @@ class GPR:
     self.scale = scale
     self.budget = budget
     self.sd = sd
-    k1 = sklearn.gaussian_process.kernels.RationalQuadratic(length_scale=0.2, length_scale_bounds='fixed'
+    k1 = sklearn.gaussian_process.kernels.RationalQuadratic(length_scale=0.05, length_scale_bounds='fixed'
       ) + sklearn.gaussian_process.kernels.WhiteKernel(noise_level_bounds=[1e-1 * sd, 1e1 * sd])
     self.mean_gpr = sklearn.gaussian_process.GaussianProcessRegressor(
       kernel=k1, random_state=0, normalize_y=True, n_restarts_optimizer=10)
@@ -50,6 +51,17 @@ class GPR:
     self.S2 = np.sqrt(self.sd * np.exp(self.LV))
     print(f"mean={self.mean_gpr.kernel_}\nvar={self.var_gpr.kernel_}")
 
+    XY = self.mean_gpr.kernel_(
+      stats.X.values[:, None],
+      self.X,
+      )
+    #XX_inv = np.linalg.inv(self.mean_gpr.kernel_(
+    #  stats.X.values[:, None],
+    #))
+    #XY = XX_inv @ XY
+    XY = XY.sum(axis=0)
+    self.XY = np.sqrt(np.mean(V)/XY)
+
     warnings.formatwarning = old_format
 
   def make_plot(self, axs):
@@ -59,13 +71,16 @@ class GPR:
     self.high, = plt.plot(self.X, self.Y + 2 * self.S2)
     self.low, = plt.plot(self.X, self.Y - 2 * self.S2)
     self.high.set_color(self.low.get_color())
+    self.high2, = plt.plot(self.X, self.Y + 2 * self.XY)
+    self.low2, = plt.plot(self.X, self.Y - 2 * self.XY)
+    self.high2.set_color(self.low2.get_color())
     if self.scale == "log":
       plt.xscale('log')
     elif self.scale == "log1p":
       plt.xscale('symlog', linthresh=1)
     else:
       plt.xscale('linear')
-    plt.ylim([1.0, 1.5])
+    plt.ylim([1.0, 2])
   
   def update_plot(self, axs):
     if not self.interactive:
@@ -77,6 +92,8 @@ class GPR:
     self.band = plt.fill_between(self.X[:, 0], self.Y + 2 * self.S, self.Y - 2 * self.S, alpha=0.1, zorder=-100)
     self.high.set_ydata(self.Y + 2 * self.S2)
     self.low.set_ydata(self.Y - 2 * self.S2)
+    self.high2.set_ydata(self.Y + 2 * self.XY)
+    self.low2.set_ydata(self.Y - 2 * self.XY)
   
   def scatter(self, stats, axs):
     plt.sca(axs[0])
