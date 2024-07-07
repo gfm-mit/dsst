@@ -8,18 +8,21 @@ import core.metrics
 def update_mean(mean, n, value):
   return (n * mean + value) / (n + 1)
 
-def ucb(args, experiment, budget):
+def ucb(args, experiment, budget, sd=0.01, resume=False):
   assert args.config
   setups = util.config.parse_config(args.config)
   assert not setups.duplicated().any()
-  stats = pd.DataFrame(index=setups.index)
-  stats["mu2"] = 0.0
-  stats["steps"] = 0.0
-  stats["std"] = np.inf
-  stats["n"] = 0
-  stats["mu"] = 0.0
-  stats["ucb"] = np.inf
-  SD_GUESS = .01
+  if resume:
+    stats = pd.read_csv("results/ucb.csv", index_col=0)
+    assert stats.index.equals(setups.index)
+  else:
+    stats = pd.DataFrame(index=setups.index)
+    stats["mu2"] = 0.0
+    stats["steps"] = 0.0
+    stats["std"] = np.inf
+    stats["n"] = 0
+    stats["mu"] = 0.0
+    stats["ucb"] = np.inf
   for iter in range(budget):
     idx = stats.ucb.argmax()
     n, mu, mu2, steps = stats.iloc[idx]["n mu mu2 steps".split()]
@@ -39,14 +42,15 @@ def ucb(args, experiment, budget):
     if stats.n.min() == 0:
       stats.ucb = np.where(stats.n == 0, np.inf, -np.inf)
     elif args.task == "next_token":
-      stats.ucb = -stats.mu + 2 * SD_GUESS * np.sqrt(4 * np.log(iter-1) / stats.n)
+      stats.ucb = -stats.mu + 2 * sd * np.sqrt(4 * np.log(iter-1) / stats.n)
       #stats.ucb = stats.ucb.fillna(np.inf)
     else:
-      stats.ucb = stats.mu + 2 * SD_GUESS * np.sqrt(4 * np.log(iter-1) / stats.n)
+      stats.ucb = stats.mu + 2 * sd * np.sqrt(4 * np.log(iter-1) / stats.n)
       #stats.ucb = stats.ucb.fillna(np.inf)
     weight = stats.n - 1
     var = np.where(stats.n >= 2, stats['std']**2, 0)
     var = np.sum(var * weight) / np.sum(weight)
+    stats.to_csv("results/ucb.csv")
     print(f"****** {iter+1}/{budget}: {seconds:.2f}s, std: {np.sqrt(var):.5f} *******")
     print(stats.sort_values(by="ucb").drop(columns="mu2"))
   print(f"****** FINAL *******")
