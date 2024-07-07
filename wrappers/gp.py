@@ -16,11 +16,6 @@ def gp(
     K=None, scale="log", budget=None, resume=False):
   assert args.config
   setups = util.config.parse_config(args.config)
-  idx = [
-    setups.shape[0] - 1, 0,
-    *np.random.default_rng().permuted(np.arange(1, setups.shape[0] - 1))
-  ]
-  setups = setups.iloc[idx]
   assert not setups.duplicated().any()
   nonconstant_columns = [col for col in setups.columns if setups[col].nunique() > 1]
   assert len(nonconstant_columns) == 1, nonconstant_columns
@@ -35,8 +30,8 @@ def gp(
   for iter in range(budget):
     targets = pd.DataFrame(setups[K].values.copy(), columns=["X"])
     targets, best_idx = gpr.fit_predict(stats, targets=targets)
-    print(f"{best_idx=}")
-    params = setups.iloc[iter % setups.shape[0]]
+    print(f"{best_idx=} {targets.X.iloc[best_idx]=}")
+    params = setups.iloc[best_idx]
     try:
       delay = time.time()
       metric, epoch_loss_history = experiment.train(tqdm_prefix=None, **params.to_dict())
