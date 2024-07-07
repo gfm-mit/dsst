@@ -3,31 +3,31 @@ import torch
 
 def next_token(model, val_loader, verbose=False, offset=1):
   DEVICE = next(model.parameters()).device
-  results = []
+  logits = []
+  targets = []
   groups = []
   model.eval()
   with torch.no_grad():
     for (data, target, *g) in val_loader:
       output = model(data.to(DEVICE)).to('cpu')
-      if offset == 0:
-        results += [(
-            output.detach().numpy(),
-            data.detach().to('cpu').numpy(),
-        )]
-      else:
-        results += [(
-            output.detach().numpy()[:, :-offset, :],
-            data.detach().to('cpu').numpy()[:, offset:, :],
-        )]
+      output = output.detach().numpy()
+      data = data.detach().to('cpu').numpy()
+      if offset > 0:
+        output = output[:, :-offset, :]
+        data = data[:, offset:, :]
+      # hacks
+      rmse = np.sqrt(np.mean((output - data)**2, axis=1, keepdims=True))
+      zeros = np.zeros([data.shape[0], 1, data.shape[2]])
+      logits += [rmse]
+      targets += [zeros]
       if len(g) > 0:
         groups += g
-  predicted, data = zip(*results)
-  predicted = np.concatenate(predicted)
-  data = np.concatenate(data)
+  logits = np.concatenate(logits)
+  targets = np.concatenate(targets)
   if len(groups) > 0:
     groups = np.concatenate(groups)
-    return predicted, data, groups
-  return predicted, data
+    return logits, targets, groups
+  return logits, targets
 
 def binary_classifier(model, loader):
   logits = []
