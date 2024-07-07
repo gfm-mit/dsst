@@ -1,6 +1,7 @@
 import warnings
 
 import numpy as np
+import pandas as pd
 import sklearn.gaussian_process
 import sklearn.metrics.pairwise
 import matplotlib.pyplot as plt
@@ -15,9 +16,8 @@ class GPR:
     self.budget = budget
     self.task=task
     kernel = sklearn.gaussian_process.kernels.RationalQuadratic(
-      length_scale=0.2,
+      length_scale=0.1,
       length_scale_bounds='fixed',
-      alpha_bounds=[1e-1, 1e1],
       ) + sklearn.gaussian_process.kernels.WhiteKernel()
     self.gpr = sklearn.gaussian_process.GaussianProcessRegressor(
       kernel=kernel, random_state=0, normalize_y=True, n_restarts_optimizer=10)
@@ -31,54 +31,72 @@ class GPR:
     else:
       self.to_gp_space = lambda x: x
       self.X = np.linspace(min, max, 100)[:, None]
-    self.interactive = False
  
   def fit(self, stats):
     old_format = warnings.formatwarning
     warnings.formatwarning = lambda message, category, filename, lineno, line: f"MEAN-GPR: {message}\n"
 
     self.gpr.fit(self.to_gp_space(stats.X.values)[:, None], stats.Y)
-    self.Y, self.S = self.gpr.predict(self.to_gp_space(self.X), return_std=True)
+    warnings.formatwarning = old_format
+  
+  def predict(self, targets=None):
+    if targets is None:
+      targets = pd.DataFrame(self.X, columns=["X"])
+    targets["Y"], targets["S"] = self.gpr.predict(self.to_gp_space(targets.X.values[:, None]), return_std=True)
     print(f"{self.gpr.kernel_=}")
 
     XY = self.gpr.kernel_.k1(
-      self.to_gp_space(stats.X.values[:, None]),
-      self.to_gp_space(self.X),
+      self.gpr.X_train_,
+      self.to_gp_space(targets.X.values[:, None]),
       )
     XY = XY.sum(axis=0)
-    self.S2 = self.S / np.sqrt(XY)
 
-    self.X_best = self.X[
-     core.metrics.argbest(
-      (self.Y + 2 * self.S2).tolist(),
+    total_N = self.gpr.X_train_.shape[0]
+
+    targets["S_mu"] = targets.S / np.sqrt(XY)
+    if total_N == 0:
+      targets.S_mu = np.exp(
+        np.linspace(-1, 1, num=targets.shape[0])**2
+      )
+    elif total_N == 1:
+      D = (self.to_gspace(targets.X) - self.to_gspace(self.gpr.X_train_[0]))**2
+      D /= D.max()
+      targets.S_mu = np.exp(D)
+    else:
+      targets.S_mu *= np.sqrt(4 * np.log(total_N-1) / XY)
+
+    best_idx = core.metrics.argbest(
+      (targets.Y + 2 * targets.S_mu).tolist(),
       task=self.task
-    )]
+    )
+    return targets, best_idx
 
-    warnings.formatwarning = old_format
 
-  def make_plot(self, axs):
+  def make_plot(self, targets, best_idx, axs):
+    if axs is None:
+      fig, axs = plt.subplots(2, sharex=True)
     plt.sca(axs[0])
-    self.band = plt.fill_between(self.X[:, 0], self.Y + 2 * self.S, self.Y - 2 * self.S, alpha=0.1, zorder=-10)
-    self.band2 = plt.fill_between(self.X[:, 0], self.Y + 2 * self.S2, self.Y - 2 * self.S2, alpha=0.5, zorder=10)
-    self.vline = plt.axvline(x=self.X_best, color="lightgray", linestyle=':', zorder=-20)
+    self.band = plt.fill_between(targets.X, targets.Y + 2 * targets.S, targets.Y - 2 * targets.S, alpha=0.1, zorder=-10)
+    self.band2 = plt.fill_between(targets.X, targets.Y + 2 * targets.S_mu, targets.Y - 2 * targets.S_mu, alpha=0.5, zorder=10)
+    self.vline = plt.axvline(x=targets.X[best_idx], color="lightgray", linestyle=':', zorder=-20)
     if self.scale == "log":
       plt.xscale('log')
     elif self.scale == "log1p":
       plt.xscale('symlog', linthresh=1)
     else:
       plt.xscale('linear')
-    plt.ylim([1.0, 2])
+    return axs
   
-  def update_plot(self, axs):
-    if not self.interactive:
-      self.interactive = True
-      return self.make_plot(axs)
+  def update_plot(self, targets, best_idx, axs):
+    if axs is None:
+      return self.make_plot(targets, best_idx, axs)
     plt.sca(axs[0])
     self.band.remove()
-    self.band = plt.fill_between(self.X[:, 0], self.Y + 2 * self.S, self.Y - 2 * self.S, alpha=0.1, zorder=-10)
+    self.band = plt.fill_between(targets.X, targets.Y + 2 * targets.S, targets.Y - 2 * targets.S, alpha=0.1, zorder=-10)
     self.band2.remove()
-    self.band2 = plt.fill_between(self.X[:, 0], self.Y + 2 * self.S2, self.Y - 2 * self.S2, alpha=0.5, zorder=10)
-    self.vline.set_xdata(self.X_best)
+    self.band2 = plt.fill_between(targets.X, targets.Y + 2 * targets.S_mu, targets.Y - 2 * targets.S_mu, alpha=0.5, zorder=10)
+    self.vline.set_xdata(targets.X[best_idx])
+    return axs
   
   def scatter(self, stats, axs):
     plt.sca(axs[0])

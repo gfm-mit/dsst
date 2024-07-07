@@ -13,7 +13,7 @@ def update_mean(mean, n, value):
 
 def gp(
     args, experiment: wrappers.experiment.Experiment,
-    K="learning_rate", scale="log", budget=None, resume=False):
+    K=None, scale="log", budget=None, resume=False):
   assert args.config
   setups = util.config.parse_config(args.config)
   idx = [
@@ -22,15 +22,20 @@ def gp(
   ]
   setups = setups.iloc[idx]
   assert not setups.duplicated().any()
+  nonconstant_columns = [col for col in setups.columns if setups[col].nunique() > 1]
+  assert len(nonconstant_columns) == 1, nonconstant_columns
+  K = nonconstant_columns[0]
+
   if resume:
     stats = pd.read_csv("results/gp.csv", index_col=0)
   else:
     stats = pd.DataFrame(columns="X Y S".split())
-  #gpr = wrappers.gpr.GPR(K, scale, budget, setups[K].min(), setups[K].max())
   pd.Series(dict(K=K, scale=scale, budget=budget, min=setups[K].min(), max=setups[K].max(), task=args.task)).to_frame().transpose().to_csv("results/gp_args.csv")
-  #fig, axs = plt.subplots(2, sharex=True)
-  #plt.ion()
+  gpr = wrappers.gpr.GPR(K, scale, budget, setups[K].min(), setups[K].max())
   for iter in range(budget):
+    gpr.fit(stats)
+    gpr.predict()
+    print(gpr.pick(setups[K].values))
     params = setups.iloc[iter % setups.shape[0]]
     try:
       delay = time.time()
@@ -42,11 +47,5 @@ def gp(
     steps = core.metrics.argbest(epoch_loss_history, args.task)
     stats.loc[stats.shape[0]] = params[K], metric, steps
     stats.to_csv("results/gp.csv")
-    print(f"kernel[{iter+1}/{budget}]={delay:.2f}s")
-    #gpr.fit(stats)
-    #gpr.update_plot(axs)
-    #gpr.scatter(stats, axs) # this might actually leak.  dammit
-    #plt.pause(0.1)
-  #plt.ioff()
+    print(f"kernel[{iter+1}/{budget}]({params[K]})={delay:.2f}s")
   print(stats.groupby("X").mean().sort_index())
-  #plt.show()
