@@ -18,8 +18,8 @@ while True:
   stats = pd.read_csv('results/gp.csv')
   config = pd.read_csv('results/gp_args.csv', index_col=0).iloc[0]
   gpr = wrappers.gpr.GPR(**config)
-  gpr.fit(stats)
-  targets, best_idx = gpr.predict()
+  targets = gpr.get_default_targets(**config)
+  targets, best_idx = gpr.fit_predict(stats, targets=targets)
   axs = None # fuck it
   axs = gpr.update_plot(targets, best_idx, axs=axs)
   gpr.scatter(stats, axs=axs)

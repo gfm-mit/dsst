@@ -33,9 +33,9 @@ def gp(
   pd.Series(dict(K=K, scale=scale, budget=budget, min=setups[K].min(), max=setups[K].max(), task=args.task)).to_frame().transpose().to_csv("results/gp_args.csv")
   gpr = wrappers.gpr.GPR(K, scale, budget, setups[K].min(), setups[K].max())
   for iter in range(budget):
-    gpr.fit(stats)
-    gpr.predict()
-    print(gpr.pick(setups[K].values))
+    targets = pd.DataFrame(setups[K].values.copy(), columns=["X"])
+    targets, best_idx = gpr.fit_predict(stats, targets=targets)
+    print(f"{best_idx=}")
     params = setups.iloc[iter % setups.shape[0]]
     try:
       delay = time.time()

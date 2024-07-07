@@ -24,26 +24,44 @@ class GPR:
 
     if scale == "log":
       self.to_gp_space = np.log10
-      self.X = np.geomspace(min, max, 100)[:, None]
     elif scale == "log1p":
       self.to_gp_space = lambda x: np.log10(1+x)
-      self.X = np.geomspace(min+1, max+1, 100)[:, None]-1
     else:
       self.to_gp_space = lambda x: x
-      self.X = np.linspace(min, max, 100)[:, None]
+    print(f"{self.to_gp_space=}")
+
+  def fit_predict(self, stats, targets):
+    if stats.shape[0] == 0:
+      targets["Y"] = 0
+      targets["S"] = 0
+      targets["S_mu"] = np.exp(
+        np.linspace(-1, 1, num=targets.shape[0])**2
+      )
+      return targets, 0
+    self.fit(stats)
+    return self.predict(targets)
  
   def fit(self, stats):
     old_format = warnings.formatwarning
     warnings.formatwarning = lambda message, category, filename, lineno, line: f"MEAN-GPR: {message}\n"
 
     self.gpr.fit(self.to_gp_space(stats.X.values)[:, None], stats.Y)
+    print(f"{self.gpr.kernel_=}")
     warnings.formatwarning = old_format
   
-  def predict(self, targets=None):
-    if targets is None:
-      targets = pd.DataFrame(self.X, columns=["X"])
+  def get_default_targets(self, min, max, **kwargs):
+    print(f"{kwargs=}")
+    if self.scale == "log":
+      X = np.geomspace(min, max, 100)
+    elif self.scale == "log1p":
+      X = np.geomspace(min+1, max+1, 100)-1
+    else:
+      X = np.linspace(min, max, 100)
+    return pd.DataFrame(X, columns=["X"])
+  
+  def predict(self, targets):
+    assert targets is not None
     targets["Y"], targets["S"] = self.gpr.predict(self.to_gp_space(targets.X.values[:, None]), return_std=True)
-    print(f"{self.gpr.kernel_=}")
 
     XY = self.gpr.kernel_.k1(
       self.gpr.X_train_,
@@ -59,18 +77,17 @@ class GPR:
         np.linspace(-1, 1, num=targets.shape[0])**2
       )
     elif total_N == 1:
-      D = (self.to_gspace(targets.X) - self.to_gspace(self.gpr.X_train_[0]))**2
+      D = (self.to_gp_space(targets.X) - self.to_gp_space(self.gpr.X_train_[0]))**2
       D /= D.max()
       targets.S_mu = np.exp(D)
     else:
       targets.S_mu *= np.sqrt(4 * np.log(total_N-1) / XY)
 
-    best_idx = core.metrics.argbest(
-      (targets.Y + 2 * targets.S_mu).tolist(),
-      task=self.task
-    )
+    if self.task == "next_token":
+      best_idx = np.argmin(targets.Y - 2 * targets.S_mu)
+    else:
+      best_idx = np.argmax(targets.Y + 2 * targets.S_mu)
     return targets, best_idx
-
 
   def make_plot(self, targets, best_idx, axs):
     if axs is None:
