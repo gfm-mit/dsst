@@ -9,6 +9,7 @@ import models.linear_bnc
 import models.rnn_lstm
 import models.seq_cnn
 import models.seq_tcn
+import models.attn_falcon
 import models.transformer
 
 def lookup_model(name):
@@ -28,6 +29,8 @@ def lookup_model(name):
     return models.rnn_lstm.Rnn
   elif name == "transformer":
     return models.transformer.Transformer
+  elif name == "falcon":
+    return models.attn_falcon.Transformer
   elif name == "causal":
     return models.seq_cnn.Cnn
   elif name == "fft":
@@ -44,6 +47,7 @@ def get_all_1d_models():
     models.cnn_1d_butterfly.Cnn,
     models.rnn_lstm.Rnn,
     models.transformer.Transformer,
+    models.attn_falcon.Transformer,
     models.seq_cnn.Cnn,
     models.cnn_1d_fft.Cnn,
   ]
