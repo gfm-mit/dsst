@@ -15,13 +15,16 @@ import wrappers.gpr
 
 while True:
   stats = pd.read_csv('results/gp.csv')
-  with open('config/sop.toml', 'rb') as f:
-    config = tomli.load(f)["meta"]["bandit"]
-  gpr = wrappers.gpr.GPR(config['K'], config['scale'], config['budget'], stats.X.min(), stats.X.max())
+  config = pd.read_csv('results/gp_args.csv', index_col=0).iloc[0]
+  gpr = wrappers.gpr.GPR(**config)
   gpr.fit(stats)
   fig, axs = plt.subplots(2, sharex=True)
   gpr.update_plot(axs)
   gpr.scatter(stats, axs)
   plt.draw()
-  plt.waitforbuttonpress(0)
-  plt.close()
+  try:
+    plt.waitforbuttonpress(0)
+  except KeyboardInterrupt:
+    break
+  finally:
+    plt.close()

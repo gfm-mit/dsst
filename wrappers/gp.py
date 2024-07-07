@@ -16,13 +16,18 @@ def gp(
     K="learning_rate", scale="log", budget=None, resume=False):
   assert args.config
   setups = util.config.parse_config(args.config)
-  setups = setups.sample(frac=1)
+  idx = [
+    setups.shape[0] - 1, 0,
+    *np.random.default_rng().permuted(np.arange(1, setups.shape[0] - 1))
+  ]
+  setups = setups.iloc[idx]
   assert not setups.duplicated().any()
   if resume:
     stats = pd.read_csv("results/gp.csv", index_col=0)
   else:
     stats = pd.DataFrame(columns="X Y S".split())
   #gpr = wrappers.gpr.GPR(K, scale, budget, setups[K].min(), setups[K].max())
+  pd.Series(dict(K=K, scale=scale, budget=budget, min=setups[K].min(), max=setups[K].max(), task=args.task)).to_frame().transpose().to_csv("results/gp_args.csv")
   #fig, axs = plt.subplots(2, sharex=True)
   #plt.ion()
   for iter in range(budget):
