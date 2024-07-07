@@ -29,11 +29,11 @@ def one_training_run(model, optimizer, scheduler, warmup_epochs, max_epochs, tra
     scheduler.step()
     if epoch > warmup_epochs and (train_loss > absolute_upper_bound
                                   or train_loss > relative_upper_bound):
-      print(f"next_loss too big: {train_loss} > min({relative_upper_bound}, {absolute_upper_bound})")
+      print(f"step {epoch} loss too big: {train_loss} > min({relative_upper_bound}, {absolute_upper_bound})")
       model.load_state_dict(state_dict)
       return model, epoch_loss_history
     if np.isnan(train_loss):
-      print("next_loss isnan")
+      print("step {epoch} loss is nan")
       model.load_state_dict(state_dict)
       return model, epoch_loss_history
     relative_upper_bound = MAX_JUMP * train_loss
