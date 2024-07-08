@@ -68,19 +68,21 @@ def plot_best_values(X, y, task):
   plt.show()
 
 def print_and_plot_params(args, tuning_history, metric_history):
-  plot_metric = "rmse" if args.task == "next_token" else "auc"
-  plot_metric = metric_history.loc[:, plot_metric].copy()
-  latex = metric_history.aggregate(["mean", "std"], axis=0).transpose()
-  print("LaTeX & " + " & ".join(latex.columns))
-  latex = [
-    f"${v['mean']:.3f} \pm {v['std']:.3f}$"
-    for _, v in latex.iterrows()
-  ]
-  print(" & ".join(latex))
-
   tuning_history = get_varying_params(tuning_history)
+
   metric_history.index = tuning_history.index
   display_only = pd.concat([tuning_history, metric_history], axis=1)
   display_only.to_csv("results/params.csv")
   print(display_only)
+
+  latex = display_only.groupby(tuning_history.columns.tolist()).aggregate(["mean", "std"])
+  print("LaTeX & " + " & ".join(metric_history.columns))
+  for idx, v in latex.iterrows():
+    print(" & ".join([idx] + [
+      f"${v[k]['mean']:.3f} \pm {v[k]['std']:.3f}$"
+      for k in metric_history.columns
+    ]))
+
+  plot_metric = "rmse" if args.task == "next_token" else "auc"
+  plot_metric = metric_history.loc[:, plot_metric].copy()
   plot_best_values(tuning_history, plot_metric, task=args.task)
