@@ -25,11 +25,16 @@ class GPR:
 
     if scale == "log":
       self.to_gp_space = np.log10
+      self.from_gp_space = lambda x: 10 ** x
     elif scale == "log1p":
       self.to_gp_space = lambda x: np.log10(1+x)
+      self.from_gp_space = lambda x: 10 ** x - 1
     else:
       self.to_gp_space = lambda x: x
-    print(f"{self.to_gp_space=}")
+      self.from_gp_space = lambda x: x
+  
+  def gp_space_plus(self, x, dx):
+    return self.from_gp_space(self.to_gp_space(x) + dx)
 
   def fit_predict(self, stats, targets):
     if stats.shape[0] == 0:
@@ -96,7 +101,12 @@ class GPR:
     plt.sca(axs[0])
     self.band = plt.fill_between(targets.X, targets.Y + 2 * targets.S, targets.Y - 2 * targets.S, alpha=0.1, zorder=-10)
     self.band2 = plt.fill_between(targets.X, targets.Y + 2 * targets.S_mu, targets.Y - 2 * targets.S_mu, alpha=0.5, zorder=10)
-    self.vline = plt.axvline(x=targets.X.iloc[best_idx], color="lightgray", linestyle=':', zorder=-20)
+    self.vline = plt.axvline(x=targets.X.iloc[best_idx], color="lightgray", linewidth=2, linestyle=':', zorder=-20)
+    sigma_x = self.gpr.kernel_.k1.length_scale
+    self.band3 = plt.axvspan(
+      self.gp_space_plus(targets.X.iloc[best_idx],-sigma_x),
+      self.gp_space_plus(targets.X.iloc[best_idx],+sigma_x),
+      color="limegreen", alpha=0.05, zorder=-30)
     if self.scale == "log":
       plt.xscale('log')
     elif self.scale == "log1p":
@@ -114,6 +124,11 @@ class GPR:
     self.band2.remove()
     self.band2 = plt.fill_between(targets.X, targets.Y + 2 * targets.S_mu, targets.Y - 2 * targets.S_mu, alpha=0.5, zorder=10)
     self.vline.set_xdata(targets.X[best_idx])
+    sigma_x = self.gpr.kernel_.k1.length_scale
+    self.band3.set_x(self.gp_space_plus(targets.X.iloc[best_idx],-sigma_x))
+    self.band3.set_width(
+      self.gp_space_plus(targets.X.iloc[best_idx],+sigma_x)
+      - self.gp_space_plus(targets.X.iloc[best_idx],-sigma_x))
     return axs
   
   def scatter(self, stats, axs):
