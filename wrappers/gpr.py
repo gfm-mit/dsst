@@ -10,13 +10,14 @@ import core.metrics
 
 
 class GPR:
-  def __init__(self, K, scale, budget, min, max, task="next_token"):
+  def __init__(self, K, scale, budget, task="next_token", sigma=0.1, **kwargs):
+    print(f"{kwargs=}")
     self.K = K
     self.scale = scale
     self.budget = budget
     self.task=task
     kernel = sklearn.gaussian_process.kernels.RationalQuadratic(
-      length_scale=0.1,
+      length_scale=sigma,
       length_scale_bounds='fixed',
       ) + sklearn.gaussian_process.kernels.WhiteKernel()
     self.gpr = sklearn.gaussian_process.GaussianProcessRegressor(
