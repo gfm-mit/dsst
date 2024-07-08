@@ -1,6 +1,24 @@
-[column_major]
-  scheduler=["none", "warmup", "cosine"]
+[[row_major]]
+[[row_major]]
+  scheduler="warmup"
+[[row_major]]
+  scheduler="cosine"
+[[row_major]]
+  optimizer="adam"
+  learning_rate=3e-4
+[[row_major]]
+  scheduler="warmup"
+  optimizer="adam"
+  learning_rate=3e-4
+[[row_major]]
+  scheduler="cosine"
+  optimizer="adam"
+  learning_rate=3e-4
+[[row_major]]
+  optimizer="samprodigy"
 [scalar]
+  scheduler="none"
+  optimizer="samadam"
   model="falcon"
   warmup_epochs=8
   max_epochs=10
@@ -8,4 +26,4 @@
   learning_rate=3.8e-2
 [meta]
   repeat=10
-  cartesian=true
+  overlay=true
