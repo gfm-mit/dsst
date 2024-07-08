@@ -96,9 +96,11 @@ def main():
       stats.print_stats(30)
     elif args.stats == "ucb":
       settings = args.config["meta"].pop("bandit")
+      assert not set("budget".split()) - settings.keys()
       wrappers.ucb.ucb(args, experiment, **settings)
     elif args.stats == "gp":
       settings = args.config["meta"].pop("bandit")
+      assert not set("scale budget sigma".split()) - settings.keys()
       wrappers.gp.gp(args, experiment, **settings)
     else:
       compare(args, experiment)
