@@ -2,7 +2,6 @@ import numpy as np
 import torch
 from einops.layers.torch import Rearrange
 import re
-#from x_transformers import Decoder
 from transformers.models.falcon.modeling_falcon import FalconDecoderLayer, FalconConfig, build_alibi_tensor
 from transformers.modeling_attn_mask_utils import AttentionMaskConverter
 import warnings
@@ -11,7 +10,7 @@ import models.base
 from models.util import PrintfModule
 
 class DecoderWrapper(torch.nn.Module):
-  def __init__(self, arch_width, arch_depth, arch_head, arch_dropout, device=None):
+  def __init__(self, arch_width, arch_depth, arch_head, arch_dropout, device=None, arch_mask=False):
     super().__init__()
     self.device = device
     self.num_heads = arch_head
@@ -28,9 +27,8 @@ class DecoderWrapper(torch.nn.Module):
     )
     config._attn_implementation = "sdpa"
     self.core = FalconDecoderLayer(config).to(device)
-    #print(self.core)
-    #exit(0)
     self.mask_converter = AttentionMaskConverter(is_causal=True)
+    self.mask = arch_mask
   
   def forward(self, x):
     batch_size, seq_length, width = x.shape
@@ -41,7 +39,12 @@ class DecoderWrapper(torch.nn.Module):
         dtype=x.dtype,
         device=self.device
     )
-    alibi_mask = torch.ones((batch_size, seq_length), dtype=torch.bool, device=self.device)
+    if self.mask:
+      alibi_mask = torch.amax(x != 0, dim=2)
+      unused_mask = ~torch.einsum("bi,bj->bij", alibi_mask, alibi_mask).to(self.device).unsqueeze(1)
+      mask = mask.masked_fill(unused_mask, torch.finfo(mask.dtype).min)
+    else:
+      alibi_mask = torch.ones((batch_size, seq_length), dtype=torch.bool, device=self.device)
     alibi = build_alibi_tensor(alibi_mask, self.num_heads, dtype=x.dtype).to(self.device)
     output, = self.core(x, alibi=alibi, attention_mask=mask)
     return output
@@ -57,7 +60,7 @@ class Transformer(models.base.SequenceBase):
   def get_next_token_architecture(self, **kwargs):
     model = torch.nn.Sequential(
         # b n c
-        models.util.SineProjection(self.inputs, kwargs['arch_width'], scale=1, axis=-1),
+        models.util.SineProjection(self.inputs, kwargs['arch_width'], axis=-1, scale=1, preserve_zeros=True),
         DecoderWrapper(device=self.device, **kwargs),
         torch.nn.SiLU(),
         torch.nn.LayerNorm(normalized_shape=kwargs['arch_width']),
@@ -79,7 +82,7 @@ class Transformer(models.base.SequenceBase):
   def get_classifier_architecture(self, **kwargs):
     model = torch.nn.Sequential(
         # b n c
-        models.util.SineProjection(self.inputs, kwargs['arch_width'], scale=1, axis=-1),
+        models.util.SineProjection(self.inputs, kwargs['arch_width'], axis=-1, scale=1, preserve_zeros=True),
         DecoderWrapper(device=self.device, **kwargs),
         torch.nn.SiLU(),
         torch.nn.LayerNorm(normalized_shape=kwargs['arch_width']),
