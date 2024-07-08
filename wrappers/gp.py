@@ -13,7 +13,7 @@ def update_mean(mean, n, value):
 
 def gp(
     args, experiment: wrappers.experiment.Experiment,
-    K=None, scale="log", budget=None, resume=False):
+    K=None, scale="log", budget=None, resume=False, sigma=0.1):
   assert args.config
   setups = util.config.parse_config(args.config)
   assert not setups.duplicated().any()
@@ -25,12 +25,19 @@ def gp(
     stats = pd.read_csv("results/gp.csv", index_col=0)
   else:
     stats = pd.DataFrame(columns="X Y S".split())
-  pd.Series(dict(K=K, scale=scale, budget=budget, min=setups[K].min(), max=setups[K].max(), task=args.task)).to_frame().transpose().to_csv("results/gp_args.csv")
-  gpr = wrappers.gpr.GPR(K, scale, budget, setups[K].min(), setups[K].max())
+  pd.Series(dict(K=K, scale=scale, budget=budget, task=args.task, min=setups[K].min(), max=setups[K].max(), sigma=sigma)).to_frame().transpose().to_csv("results/gp_args.csv")
+  gpr = wrappers.gpr.GPR(K, scale, budget, sigma=sigma)
+  fractal_order = fractal_sort(np.arange(setups.shape[0]).tolist())
+  if len(fractal_order) > 3: # should help fit the white kernel
+    fractal_order = fractal_order[:2] + fractal_order[2:3] * 3 + fractal_order[3:]
   for iter in range(budget):
     targets = pd.DataFrame(setups[K].values.copy(), columns=["X"])
-    targets, best_idx = gpr.fit_predict(stats, targets=targets)
-    print(f"{best_idx=} {targets.X.iloc[best_idx]=}")
+    if sigma <= 0:
+      best_idx = fractal_order[iter % len(fractal_order)]
+      print(f"fractal {best_idx=} {targets.X.iloc[best_idx]=}")
+    else:
+      targets, best_idx = gpr.fit_predict(stats, targets=targets)
+      print(f"gp {best_idx=} {targets.X.iloc[best_idx]=}")
     params = setups.iloc[best_idx]
     try:
       delay = time.time()
@@ -44,3 +51,16 @@ def gp(
     stats.to_csv("results/gp.csv")
     print(f"kernel[{iter+1}/{budget}]({params[K]})={delay:.2f}s")
   print(stats.groupby("X").mean().sort_index())
+
+def fractal_sort(X):
+  out = [X[0], X[-1]]
+  bfs = [X[1:-1]]
+  while bfs:
+    chunk = bfs.pop(0)
+    if len(chunk) <= 2:
+      out += chunk
+    else:
+      mid = len(chunk) // 2
+      out += [chunk[mid]]
+      bfs += [chunk[:mid], chunk[mid+1:]]
+  return out
