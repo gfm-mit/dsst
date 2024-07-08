@@ -35,6 +35,8 @@ def ucb(args, experiment, budget, resume=False):
     n, mu, mu2, steps = stats.iloc[idx]["n mu mu2 steps".split()]
     params = setups.iloc[idx]
     seconds = time.time()
+    if 'batch' in params:
+      experiment.redefine_loaders(params['batch'])
     metric, epoch_loss_history = experiment.train(tqdm_prefix=None, **params.to_dict())
     steps_idx = core.metrics.argbest(epoch_loss_history, args.task)
     seconds = time.time() - seconds
