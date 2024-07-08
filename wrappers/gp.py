@@ -47,7 +47,8 @@ def gp(
       print("KeyboardInterrupt")
       break
     steps = core.metrics.argbest(epoch_loss_history, args.task)
-    stats.loc[stats.shape[0]] = params[K], metric, steps
+    new_idx = stats.index.max() + 1 if stats.shape[0] > 0 else 0
+    stats.loc[new_idx] = params[K], metric, steps
     stats.to_csv("results/gp.csv")
     print(f"kernel[{iter+1}/{budget}]({params[K]})={delay:.2f}s")
   print(stats.groupby("X").mean().sort_index())
