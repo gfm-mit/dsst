@@ -1,0 +1,11 @@
+[column_major]
+  scheduler=["none", "warmup", "cosine"]
+[scalar]
+  model="falcon"
+  warmup_epochs=8
+  max_epochs=10
+  batch=125
+  learning_rate=3.8e-2
+[meta]
+  repeat=10
+  cartesian=true
