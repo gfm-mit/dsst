@@ -36,18 +36,18 @@ def get_optimizer(params, model):
   elif params["optimizer"] == "prodigy":
     assert params["scheduler"] == "none"
     optimizer = pytorch_optimizer.Prodigy(model.parameters(),
+                                          lr=1e-2, # hack for instability so we don't diverge for an epoch or two
                                           betas=[
                                               params["momentum"],
                                               params["conditioning_smoother"],
                                           ],
-                                          lr=1e-1, # hack for --model=causal
                                           weight_decouple=True,
                                           weight_decay=params["weight_decay"])
   elif params["optimizer"] == "samprodigy":
     assert params["scheduler"] == "none"
     optimizer = pytorch_optimizer.SAM(model.parameters(),
+                                      lr=1e-2, # hack for instability so we don't diverge for an epoch or two
                                       base_optimizer=pytorch_optimizer.Prodigy,
-                                      lr=1,
                                       betas=[
                                           params["momentum"],
                                           params["conditioning_smoother"],
