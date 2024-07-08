@@ -118,26 +118,29 @@ def compare(args, experiment):
         if 'batch' in v:
           experiment.redefine_loaders(v['batch'])
         metric, epoch_loss_history = experiment.train(tqdm_prefix=tqdm_prefix, **v)
+        y_axis_history += [epoch_loss_history]
+        tuning_history += [v]
+        metric_history += [experiment.get_tuning_results(epoch_loss_history)]
         if args.stats == "params":
-          tuning_history += [v]
-          metric_history += [experiment.get_tuning_results(epoch_loss_history)]
+          pass
         elif args.stats in "train_loss epochs".split():
           pd.Series(epoch_loss_history).to_csv(f"results/epoch/{i}.csv")
           axs = plot.tune.plot_history(args, epoch_loss_history, axs=axs, label=k)
-          y_axis_history += [epoch_loss_history]
         elif args.stats == "thresholds":
           axs = experiment.plot_trained(axs, label=k)
         else:
           assert False
         plt.pause(0.1)
       plt.ioff()
+      # TODO: really just need to track min and max suggestions for each line, not overall quantiles
+      y_axis_history = np.concatenate(y_axis_history)
+      tuning_history = pd.DataFrame(tuning_history)
+      metric_history = pd.DataFrame(metric_history)
       if args.stats == "params":
-        tuning_history = pd.DataFrame(tuning_history)
-        metric_history = pd.DataFrame(metric_history)
         print_and_plot_params(args, tuning_history, metric_history)
         return
       if args.stats in "train_loss epochs".split():
-        plot.tune.set_ylim(np.concatenate(y_axis_history))
+        plot.tune.set_ylim(y_axis_history)
       suptitle = "Aggregated at the Box Level, not Patient" if args.task == "classify" else "Aggregated at Patient Level, not Box"
       plt.suptitle(suptitle)
       try:
