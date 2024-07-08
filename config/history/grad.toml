@@ -13,7 +13,7 @@
 [[row_major]]
   optimizer="sfsamadam"
   scheduler="none"
-  learning_rate=2e-2
+  learning_rate=3e-3
   weight_decay=1e-1
 [[row_major]]
   optimizer="sfsamadam"
