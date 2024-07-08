@@ -8,7 +8,7 @@ import core.metrics
 def update_mean(mean, n, value):
   return (n * mean + value) / (n + 1)
 
-def ucb(args, experiment, budget, sd=0.09, resume=False):
+def ucb(args, experiment, budget, resume=False):
   assert args.config
   setups = util.config.parse_config(args.config)
   assert not setups.duplicated().any()
