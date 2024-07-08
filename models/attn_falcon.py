@@ -98,12 +98,12 @@ class Transformer(models.base.SequenceBase):
 
   def get_next_token_parameters(self):
     return dict(
-      scheduler='warmup',
+      scheduler='cosine',
       optimizer='samadam',
       warmup_epochs=8,
       max_epochs=12,
       batch=125,
-      learning_rate=3e-2,
+      learning_rate=3.8e-2
     )
 
   def get_classifier_parameters(self, **kwargs):
@@ -118,7 +118,8 @@ class Transformer(models.base.SequenceBase):
       learning_rate=2e-2,
 
       arch_depth=1,
-      arch_width=24,
+      arch_width=128,
       arch_dropout=0.05,
       arch_head=4,
+      arch_mask=False
     )
