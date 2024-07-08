@@ -96,7 +96,7 @@ class GPR:
     plt.sca(axs[0])
     self.band = plt.fill_between(targets.X, targets.Y + 2 * targets.S, targets.Y - 2 * targets.S, alpha=0.1, zorder=-10)
     self.band2 = plt.fill_between(targets.X, targets.Y + 2 * targets.S_mu, targets.Y - 2 * targets.S_mu, alpha=0.5, zorder=10)
-    self.vline = plt.axvline(x=targets.X[best_idx], color="lightgray", linestyle=':', zorder=-20)
+    self.vline = plt.axvline(x=targets.X.iloc[best_idx], color="lightgray", linestyle=':', zorder=-20)
     if self.scale == "log":
       plt.xscale('log')
     elif self.scale == "log1p":
