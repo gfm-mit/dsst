@@ -41,6 +41,8 @@ def gp(
     params = setups.iloc[best_idx]
     try:
       delay = time.time()
+      if 'batch' in params:
+        experiment.redefine_loaders(params['batch'])
       metric, epoch_loss_history = experiment.train(tqdm_prefix=None, **params.to_dict())
       delay = time.time() - delay
     except KeyboardInterrupt:
