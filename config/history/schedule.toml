@@ -15,7 +15,13 @@
   optimizer="adam"
   learning_rate=3e-4
 [[row_major]]
-  optimizer="samprodigy"
+  optimizer="sfadam"
+  scheduler="none"
+  learning_rate=2e-2
+[[row_major]]
+  optimizer="sfsamadam"
+  scheduler="none"
+  learning_rate=1e-2
 [scalar]
   scheduler="none"
   optimizer="samadam"
