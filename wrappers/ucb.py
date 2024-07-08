@@ -8,23 +8,30 @@ import core.metrics
 def update_mean(mean, n, value):
   return (n * mean + value) / (n + 1)
 
-def ucb(args, experiment, budget, sd=0.01, resume=False):
+def ucb(args, experiment, budget, sd=0.09, resume=False):
   assert args.config
   setups = util.config.parse_config(args.config)
   assert not setups.duplicated().any()
   if resume:
     stats = pd.read_csv("results/ucb.csv", index_col=0)
+    base = stats.n.sum()
+    print(f"resuming after {base} steps")
     assert stats.index.equals(setups.index)
   else:
     stats = pd.DataFrame(index=setups.index)
     stats["mu2"] = 0.0
     stats["steps"] = 0.0
-    stats["std"] = np.inf
+    stats["std"] = 0.0
     stats["n"] = 0
     stats["mu"] = 0.0
-    stats["ucb"] = np.inf
+    stats["ucb"] = 0
+    if args.task == "next_token":
+      stats.ucb = -np.inf
+    base = 0
+  idx = 0
   for iter in range(budget):
-    idx = stats.ucb.argmax()
+    idx = fit_predict(args, budget, stats, base, iter)
+
     n, mu, mu2, steps = stats.iloc[idx]["n mu mu2 steps".split()]
     params = setups.iloc[idx]
     seconds = time.time()
@@ -35,23 +42,30 @@ def ucb(args, experiment, budget, sd=0.01, resume=False):
     stats.loc[params.name, "mu2"] = update_mean(mu2, n, metric**2)
     stats.loc[params.name, "n"] = n + 1
     stats.loc[params.name, "steps"] = update_mean(steps, n, steps_idx)
+
     n, mu, mu2, steps = stats.iloc[idx]["n mu mu2 steps".split()]
     if n > 1:
       stats.loc[params.name, "std"] = np.sqrt((mu2 - mu**2) / (n-1))
-
-    if stats.n.min() == 0:
-      stats.ucb = np.where(stats.n == 0, np.inf, -np.inf)
-    elif args.task == "next_token":
-      stats.ucb = -stats.mu + 2 * sd * np.sqrt(4 * np.log(iter-1) / stats.n)
-      #stats.ucb = stats.ucb.fillna(np.inf)
-    else:
-      stats.ucb = stats.mu + 2 * sd * np.sqrt(4 * np.log(iter-1) / stats.n)
-      #stats.ucb = stats.ucb.fillna(np.inf)
-    weight = stats.n - 1
-    var = np.where(stats.n >= 2, stats['std']**2, 0)
-    var = np.sum(var * weight) / np.sum(weight)
-    stats.to_csv("results/ucb.csv")
-    print(f"****** {iter+1}/{budget}: {seconds:.2f}s, std: {np.sqrt(var):.5f} *******")
-    print(stats.sort_values(by="ucb").drop(columns="mu2"))
+    print(f"********** {seconds:.2f}s **********")
   print(f"****** FINAL *******")
   print(stats.mu.sort_values().tail(10))
+
+def fit_predict(args, budget, stats, base, iter):
+    if stats.n.min() == 1 and stats.n.max() > 1:
+      stats.loc[stats.n == 1, "std"] = stats["std"].max()
+
+    with np.errstate(divide='ignore', invalid='ignore'):
+      ucb_term = 4 * np.log(base + iter - 1) / stats.n
+      optimism = 2 * stats["std"] * np.sqrt(ucb_term)
+    optimism[stats.n == 0] = np.inf
+    if args.task == "next_token":
+      stats.ucb = stats.mu - optimism
+      best_idx = stats.ucb.argmin()
+    else:
+      stats.ucb = stats.mu + optimism
+      best_idx = stats.ucb.argmax()
+
+    stats.to_csv("results/ucb.csv")
+    print(stats.sort_values(by="ucb").drop(columns="mu2"))
+    print(f"****** {base}+{iter+1}/{budget}: {best_idx=} *******")
+    return best_idx
