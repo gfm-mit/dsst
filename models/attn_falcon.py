@@ -154,9 +154,9 @@ class Transformer(models.base.SequenceBase):
         torch.nn.LayerNorm(normalized_shape=kwargs['arch_width']),
         Rearrange('b n c -> b c n'),
         # TODO: surely this can be improved?
-        torch.nn.AvgPool1d(kwargs['arch_pool']),
+        torch.nn.AvgPool1d(int(kwargs['arch_pool'])),
         Rearrange('b c n -> b n c'),
-        models.util.SoftmaxAgg(kwargs['arch_width'], kwargs['arch_softmax_width']),
+        models.util.SoftmaxAgg(kwargs['arch_width'], int(kwargs['arch_softmax_width'])),
         torch.nn.Linear(kwargs['arch_width'], self.classes),
         torch.nn.LogSoftmax(dim=-1),
     )
