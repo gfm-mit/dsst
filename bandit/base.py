@@ -9,12 +9,15 @@ class Bandit:
   def __init__(self, args: dict, conf: dict, arms: pd.DataFrame):
     super().__init__()
     self.args = args
-    pd.Series(self.args).to_csv("rewards/bandit/args.csv")
+    pd.Series(self.args).to_csv("results/bandit/args.csv")
     self.conf = conf
-    pd.Series(self.conf).to_csv("rewards/bandit/conf.csv")
+    pd.Series(self.conf).to_csv("results/bandit/conf.csv")
     self.arms = arms.reset_index(drop=True)
-    self.arms.to_csv("rewards/bandit/arms.csv")
-    self.rewards = None
+    if conf["resume"]:
+      old_arms = pd.read_csv("results/bandit/arms.csv", index_col=0)
+      assert old_arms.equals(self.arms)
+      self.rewards = pd.read_csv("results/bandit/rewards.csv", index_col=0)
+    self.arms.to_csv("results/bandit/arms.csv")
   
   def suggest_arm(self):
     if self.rewards.shape[0] >= self.conf["budget"]:
@@ -29,7 +32,7 @@ class Bandit:
       self.rewards["arm_idx"] = self.idx
     else:
       self.rewards.loc[self.rewards.index.max() + 1] = dict(**metric, arm_idx=self.idx)
-    self.rewards.to_csv("rewards/bandit/rewards.csv")
+    self.rewards.to_csv("results/bandit/rewards.csv")
   
   def calculate_state(self): 
     counts = self.rewards.groupby("arm_idx").size().rename("n")
