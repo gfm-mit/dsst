@@ -14,12 +14,11 @@ import tomli
 import plot.gpr
 import bandit.base
 
-def gpr(rewards, arms):
+def gpr(rewards, arms, config):
   assert arms.shape[1] == 1, arms.columns
   K = arms.columns[0]
   stats = rewards.join(arms, on="arm_idx")[[K] + "auc best_epoch".split()]
   stats.columns = "X Y S".split()
-  config = pd.read_csv('results/bandit/conf.csv', index_col=0).iloc[0].to_dict()
   config["scale"] = "log"
   config["sigma"] = .2
   config["K"] = K
@@ -33,15 +32,46 @@ def gpr(rewards, arms):
   gpr.scatter(stats, axs=axs)
   plt.draw()
 
-axs = None
-while True:
-  rewards = pd.read_csv('results/bandit/rewards.csv', index_col=0)
-  arms = pd.read_csv('results/bandit/arms.csv', index_col=0)
-  arms = bandit.base.get_varying_columns(arms)
-  gpr(rewards, arms)
-  try:
-    plt.waitforbuttonpress(0)
-  except KeyboardInterrupt:
-    break
-  finally:
-    plt.close()
+def ucb(rewards, arms, config):
+  df = rewards.join(arms, on="arm_idx")
+  print(df.groupby(arms.columns.tolist()).mean())
+
+  model = sklearn.linear_model.RidgeCV()
+  pairwise = pd.concat([
+    pd.get_dummies(df[g].astype('category'), prefix=g, drop_first=True)
+    for g in arms.columns
+  ],axis=1)
+  i, j = np.triu_indices(pairwise.shape[1], k=0)
+  unfolded = np.stack([
+    pairwise.values[:, ii] * pairwise.values[:, jj]
+    for ii, jj in zip(i, j)
+  ]).T
+  model.fit(unfolded, df[config["metric"]])
+  folded = np.eye(pairwise.shape[1]) + np.nan
+  for i, j, c, v in zip(i, j, model.coef_, unfolded.var(axis=0)):
+    if v > 0:
+      folded[i, j] = c
+  folded = pd.DataFrame(folded, index=pairwise.columns, columns=pairwise.columns)
+  sns.heatmap(folded, center=0, cmap='coolwarm')
+  plt.title(
+    df[arms.columns].astype('category').apply(lambda x: x.cat.categories[0]).values
+  )
+  plt.tight_layout()
+  plt.show()
+
+if __name__ == "__main__":
+  while True:
+    rewards = pd.read_csv('results/bandit/rewards.csv', index_col=0)
+    arms = pd.read_csv('results/bandit/arms.csv', index_col=0)
+    arms = bandit.base.get_varying_columns(arms)
+    config = pd.read_csv('results/bandit/conf.csv', index_col=0).iloc[0].to_dict()
+    if arms.shape[1] == 1 and False:
+      gpr(rewards, arms, config)
+    else:
+      ucb(rewards, arms, config)
+    try:
+      plt.waitforbuttonpress(0)
+    except KeyboardInterrupt:
+      break
+    finally:
+      plt.close()
