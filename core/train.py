@@ -70,7 +70,7 @@ def setup_model(params, model_factory_fn, task="classify", disk="none"):
     network_state_dict = torch.load('./results/model.pth')
     missing_keys, unexpected_keys = model.load_state_dict(network_state_dict, strict=False)
     # TODO: set a flag for whether the parameters are frozen
-    freeze_loaded_params(missing_keys, unexpected_keys, model, freeze=disk == "freeze")
+    freeze_loaded_params(missing_keys, unexpected_keys, model, freeze=disk == "freeze", verbose=False)
   else:
     for layer in model.children():
       if hasattr(layer, 'reset_parameters'):
@@ -104,7 +104,7 @@ def nest_param_list(flat_list):
   result = pprint.pformat(result).replace("\n", "\n     ")
   return result
 
-def freeze_loaded_params(missing_keys, unexpected_keys, model, freeze=True):
+def freeze_loaded_params(missing_keys, unexpected_keys, model, freeze=True, verbose=True):
     loaded_params = dict(model.named_parameters())
     for k in missing_keys:
       if k in loaded_params:
@@ -112,7 +112,8 @@ def freeze_loaded_params(missing_keys, unexpected_keys, model, freeze=True):
     missing_keys = nest_param_list(missing_keys)
     unexpected_keys = nest_param_list(unexpected_keys)
     frozen_keys = nest_param_list(loaded_params.keys())
-    print(f"loading.missing_keys={missing_keys}\nloading.unexpected_keys={unexpected_keys}\nloading.frozen_keys={frozen_keys}")
+    if verbose:
+      print(f"loading.missing_keys={missing_keys}\nloading.unexpected_keys={unexpected_keys}\nloading.frozen_keys={frozen_keys}")
     if freeze:
       for v in loaded_params.values():
         v.requires_grad = False
