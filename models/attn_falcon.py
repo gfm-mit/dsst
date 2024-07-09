@@ -76,10 +76,8 @@ class CachedEmbeddingWrapper(torch.nn.Module):
   
   # still some bug in this that makes it sometimes fail
   def hash_tensor(self, n_c):
-    data = n_c.cpu().numpy()
-    length = np.sum(np.max(data != 0, axis=1))
-    data = data[:, :length]
-    return sha1(data.tobytes()).hexdigest()
+    length = torch.sum(torch.amax(n_c != 0, axis=1))
+    return sha1(n_c[:length].cpu().numpy().tobytes()).hexdigest()
 
   def forward(self, x):
     if not self.use_cache:
