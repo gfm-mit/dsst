@@ -107,3 +107,24 @@ class SineProjection(torch.nn.Module):
 
   def forward(self, x):
     return torch.sin(self.scale*self.projection(x))
+
+class SoftmaxAgg(torch.nn.Module):
+  def __init__(self, dim, ff_width):
+    assert ff_width is not None
+    super().__init__()
+    if ff_width:
+      self.fc1 = torch.nn.Linear(dim, ff_width)
+      self.fc2 = torch.nn.Linear(ff_width, 1)
+    else:
+      self.fc1, self.fc2 = None, None
+  
+  def forward(self, x):
+    # b n c
+    if self.fc1:
+      w = torch.nn.functional.silu(self.fc1(x))
+      w = self.fc2(w)
+      #w = self.fc1(x)
+      w = torch.softmax(w, axis=1)
+      return torch.sum(x * w, axis=1)
+    else:
+      return torch.amax(x, dim=1)
