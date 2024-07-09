@@ -9,7 +9,7 @@ class Bandit:
     super().__init__()
     self.task = task
     self.conf = conf
-    pd.Series(self.conf).to_csv("results/bandit/conf.csv")
+    pd.Series(self.conf).to_frame().T.to_csv("results/bandit/conf.csv")
     self.arms = arms.reset_index(drop=True)
     if conf["resume"]:
       old_arms = pd.read_csv("results/bandit/arms.csv", index_col=0)
@@ -33,7 +33,7 @@ class Bandit:
     if self.rewards is None:
       self.rewards = pd.Series(metric).rename(0).to_frame().transpose()
       self.rewards["arm_idx"] = self.idx
-      print(f"{self.rewards=}")
+      print(f"Rewards:\n{self.rewards}")
     else:
       self.rewards.loc[self.rewards.index.max() + 1] = dict(**metric, arm_idx=self.idx)
     self.rewards.to_csv("results/bandit/rewards.csv")
@@ -44,9 +44,19 @@ class Bandit:
     state.to_csv("results/bandit/state.csv")
     return state.n.idxmin()
 
+  def get_varying_columns(self):
+    return get_varying_columns(self.arms)
+
   def get_label(self):
     label = {}
     for k in self.arms.columns:
       if self.arms[k].nunique() != 1:
         label[k] = self.arms.loc[self.idx, k]
     return util.config.pprint_dict(label)
+
+def get_varying_columns(arms):
+  columns = [
+    k for k in arms.columns
+    if arms[k].nunique() > 1
+  ]
+  return arms[columns]

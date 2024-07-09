@@ -21,10 +21,9 @@ def fractal_sort(X):
 class Fractal(bandit.base.Bandit):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    varying_columns = self.arms.apply(lambda x: x.nunique() > 1, axis=0)
-    varying_columns = varying_columns[varying_columns].index
-    assert varying_columns.shape[0] == 1, varying_columns # could do this in i_
-    self.arm_1d = self.arms[varying_columns[0]]
+    varying_columns = self.get_varying_columns()
+    assert varying_columns.shape[1] == 1, varying_columns.columns
+    self.arm_1d = varying_columns.iloc[:, 0]
 
   def calculate_state(self): 
     counts = self.rewards.groupby("arm_idx").size().rename("n")
