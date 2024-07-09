@@ -170,7 +170,8 @@ class Transformer(models.base.SequenceBase):
       warmup_epochs=8,
       max_epochs=12,
       batch=125,
-      learning_rate=3.8e-2
+      learning_rate=3.8e-2,
+      weight_decay=0,
     )
 
   def get_classifier_parameters(self, **kwargs):
