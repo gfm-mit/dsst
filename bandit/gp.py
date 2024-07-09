@@ -26,5 +26,4 @@ class GP(bandit.base.Bandit):
     targets = X.copy()
     targets["Y"] = np.nan
     targets, best_idx = self.gpr.fit_predict(stats, targets=targets)
-    print(targets.iloc[best_idx])
     return targets.iloc[best_idx].name

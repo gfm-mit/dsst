@@ -27,8 +27,6 @@ import etl.torch.linear_box
 import etl.torch.linear_patient
 import wrappers.coef
 import wrappers.experiment
-import wrappers.ucb
-import wrappers.gp
 import plot.lr_finder
 import plot.tune
 import models.registry
