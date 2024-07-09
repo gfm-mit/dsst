@@ -26,7 +26,7 @@ def gp(
   else:
     stats = pd.DataFrame(columns="X Y S".split())
   pd.Series(dict(K=K, scale=scale, budget=budget, task=args.task, min=setups[K].min(), max=setups[K].max(), sigma=sigma)).to_frame().transpose().to_csv("results/gp_args.csv")
-  gpr = wrappers.gpr.GPR(K, scale, budget, sigma=sigma)
+  gpr = wrappers.gpr.GPR(K, scale, budget, sigma=sigma, task=args.task)
   fractal_order = fractal_sort(np.arange(setups.shape[0]).tolist())
   if len(fractal_order) > 3: # should help fit the white kernel
     fractal_order = fractal_order[:2] + fractal_order[2:3] * 3 + fractal_order[3:]

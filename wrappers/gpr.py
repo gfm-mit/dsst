@@ -10,11 +10,12 @@ import core.metrics
 
 
 class GPR:
-  def __init__(self, K, scale, budget, task="next_token", sigma=0.1, **kwargs):
+  def __init__(self, K, scale, budget, task=None, sigma=0.1, **kwargs):
     print(f"{kwargs=}")
     self.K = K
     self.scale = scale
     self.budget = budget
+    assert task is not None
     self.task=task
     kernel = sklearn.gaussian_process.kernels.RationalQuadratic(
       length_scale=sigma,
