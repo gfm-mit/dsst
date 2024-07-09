@@ -57,7 +57,7 @@ def ucb(rewards, arms, config):
     df[arms.columns].astype('category').apply(lambda x: x.cat.categories[0]).values
   )
   plt.tight_layout()
-  plt.show()
+  plt.draw()
 
 if __name__ == "__main__":
   while True:
@@ -70,8 +70,11 @@ if __name__ == "__main__":
     else:
       ucb(rewards, arms, config)
     try:
+      print("start wait")
       plt.waitforbuttonpress(0)
+      print("finish wait")
     except KeyboardInterrupt:
       break
     finally:
+      print("close")
       plt.close()
