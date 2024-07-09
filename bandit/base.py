@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 
 import util.config
-import core.metrics
 
 class Bandit:
   def __init__(self, args: dict, conf: dict, arms: pd.DataFrame):
@@ -22,8 +21,7 @@ class Bandit:
   def suggest_arm(self):
     if self.rewards.shape[0] >= self.conf["budget"]:
       return None
-    self.state = self.calculate_state()
-    self.idx = self.state.n.idxmin()
+    self.idx = self.calculate_state()
     return self.arms.loc[self.idx]
   
   def update_rewards(self, metric):
@@ -36,7 +34,9 @@ class Bandit:
   
   def calculate_state(self): 
     counts = self.rewards.groupby("arm_idx").size().rename("n")
-    return counts.reindex(self.arms.index, fill_value=0)
+    state = counts.reindex(self.arms.index, fill_value=0)
+    state.to_csv("results/bandit/state.csv")
+    return state.n.idxmin()
 
   def get_label(self):
     label = {}
