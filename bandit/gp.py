@@ -3,7 +3,7 @@ import pandas as pd
 
 import bandit.base
 import bandit.fractal_1d
-import wrappers.gpr
+import plot.gpr
 
 class GP(bandit.base.Bandit):
   def __init__(self, *args, **kwargs):
@@ -12,7 +12,7 @@ class GP(bandit.base.Bandit):
     assert varying_columns.shape[1] == 1, varying_columns.columns
     self.arm_1d = varying_columns.iloc[:, 0]
 
-    self.gpr = wrappers.gpr.GPR(
+    self.gpr = plot.gpr.GPR(
       K=self.arm_1d.name,
       scale=self.conf["scale"],
       budget='unused',
