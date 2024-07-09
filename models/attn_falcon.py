@@ -55,7 +55,13 @@ class CachedEmbeddingWrapper(torch.nn.Module):
   def __init__(self, device, inputs, use_cache=False, **kwargs):
     super().__init__()
     self.project = models.util.SineProjection(inputs, kwargs['arch_width'], axis=-1, scale=1, preserve_zeros=True)
-    self.attn = FalconWrapper(device=device, **kwargs)
+    self.attn = FalconWrapper(
+      device=device,
+      arch_width=kwargs["arch_width"],
+      arch_depth=kwargs["arch_depth"],
+      arch_head=kwargs["arch_head"],
+      arch_dropout=kwargs["arch_dropout"],
+      arch_mask=False)
     self.use_cache = use_cache
     if self.use_cache:
       self.project.requires_grad_(False)
