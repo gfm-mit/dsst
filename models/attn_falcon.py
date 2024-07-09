@@ -144,6 +144,8 @@ class Transformer(models.base.SequenceBase):
     return classifier_state_dict
 
   def get_classifier_architecture(self, **kwargs):
+    if self.device == "mps":
+      print("falcon classifier kind of sucks on device=MPS")
     # TODO: use_cache should be based on args.disk == "freeze", but I'll be damned if I know where to find that
     model = torch.nn.Sequential(
         # b n c
@@ -152,8 +154,9 @@ class Transformer(models.base.SequenceBase):
         torch.nn.LayerNorm(normalized_shape=kwargs['arch_width']),
         Rearrange('b n c -> b c n'),
         # TODO: surely this can be improved?
-        torch.nn.AdaptiveMaxPool1d(1),
-        Rearrange('b c 1 -> b c'),
+        torch.nn.AvgPool1d(kwargs['arch_pool']),
+        Rearrange('b c n -> b n c'),
+        models.util.SoftmaxAgg(kwargs['arch_width'], kwargs['arch_softmax_width']),
         torch.nn.Linear(kwargs['arch_width'], self.classes),
         torch.nn.LogSoftmax(dim=-1),
     )
