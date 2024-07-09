@@ -54,7 +54,7 @@ def ucb(rewards, arms, config):
   folded = pd.DataFrame(folded, index=pairwise.columns, columns=pairwise.columns)
   sns.heatmap(folded, center=0, cmap='coolwarm')
   plt.title(
-    df[arms.columns].astype('category').apply(lambda x: x.cat.categories[0]).values
+    df[arms.columns].astype('category').apply(lambda x: x.cat.categories[0]).rename('base')
   )
   plt.tight_layout()
   plt.draw()
@@ -65,7 +65,9 @@ if __name__ == "__main__":
     arms = pd.read_csv('results/bandit/arms.csv', index_col=0)
     arms = bandit.base.get_varying_columns(arms)
     config = pd.read_csv('results/bandit/conf.csv', index_col=0).iloc[0].to_dict()
-    if arms.shape[1] == 1 and False:
+    if rewards.shape[0] == 1:
+      print("only one arm")
+    elif arms.shape[1] == 1 and arms.iloc[:, 0].dtype == float:
       gpr(rewards, arms, config)
     else:
       ucb(rewards, arms, config)
