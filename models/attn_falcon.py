@@ -175,18 +175,22 @@ class Transformer(models.base.SequenceBase):
 
   def get_classifier_parameters(self, **kwargs):
     return dict(
-      scheduler='warmup',
-      optimizer='samadam',
-      weight_decay=0,
+      scheduler="none",
+      optimizer="sfsamadam",
+      weight_decay=5e-2,
       momentum=0.9,
       conditioning_smoother=0.999,
       warmup_epochs=5,
-      max_epochs=20,
-      learning_rate=2e-2,
+      max_epochs=15,
+      learning_rate=1e-3,
+      batch=64,
 
       arch_depth=1,
       arch_width=128,
       arch_dropout=0.05,
       arch_head=4,
-      arch_mask=False
+      arch_mask=False,
+
+      arch_pool=2,
+      arch_softmax_width=16,
     )
