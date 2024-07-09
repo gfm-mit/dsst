@@ -14,11 +14,7 @@ import tomli
 import plot.gpr
 import bandit.base
 
-axs = None
-while True:
-  rewards = pd.read_csv('results/bandit/rewards.csv', index_col=0)
-  arms = pd.read_csv('results/bandit/arms.csv', index_col=0)
-  arms = bandit.base.get_varying_columns(arms)
+def gpr(rewards, arms):
   assert arms.shape[1] == 1, arms.columns
   K = arms.columns[0]
   stats = rewards.join(arms, on="arm_idx")[[K] + "auc best_epoch".split()]
@@ -33,10 +29,16 @@ while True:
   gpr = plot.gpr.GPR(**config)
   targets = gpr.get_default_targets(**config)
   targets, best_idx = gpr.fit_predict(stats, targets=targets)
-  axs = None # fuck it
-  axs = gpr.update_plot(targets, best_idx, axs=axs)
+  axs = gpr.make_plot(targets, best_idx, axs=None)
   gpr.scatter(stats, axs=axs)
   plt.draw()
+
+axs = None
+while True:
+  rewards = pd.read_csv('results/bandit/rewards.csv', index_col=0)
+  arms = pd.read_csv('results/bandit/arms.csv', index_col=0)
+  arms = bandit.base.get_varying_columns(arms)
+  gpr(rewards, arms)
   try:
     plt.waitforbuttonpress(0)
   except KeyboardInterrupt:
