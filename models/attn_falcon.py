@@ -1,3 +1,4 @@
+import pathlib
 import numpy as np
 import torch
 from einops.layers.torch import Rearrange
@@ -8,8 +9,9 @@ import warnings
 
 import models.base
 from models.util import PrintfModule
+from hashlib import sha1
 
-class DecoderWrapper(torch.nn.Module):
+class FalconWrapper(torch.nn.Module):
   def __init__(self, arch_width, arch_depth, arch_head, arch_dropout, device=None, arch_mask=False):
     super().__init__()
     self.device = device
@@ -49,6 +51,65 @@ class DecoderWrapper(torch.nn.Module):
     output, = self.core(x, alibi=alibi, attention_mask=mask)
     return output
 
+class CachedEmbeddingWrapper(torch.nn.Module):
+  def __init__(self, device, inputs, use_cache=False, **kwargs):
+    super().__init__()
+    self.project = models.util.SineProjection(inputs, kwargs['arch_width'], axis=-1, scale=1, preserve_zeros=True)
+    self.attn = FalconWrapper(device=device, **kwargs)
+    self.use_cache = use_cache
+    if self.use_cache:
+      self.project.requires_grad_(False)
+      self.attn.requires_grad_(False)
+      if pathlib.Path("./results/cache_data.npy").exists():
+        self.cache_data = np.load("./results/cache_data.npy").astype(np.float32)
+        self.cache_map = np.load("./results/cache_map.npy", allow_pickle=True).item()
+        print(f"loading persistent cache: len(cache)={len(self.cache_map)}")
+      else:
+        self.cache_data = np.zeros([20_000, 128, 128], dtype=np.float32)
+        self.cache_map = {}
+    elif pathlib.Path("./results/cache_data.npy").exists():
+      pathlib.Path("./results/cache_data.npy").unlink()
+      pathlib.Path("./results/cache_map.npy").unlink()
+  
+  def cache_miss(self, x):
+    return self.attn(self.project(x))
+  
+  # still some bug in this that makes it sometimes fail
+  def hash_tensor(self, n_c):
+    data = n_c.cpu().numpy()
+    length = np.sum(np.max(data != 0, axis=1))
+    data = data[:, :length]
+    return sha1(data.tobytes()).hexdigest()
+
+  def forward(self, x):
+    if not self.use_cache:
+      return self.cache_miss(x)
+    batch, length, _ = x.shape
+    batch_keys = []
+    for b in range(batch):
+      key = self.hash_tensor(x[b])
+      batch_keys += [key]
+    if set(batch_keys) - self.cache_map.keys():
+      # don't bother subsetting to get new ones
+      y = self.cache_miss(x)
+      for b, key in enumerate(batch_keys):
+        if key not in self.cache_map:
+          idx = len(self.cache_map)
+          assert idx < self.cache_data.shape[0]
+          self.cache_map[key] = idx
+          value = y[b].cpu().numpy()
+          self.cache_data[idx, :length] = value
+      np.save("./results/cache_data.npy", self.cache_data)
+      np.save("./results/cache_map.npy", self.cache_map)
+      print(f"persisted: len(cache)={len(self.cache_map)}]")
+      return y
+    #print("cache hit")
+    y = np.zeros([batch, length, 128])
+    for b, key in enumerate(batch_keys):
+      idx = self.cache_map[key]
+      y[b] = self.cache_data[idx][:length]
+    return torch.from_numpy(y).to(dtype=torch.float32, device=x.device)
+
 class Transformer(models.base.SequenceBase):
   def __init__(self, n_classes=2, n_inputs=12, device='cpu'):
     self.classes = n_classes
@@ -60,8 +121,7 @@ class Transformer(models.base.SequenceBase):
   def get_next_token_architecture(self, **kwargs):
     model = torch.nn.Sequential(
         # b n c
-        models.util.SineProjection(self.inputs, kwargs['arch_width'], axis=-1, scale=1, preserve_zeros=True),
-        DecoderWrapper(device=self.device, **kwargs),
+        CachedEmbeddingWrapper(device=self.device, inputs=self.inputs, use_cache=False, **kwargs),
         torch.nn.SiLU(),
         torch.nn.LayerNorm(normalized_shape=kwargs['arch_width']),
         torch.nn.Linear(kwargs['arch_width'], self.inputs),
@@ -72,7 +132,7 @@ class Transformer(models.base.SequenceBase):
   def translate_state_dict(self, next_token_state_dict):
     classifier_state_dict = {}
     for k, v in next_token_state_dict.items():
-      if re.match("0[.]projection[.]weight|1[.]core[.].*", k):
+      if re.match("0[.](project|attn)[.].*", k):
         print(f"saving param {k}")
         classifier_state_dict[k] = v
       else:
@@ -80,10 +140,10 @@ class Transformer(models.base.SequenceBase):
     return classifier_state_dict
 
   def get_classifier_architecture(self, **kwargs):
+    # TODO: use_cache should be based on args.disk == "freeze", but I'll be damned if I know where to find that
     model = torch.nn.Sequential(
         # b n c
-        models.util.SineProjection(self.inputs, kwargs['arch_width'], axis=-1, scale=1, preserve_zeros=True),
-        DecoderWrapper(device=self.device, **kwargs),
+        CachedEmbeddingWrapper(device=self.device, inputs=self.inputs, use_cache=True, **kwargs),
         torch.nn.SiLU(),
         torch.nn.LayerNorm(normalized_shape=kwargs['arch_width']),
         Rearrange('b n c -> b c n'),
