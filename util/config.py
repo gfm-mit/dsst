@@ -89,17 +89,16 @@ def parse_column_group(group, cartesian=False):
   return column_group.to_dict(orient='records')
 
 def parse_config(config):
-  assert not config.keys() - "row_major column_major scalar meta".split()
+  assert not config.keys() - "row_major column_major scalar merge bandit".split()
   row_major = config.get("row_major", [])
   column_major = config.get("column_major", {})
   scalar = config.get("scalar", {})
-  meta = config.get("meta", {})
+  meta = config.get("merge", {})
   assert isinstance(meta, dict)
-  if "bandit" in meta:
-    del meta["bandit"]
-  assert not meta.keys() - "repeat shuffle cartesian overlay append".split()
-  meta_repeat = meta.get("repeat", None)
-  meta_shuffle = meta.get("shuffle", None)
+  assert not meta.keys() - "cartesian overlay append".split()
+  bandit = config.get("bandit", {})
+  meta_repeat = bandit.get("repeat", None)
+  meta_shuffle = bandit.get("shuffle", None)
   meta_cartesian = meta.get("cartesian", None)
   meta_overlay = meta.get("overlay", None)
   meta_append = meta.get("append", None)

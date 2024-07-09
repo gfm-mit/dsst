@@ -38,6 +38,7 @@
   model='causal'
   scheduler='none'
   warmup_epochs=0
-[meta]
+[merge]
+[bandit]
   repeat=10
   shuffle=false

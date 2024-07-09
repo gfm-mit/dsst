@@ -36,6 +36,7 @@
   max_epochs=10
   batch=125
   learning_rate=3.8e-2
-[meta]
+[bandit]
   repeat=10
+[merge]
   overlay=true
