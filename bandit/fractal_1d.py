@@ -19,13 +19,14 @@ def fractal_sort(X):
   return out
 
 class Fractal(bandit.base.Bandit):
-  def calculate_state(self): 
-    # std n ucb
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
     varying_columns = self.arms.apply(lambda x: x.nunique() > 1, axis=0)
     varying_columns = varying_columns[varying_columns].index
-    assert varying_columns.shape[0] == 1, varying_columns
-    arm = self.arms[varying_columns[0]]
+    assert varying_columns.shape[0] == 1, varying_columns # could do this in i_
+    self.arm_1d = self.arms[varying_columns[0]]
 
+  def calculate_state(self): 
     counts = self.rewards.groupby("arm_idx").size().rename("n")
-    order = fractal_sort(arm).drop(index=counts.index)
-    return order.index[0]
+    order = fractal_sort(self.arm_1d.copy()).drop(index=counts.index).index
+    return order[0]
