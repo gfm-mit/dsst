@@ -36,7 +36,7 @@ class Experiment:
     #torch.manual_seed(42)
     self.model_class = models.registry.lookup_model(self.args.model or kwargs.get("model", "linear"))
     builder = self.model_class(n_classes=self.n_classes, device=self.args.device)
-    base_params = builder.get_parameters(task=self.args.task) | self.args.config | kwargs
+    base_params = builder.get_parameters(task=self.args.task) | kwargs
     metric, epoch_loss_history, self.model = core.train.setup_training_run(
         base_params, model_factory_fn=builder,
         train_loader=self.train_loader,
