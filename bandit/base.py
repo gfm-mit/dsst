@@ -10,7 +10,7 @@ class Bandit:
     self.conf = conf
     pd.Series(self.conf).to_frame().T.to_csv("results/bandit/conf.csv")
     self.arms = arms.reset_index(drop=True)
-    if conf["resume"]:
+    if "resume" in conf and conf["resume"]:
       old_arms = pd.read_csv("results/bandit/arms.csv", index_col=0)
       assert old_arms.equals(self.arms)
       self.rewards = pd.read_csv("results/bandit/rewards.csv", index_col=0)
