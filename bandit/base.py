@@ -41,7 +41,8 @@ class Bandit:
     counts = self.rewards.groupby("arm_idx").size().rename("n")
     state = counts.reindex(self.arms.index, fill_value=0)
     state.to_csv("results/bandit/state.csv")
-    return state.n.idxmin()
+    state = state[state.values == state.min()].sample(1)
+    return state.index.item()
 
   def get_varying_columns(self):
     return get_varying_columns(self.arms)
@@ -51,6 +52,7 @@ class Bandit:
     for k in self.arms.columns:
       if self.arms[k].nunique() != 1:
         label[k] = self.arms.loc[self.idx, k]
+    print(f"{label=}")
     return util.config.pprint_dict(label)
 
 def get_varying_columns(arms):
