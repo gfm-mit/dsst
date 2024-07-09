@@ -9,6 +9,10 @@ import torch
 import pandas as pd
 import sklearn
 import sklearn.metrics
+import bandit.fractal_1d
+import bandit.gp
+import bandit.loop
+import bandit.ucb
 import models.cnn_2d
 import models.linear_bnc
 from plot.tune import print_and_plot_params
@@ -47,7 +51,7 @@ def parse_args():
   parser.add_argument('--device', default='cpu', help='torch device')
   parser.add_argument('--model', default='', help='which model class to use')
   parser.add_argument('--task', default='classify', choices=set("next_token classify classify_patient classify_section".split()), help='training target / loss')
-  parser.add_argument('--stats', default='train_loss', choices=set("train_loss thresholds epochs params ucb gp".split()), help='output types to generate')
+  parser.add_argument('--stats', default='train_loss', choices=set("train_loss thresholds epochs params ucb fractal gp".split()), help='output types to generate')
 
   parser.add_argument('--disk', default='none', choices=set("none load save freeze".split()), help='whether to persist the model (or use persisted)')
   parser.add_argument('--offset', type=int, default=1, help='how far in advance to pretrain')
@@ -95,13 +99,26 @@ def main():
       stats.sort_stats('cumulative')
       stats.print_stats(30)
     elif args.stats == "ucb":
-      settings = args.config["meta"].pop("bandit")
-      assert not set("budget".split()) - settings.keys()
-      wrappers.ucb.ucb(args, experiment, **settings)
+      setups = util.config.parse_config(args.config)
+      conf = args.config["bandit"]
+      conf["task"] = args.task
+      ucb = bandit.ucb.UCB(conf, setups)
+      for metric, epoch_loss_history, label in bandit.loop.run(ucb, experiment):
+        print(label, metric)
+    elif args.stats == "fractal":
+      setups = util.config.parse_config(args.config)
+      conf = args.config["bandit"]
+      conf["task"] = args.task
+      fractal = bandit.fractal_1d.Fractal(conf, setups)
+      for metric, epoch_loss_history, label in bandit.loop.run(fractal, experiment):
+        print(label, metric)
     elif args.stats == "gp":
-      settings = args.config["meta"].pop("bandit")
-      assert not set("scale budget sigma".split()) - settings.keys()
-      wrappers.gp.gp(args, experiment, **settings)
+      setups = util.config.parse_config(args.config)
+      conf = args.config["bandit"]
+      conf["task"] = args.task
+      gp = bandit.gp.GP(conf, setups)
+      for metric, epoch_loss_history, label in bandit.loop.run(gp, experiment):
+        print(label, metric)
     else:
       compare(args, experiment)
 

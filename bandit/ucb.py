@@ -18,7 +18,7 @@ class UCB(bandit.base.Bandit):
     ucb[state.n == 0] = np.inf
     ucb = ucb.fillna(-np.inf) # annoying edge case when N=1 overall, or there are no sigmas
 
-    if self.task == "next_token":
+    if self.conf["task"] == "next_token":
       state["ucb"] = state.mu.fillna(-np.inf) - ucb
       best_idx = state.ucb.argmin()
     else:

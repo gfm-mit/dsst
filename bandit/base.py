@@ -5,9 +5,8 @@ import pandas as pd
 import util.config
 
 class Bandit:
-  def __init__(self, task: str, conf: dict, arms: pd.DataFrame):
+  def __init__(self, conf: dict, arms: pd.DataFrame):
     super().__init__()
-    self.task = task
     self.conf = conf
     pd.Series(self.conf).to_frame().T.to_csv("results/bandit/conf.csv")
     self.arms = arms.reset_index(drop=True)
