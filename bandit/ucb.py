@@ -10,7 +10,7 @@ class UCB(bandit.base.Bandit):
     state["mu"] = self.rewards.groupby("arm_idx")[self.metric].mean()
     state["sigma"] = self.rewards.groupby("arm_idx")[self.metric].std(ddof=1)
     state.sigma = state.sigma.fillna(state.sigma.max(skipna=True))
-    print(f"{state=}")
+    print(state.join(self.get_varying_columns(), how='outer'))
     
     with np.errstate(divide='ignore', invalid='ignore'):
       ucb = 4 * np.log(state.n.sum() - 1) / state.n
@@ -19,10 +19,10 @@ class UCB(bandit.base.Bandit):
     ucb = ucb.fillna(-np.inf) # annoying edge case when N=1 overall, or there are no sigmas
 
     if self.task == "next_token":
-      state.ucb = state.mu.fillna(-np.inf) - ucb
+      state["ucb"] = state.mu.fillna(-np.inf) - ucb
       best_idx = state.ucb.argmin()
     else:
-      state.ucb = state.mu.fillna(np.inf) + ucb
+      state["ucb"] = state.mu.fillna(np.inf) + ucb
       best_idx = state.ucb.argmax()
     state.to_csv("results/bandit/state.csv")
     return best_idx
