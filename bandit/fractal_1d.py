@@ -1,18 +1,21 @@
 import numpy as np
+import pandas as pd
 
 import bandit.base
 
 def fractal_sort(X):
-  out = [X[0], X[-1]]
-  bfs = [X[1:-1]]
+  X = X.sort_values()
+  out = [X.iloc[:1], X.iloc[-1:]]
+  bfs = [X.iloc[1:-1]]
   while bfs:
     chunk = bfs.pop(0)
-    if len(chunk) <= 2:
-      out += chunk
+    if chunk.shape[0] <= 2:
+      out += [chunk]
     else:
-      mid = len(chunk) // 2
-      out += [chunk[mid]]
-      bfs += [chunk[:mid], chunk[mid+1:]]
+      mid = chunk.shape[0] // 2
+      out += [chunk.iloc[mid:mid+1]]
+      bfs += [chunk.iloc[:mid], chunk.iloc[mid+1:]]
+  out = pd.concat(out)
   return out
 
 class Fractal(bandit.base.Bandit):
@@ -24,10 +27,5 @@ class Fractal(bandit.base.Bandit):
     arm = self.arms[varying_columns[0]]
 
     counts = self.rewards.groupby("arm_idx").size().rename("n")
-    order = fractal_sort(arm)
-    order = [
-      x for x in order
-      if x not in counts.index
-    ]
-    print(order)
-    return order[0]
+    order = fractal_sort(arm).drop(index=counts.index)
+    return order.index[0]
