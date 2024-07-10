@@ -1,6 +1,7 @@
 import argparse
 import pathlib
 import pstats
+import shutil
 import sys
 import cProfile
 import os
@@ -107,7 +108,10 @@ def main():
         "fractal": bandit.fractal_1d.Fractal,
         "uniform": bandit.base.Bandit,
       }[args.stats](conf, setups)
+      shutil.rmtree("results/bandit/epoch", ignore_errors=True)
+      pathlib.Path("results/bandit/epoch").mkdir(parents=True, exist_ok=True)
       for metric, epoch_loss_history, label in bandit.loop.run(hyper, experiment):
+        np.save(f"results/bandit/epoch/{label}.npy", epoch_loss_history)
         print(label, metric)
     elif args.stats == "fractal":
       setups = util.config.parse_config(args.config)
