@@ -90,4 +90,5 @@ class Transformer(models.base.SequenceBase):
       arch_width=96,
       arch_dropout=0.05,
       arch_head=4,
+      batch=1000, # used to be hard coded
     )

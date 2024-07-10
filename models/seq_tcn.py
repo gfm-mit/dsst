@@ -89,4 +89,5 @@ class Cnn(models.base.SequenceBase):
       arch_kernel=5, # worse than 1, though
       arch_depth=3, # probably a fluke
       arch_dropout=0.05,
+      batch=1000, # used to be hard coded
     )

@@ -72,4 +72,5 @@ class Cnn(models.base.Base):
       arch_width=32,
       arch_kernel_list='2,2,16',
       arch_activation="swish",
+      batch=1000, # used to be hard coded
     )

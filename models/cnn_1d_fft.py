@@ -44,6 +44,7 @@ class Cnn(models.base.Base):
       warmup_epochs=2,
       max_epochs=40,
       learning_rate=3e-3,
+      batch=1000, # used to be hard coded
 
       arch_kernel=5,
       arch_fft_length=32,

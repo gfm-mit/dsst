@@ -36,6 +36,7 @@ class Linear(models.base.Base):
       warmup_epochs=5,
 
       learning_rate=7e-2,
+      batch=1000, # used to be hard coded
     )
 
   def get_coefficients(self, model):

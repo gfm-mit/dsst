@@ -55,4 +55,5 @@ class Cnn(models.base.Base):
 
       learning_rate=2e-2,
       arch_channels=128,
+      batch=64, # used to be hard coded
     )

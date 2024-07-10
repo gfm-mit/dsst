@@ -60,5 +60,6 @@ class Cnn(models.base.Base):
 
       max_epochs=100,
 
+      batch=1000,
       learning_rate=1e-2,  # not tuned
     )

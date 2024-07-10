@@ -43,6 +43,7 @@ class Linear(models.base.Base):
       warmup_epochs=0,
 
       learning_rate=3e-1,  # stupid edge of stability!!
+      batch=1000, # used to be hard coded
     )
 
   def get_coefficients(self, model):

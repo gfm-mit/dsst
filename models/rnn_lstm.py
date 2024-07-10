@@ -86,4 +86,5 @@ class Rnn(models.base.SequenceBase):
 
       arch_width=48,
       arch_depth=2,
+      batch=1000, # used to be hard coded
     )
