@@ -10,9 +10,8 @@ import core.metrics
 
 
 class GPR:
-  def __init__(self, K, scale, task=None, sigma=0.1, **kwargs):
+  def __init__(self, scale, task=None, sigma=0.1, **kwargs):
     print(f"{kwargs=}")
-    self.K = K
     self.scale = scale
     assert task is not None
     self.task=task

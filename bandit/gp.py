@@ -13,7 +13,6 @@ class GP(bandit.base.Bandit):
     self.arm_1d = varying_columns.iloc[:, 0]
 
     self.gpr = plot.gpr.GPR(
-      K=self.arm_1d.name,
       scale=self.conf["scale"],
       budget='unused',
       sigma=self.conf["sigma"],
