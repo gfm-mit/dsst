@@ -57,10 +57,10 @@ class Cnn(models.base.Base):
       conditioning_smoother=0.999,
       warmup_epochs=5,
       max_epochs=30,
-      batch=1000,
 
       learning_rate=1e-3,
       arch_width=192,
       arch_dilation='2,16',
       arch_kernel_size='5,5,4',
+      batch=1000, # used to be hard coded
     )

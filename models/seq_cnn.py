@@ -86,10 +86,10 @@ class Cnn(models.base.SequenceBase):
       warmup_epochs=2,
       max_epochs=20,
       learning_rate=1e-3,
-      batch=1000,
 
       arch_width=192,
       arch_kernel=4, # worse than 1, though
       arch_depth=3, # probably a fluke
       arch_dropout=0.05,
+      batch=1000, # used to be hard coded
     )
