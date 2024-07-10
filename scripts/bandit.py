@@ -34,7 +34,7 @@ def gpr(rewards, arms, config):
 
 def ucb(rewards, arms, config):
   df = rewards.join(arms, on="arm_idx")
-  print(df.groupby(arms.columns.tolist()).mean())
+  print(df.groupby(arms.columns.tolist()).mean().sort_values(by=config["metric"]))
 
   model = sklearn.linear_model.RidgeCV()
   pairwise = pd.concat([
@@ -66,7 +66,8 @@ if __name__ == "__main__":
     arms = bandit.base.get_varying_columns(arms)
     config = pd.read_csv('results/bandit/conf.csv', index_col=0).iloc[0].to_dict()
     if rewards.shape[0] == 1:
-      print("only one arm")
+      plt.title("only one arm")
+      plt.draw()
     elif arms.shape[1] == 1 and arms.iloc[:, 0].dtype == float:
       gpr(rewards, arms, config)
     else:
