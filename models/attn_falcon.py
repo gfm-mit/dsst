@@ -178,12 +178,12 @@ class Transformer(models.base.SequenceBase):
     return dict(
       scheduler="none",
       optimizer="sfsamadam",
-      weight_decay=5e-2,
+      weight_decay=3e-3,
       momentum=0.9,
       conditioning_smoother=0.999,
       warmup_epochs=5,
       max_epochs=15,
-      learning_rate=1e-3,
+      learning_rate=3e-3,
       batch=64,
 
       arch_depth=1,
@@ -192,6 +192,6 @@ class Transformer(models.base.SequenceBase):
       arch_head=4,
       arch_mask=False,
 
-      arch_pool=2,
+      arch_pool=3,
       arch_softmax_width=16,
     )
