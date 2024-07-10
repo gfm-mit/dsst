@@ -53,6 +53,8 @@ class FalconWrapper(torch.nn.Module):
 
 class CachedEmbeddingWrapper(torch.nn.Module):
   def __init__(self, device, inputs, use_cache=False, **kwargs):
+    if device == "mps" and use_cache == True:
+      print("falcon classifier kind of sucks on device=MPS")
     super().__init__()
     self.project = models.util.SineProjection(inputs, kwargs['arch_width'], axis=-1, scale=1, preserve_zeros=True)
     self.attn = FalconWrapper(
@@ -144,12 +146,10 @@ class Transformer(models.base.SequenceBase):
     return classifier_state_dict
 
   def get_classifier_architecture(self, **kwargs):
-    if self.device == "mps":
-      print("falcon classifier kind of sucks on device=MPS")
     # TODO: use_cache should be based on args.disk == "freeze", but I'll be damned if I know where to find that
     model = torch.nn.Sequential(
         # b n c
-        CachedEmbeddingWrapper(device=self.device, inputs=self.inputs, use_cache=True, **kwargs),
+        CachedEmbeddingWrapper(device=self.device, inputs=self.inputs, use_cache=False, **kwargs),
         torch.nn.SiLU(),
         torch.nn.LayerNorm(normalized_shape=kwargs['arch_width']),
         Rearrange('b n c -> b c n'),
