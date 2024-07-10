@@ -83,5 +83,5 @@ class Experiment:
       plot_metric = sklearn.metrics.roc_auc_score(targets, logits)
       probs = scipy.special.expit(logits)
       brier = sklearn.metrics.brier_score_loss(targets, probs)
-      best_epoch = np.argmin(epoch_loss_history)
+      best_epoch = np.argmax(epoch_loss_history)
       return dict(auc=plot_metric, brier=brier, best_epoch=best_epoch)
