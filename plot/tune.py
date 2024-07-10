@@ -75,13 +75,18 @@ def print_and_plot_params(args, tuning_history, metric_history):
   display_only.to_csv("results/params.csv")
   print(display_only)
 
-  latex = display_only.groupby(tuning_history.columns.tolist()).aggregate(["mean", "std"])
+  if tuning_history.shape[1] > 0:
+    latex = display_only.groupby(tuning_history.columns.tolist()).aggregate(["mean", "std"])
+  else:
+    latex = display_only.aggregate(["mean", "std"]).unstack().to_frame().T
   print("LaTeX & " + " & ".join(metric_history.columns))
   for idx, v in latex.iterrows():
-    print(" & ".join([idx] + [
-      f"${v[k]['mean']:.3f} \pm {v[k]['std']:.3f}$"
-      for k in metric_history.columns
-    ]))
+    cells = [str(idx)]
+    for k in metric_history.columns:
+      mu = v[k]['mean']
+      sigma = v[k]['std']
+      cells += [f"${mu:.3f} \pm {sigma:.3f}$"]
+    print(" & ".join(cells))
 
   plot_metric = "rmse" if args.task == "next_token" else "auc"
   plot_metric = metric_history.loc[:, plot_metric].copy()
