@@ -17,12 +17,8 @@ import bandit.base
 def gpr(rewards, arms, config):
   assert arms.shape[1] == 1, arms.columns
   K = arms.columns[0]
-  stats = rewards.join(arms, on="arm_idx")[[K] + "auc best_epoch".split()]
+  stats = rewards.join(arms, on="arm_idx")[[K] + [config["metric"]] + ["best_epoch"]]
   stats.columns = "X Y S".split()
-  config["scale"] = "log"
-  config["sigma"] = .2
-  config["K"] = K
-  config["task"] = "classify"
   config["min"] = arms.min()
   config["max"] = arms.max()
   gpr = plot.gpr.GPR(**config)
