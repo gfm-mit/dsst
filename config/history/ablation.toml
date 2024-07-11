@@ -1,0 +1,32 @@
+[column_major]
+  columns=[
+    "t v_mag2 a_mag2 dv_mag2 cw j_mag2",
+    "v_mag2 a_mag2 dv_mag2 cw j_mag2",
+    "t a_mag2 dv_mag2 cw j_mag2",
+    "t v_mag2 dv_mag2 cw j_mag2",
+    "t v_mag2 a_mag2 cw j_mag2",
+    "t v_mag2 a_mag2 dv_mag2 j_mag2",
+    "t v_mag2 a_mag2 dv_mag2 cw",
+    "t",
+    "v_mag2",
+    "a_mag2",
+    "dv_mag2",
+    "cw",
+    "j_mag2",
+    "0",
+  ]
+[scalar]
+  model='causal'
+  max_epochs=10
+  learning_rate=1e-3
+  weight_decay=3e-1
+  batch=1000
+[merge]
+  cartesian=true
+[bandit]
+  repeat=1
+  sigma=0.5
+  budget=140
+  scale='log'
+  resume=false
+  metric='auc'
