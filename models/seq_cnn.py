@@ -53,7 +53,7 @@ class Cnn(models.base.SequenceBase):
     return classifier_state_dict
 
   def get_classifier_architecture(self, **kwargs):
-    self.inputs = len(kwargs.pop('columns').split())
+    #self.inputs = len(kwargs.pop('columns').split())
     print(f"{self.inputs=}")
     model = torch.nn.Sequential(
         # b n c

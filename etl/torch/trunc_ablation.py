@@ -11,12 +11,11 @@ def get_trunc_minmax(trunc):
   def get_minmax(data):
     return np.concatenate([
       data.values[:trunc, 3:],
-      -data.values[:trunc, 3:],
     ], axis=1)
   return get_minmax
 
 class SeqDataset(torch.utils.data.Dataset):
-    def __init__(self, metadata, test_split=False, device=None, task=None):
+    def __init__(self, metadata, test_split=False, device=None, task=None, trunc=128):
         self.device = device
         self.test_split = test_split
         uniq_splits = np.unique(metadata.index)
@@ -29,7 +28,7 @@ class SeqDataset(torch.utils.data.Dataset):
           csv = Path('/Users/abe/Desktop/NP/') / f"{pkey}.npy"
           data = np.load(csv)
           data = pd.DataFrame(data, columns="symbol task box t v_mag2 a_mag2 dv_mag2 cw j_mag2".split())
-          data = data.groupby("symbol task box".split()).apply(get_trunc_minmax(128))
+          data = data.groupby("symbol task box".split()).apply(get_trunc_minmax(trunc))
           features += [data.values]
 
           idx = data.index.to_frame()
@@ -59,7 +58,7 @@ class SeqDataset(torch.utils.data.Dataset):
         nda = self.features[indices]
 
         max_len = max([x.shape[0] for x in nda])
-        padded = np.zeros([len(indices), max_len, 12])
+        padded = np.zeros([len(indices), max_len, 6])
         for i in range(len(indices)):
           jagged = nda[i]
           padded[i, :jagged.shape[0]] = jagged
@@ -78,7 +77,7 @@ class SeqDataset(torch.utils.data.Dataset):
     def __len__(self):
         return self.labels.shape[0]
 
-def get_loaders(device=None, task=None, batch_size=1000, shuffle=True):
+def get_loaders(device=None, task=None, batch_size=1000, shuffle=True, trunc=128):
   # note full batch of data is 4833
   labels = pd.read_csv(pathlib.Path("/Users/abe/Desktop/meta.csv")).set_index("AnonymizedID")
   #assert(features.index.difference(labels.index).empty), (features.index, labels.index)
@@ -90,10 +89,10 @@ def get_loaders(device=None, task=None, batch_size=1000, shuffle=True):
     "test val2 val1".split(),
     default="train")
   labels = labels.set_index("split")
-  train_data = SeqDataset(labels.loc["train"], device=device, task=task)
-  val_data = SeqDataset(labels.loc["val1"], device=device, task=task)
-  calibration_data = SeqDataset(labels.loc["val1"], device=device, test_split=True, task=task)
-  test_data = SeqDataset(labels.loc["val2"], device=device, test_split=True, task=task)
+  train_data = SeqDataset(labels.loc["train"], device=device, task=task, trunc=trunc)
+  val_data = SeqDataset(labels.loc["val1"], device=device, task=task, trunc=trunc)
+  calibration_data = SeqDataset(labels.loc["val1"], device=device, test_split=True, task=task, trunc=trunc)
+  test_data = SeqDataset(labels.loc["val2"], device=device, test_split=True, task=task, trunc=trunc)
   # pin_memory is maybe a 30% speedup
   train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=shuffle, collate_fn=lambda x: x)
   val_loader = torch.utils.data.DataLoader(val_data, batch_size=batch_size, shuffle=shuffle, collate_fn=lambda x: x)

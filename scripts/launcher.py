@@ -26,6 +26,8 @@ import numpy as np
 import etl.torch.bitmap
 import etl.torch.dataset
 import etl.torch.ablation
+import etl.torch.trunc_ablation
+import etl.torch.raw
 import etl.torch.linear_box
 import etl.torch.linear_patient
 import wrappers.coef
@@ -74,7 +76,7 @@ def main():
     loader_fn = etl.torch.bitmap.get_loaders
     train_loader, val_loader, calibration_loader, test_loader = etl.torch.bitmap.get_loaders(device=args.device, task=args.task, batch_size=64)
   else:
-    loader_fn = etl.torch.ablation.get_loaders
+    loader_fn = etl.torch.trunc_ablation.get_loaders
     train_loader, val_loader, calibration_loader, test_loader = etl.torch.dataset.get_loaders(device=args.device, task=args.task, batch_size=1000)
   if args.coef:
     # check coefficients
