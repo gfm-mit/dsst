@@ -1,0 +1,20 @@
+,model,max_epochs,learning_rate,weight_decay,batch,columns
+0,causal,10,0.001,0.3,1000,t v_mag2 a_mag2 dv_mag2 cw j_mag2
+1,causal,10,0.001,0.3,1000,v_mag2 a_mag2 dv_mag2 cw j_mag2
+2,causal,10,0.001,0.3,1000,t a_mag2 dv_mag2 cw j_mag2
+3,causal,10,0.001,0.3,1000,t v_mag2 dv_mag2 cw j_mag2
+4,causal,10,0.001,0.3,1000,t v_mag2 a_mag2 cw j_mag2
+5,causal,10,0.001,0.3,1000,t v_mag2 a_mag2 dv_mag2 j_mag2
+6,causal,10,0.001,0.3,1000,t v_mag2 a_mag2 dv_mag2 cw
+7,causal,10,0.001,0.3,1000,t
+8,causal,10,0.001,0.3,1000,v_mag2
+9,causal,10,0.001,0.3,1000,a_mag2
+10,causal,10,0.001,0.3,1000,dv_mag2
+11,causal,10,0.001,0.3,1000,cw
+12,causal,10,0.001,0.3,1000,j_mag2
+13,causal,10,0.001,0.3,1000,0
+14,causal,10,0.001,0.3,1000,v_mag2 t
+15,causal,10,0.001,0.3,1000,v_mag2 a_mag2
+16,causal,10,0.001,0.3,1000,v_mag2 dv_mag2
+17,causal,10,0.001,0.3,1000,v_mag2 cw
+18,causal,10,0.001,0.3,1000,v_mag2 j_mag2
