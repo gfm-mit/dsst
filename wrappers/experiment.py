@@ -22,26 +22,26 @@ class Experiment:
       self.n_classes = 6
     self.batch_size = np.inf # sadly, this value != None
   
-  def redefine_loaders(self, batch_size=None):
-    if self.batch_size == batch_size:
-      return
-    print("redefining loaders: ", batch_size)
+  def redefine_loaders(self, batch_size=None, columns="t v_mag2 a_mag2 dv_mag2 cw j_mag2"):
+    # fuck optimization
+    #if self.batch_size == batch_size:
+    #  return
+    print("redefining loaders: ", batch_size, columns)
     self.train_loader, self.val_loader, self.calibration_loader, self.test_loader = self.loader_fn(
       device=self.args.device,
       task=self.args.task,
       batch_size=int(batch_size),
+      columns=columns,
     )
     self.batch_size = int(batch_size)
 
   def train(self, tqdm_prefix=None, **kwargs):
     #torch.manual_seed(42)
     self.model_class = models.registry.lookup_model(self.args.model or kwargs.get("model", "linear"))
-    builder = self.model_class(n_classes=self.n_classes, device=self.args.device)
+    builder = self.model_class(n_classes=self.n_classes, n_inputs=6, device=self.args.device)
     base_params = builder.get_parameters(task=self.args.task) | kwargs
-    if "batch" not in base_params:
-      self.redefine_loaders(1000) # bit arbitrary, but was used in original experiments
-    if base_params["batch"] != self.batch_size:
-      self.redefine_loaders(base_params["batch"])
+    if True:
+      self.redefine_loaders(base_params["batch"], columns=base_params["columns"])
     metric, epoch_loss_history, self.model = core.train.setup_training_run(
         base_params, model_factory_fn=builder,
         train_loader=self.train_loader,

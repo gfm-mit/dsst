@@ -53,6 +53,8 @@ class Cnn(models.base.SequenceBase):
     return classifier_state_dict
 
   def get_classifier_architecture(self, **kwargs):
+    self.inputs = len(kwargs.pop('columns').split())
+    print(f"{self.inputs=}")
     model = torch.nn.Sequential(
         # b n c
         Rearrange('b n c -> b c n'),
@@ -78,14 +80,15 @@ class Cnn(models.base.SequenceBase):
 
   def get_classifier_parameters(self, **kwargs):
     return dict(
-      scheduler='warmup', # TODO: try this with a scheduler
-      optimizer='samadam',
+      scheduler='none',
+      optimizer='sfsamadam',
       weight_decay=0,
       momentum=0.9,
       conditioning_smoother=0.999,
       warmup_epochs=2,
-      max_epochs=20,
+      max_epochs=10,
       learning_rate=1e-3,
+      columns="t v_mag2 a_mag2 dv_mag2 cw j_mag2",
 
       arch_width=192,
       arch_kernel=4, # worse than 1, though

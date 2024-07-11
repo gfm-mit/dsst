@@ -19,10 +19,12 @@ def gpr(rewards, arms, config):
   K = arms.columns[0]
   stats = rewards.join(arms, on="arm_idx")[[K] + [config["metric"]] + ["best_epoch"]]
   stats.columns = "X Y S".split()
+  config["scale"] = "log"
   config["min"] = arms.min()
   config["max"] = arms.max()
   gpr = plot.gpr.GPR(**config)
   targets = gpr.get_default_targets(**config)
+  gpr.cv_fit(stats)["kernel__length_scale"]
   targets, best_idx = gpr.fit_predict(stats, targets=targets)
   axs = gpr.make_plot(targets, best_idx, axs=None)
   gpr.scatter(stats, axs=axs)
@@ -30,7 +32,7 @@ def gpr(rewards, arms, config):
 
 def ucb(rewards, arms, config):
   df = rewards.join(arms, on="arm_idx")
-  print(df.groupby(arms.columns.tolist()).mean().sort_values(by=config["metric"]))
+  print(df.groupby(arms.columns.tolist()).agg("mean std".split()).sort_values(by=(config["metric"],"mean")))
 
   model = sklearn.linear_model.RidgeCV()
   pairwise = pd.concat([

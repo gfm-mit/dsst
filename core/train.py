@@ -57,7 +57,7 @@ def setup_model(params, model_factory_fn, task="classify", disk="none"):
   overlay_params = {
     k: params[k]
     for k in params.keys()
-    if k.startswith("arch_")
+    if k.startswith("arch_") or k == "columns"
     # TODO: namespace by having sub dictionaries, instead
   }
   if task == "next_token":

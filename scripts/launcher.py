@@ -25,6 +25,7 @@ import numpy as np
 
 import etl.torch.bitmap
 import etl.torch.dataset
+import etl.torch.ablation
 import etl.torch.linear_box
 import etl.torch.linear_patient
 import wrappers.coef
@@ -48,10 +49,11 @@ def parse_args():
   parser.add_argument('--profile', action='store_true', help='profile training with cProfile')
   parser.add_argument('--bitmap', action='store_true', help='use bitmap (2d) data and 2d CNN')
 
-  parser.add_argument('--device', default='cpu', help='torch device')
-  parser.add_argument('--model', default='', help='which model class to use')
+  parser.add_argument('--device', default='mps', help='torch device')
+  parser.add_argument('--model', default='causal', help='which model class to use')
   parser.add_argument('--task', default='classify', choices=set("next_token classify classify_patient classify_section".split()), help='training target / loss')
-  parser.add_argument('--stats', default='train_loss', choices=set("train_loss thresholds epochs params ucb fractal gp uniform".split()), help='output types to generate')
+  parser.add_argument('--stats', default='params', choices=set("train_loss thresholds epochs params ucb fractal gp uniform".split()), help='output types to generate')
+  parser.add_argument('--tuner', default='uniform', choices=set("ucb fractal gp uniform".split()), help='how to order the experiments')
 
   parser.add_argument('--disk', default='none', choices=set("none load save freeze".split()), help='whether to persist the model (or use persisted)')
   parser.add_argument('--offset', type=int, default=1, help='how far in advance to pretrain')
@@ -72,7 +74,7 @@ def main():
     loader_fn = etl.torch.bitmap.get_loaders
     train_loader, val_loader, calibration_loader, test_loader = etl.torch.bitmap.get_loaders(device=args.device, task=args.task, batch_size=64)
   else:
-    loader_fn = etl.torch.dataset.get_loaders
+    loader_fn = etl.torch.ablation.get_loaders
     train_loader, val_loader, calibration_loader, test_loader = etl.torch.dataset.get_loaders(device=args.device, task=args.task, batch_size=1000)
   if args.coef:
     # check coefficients
@@ -98,34 +100,24 @@ def main():
       stats = pstats.Stats('results/output_file.prof')
       stats.sort_stats('cumulative')
       stats.print_stats(30)
-    elif args.stats in "ucb fractal gp uniform".split():
-      setups = util.config.parse_config(args.config)
-      conf = args.config["bandit"]
-      conf["task"] = args.task
+    elif args.tuner in "ucb fractal gp uniform".split():
+      if args.config:
+        setups = util.config.parse_config(args.config)
+        conf = args.config["bandit"]
+        conf["task"] = args.task
+      else:
+        setups = pd.DataFrame(index=["<no config>"])
+        conf = dict(task=args.task, metric="auc", budget=10)
       hyper = {
         "ucb": bandit.ucb.UCB,
         "gp": bandit.gp.GP,
         "fractal": bandit.fractal_1d.Fractal,
         "uniform": bandit.base.Bandit,
-      }[args.stats](conf, setups)
+      }[args.tuner](conf, setups)
       shutil.rmtree("results/bandit/epoch", ignore_errors=True)
       pathlib.Path("results/bandit/epoch").mkdir(parents=True, exist_ok=True)
       for metric, epoch_loss_history, label in bandit.loop.run(hyper, experiment):
         np.save(f"results/bandit/epoch/{label}.npy", epoch_loss_history)
-        print(label, metric)
-    elif args.stats == "fractal":
-      setups = util.config.parse_config(args.config)
-      conf = args.config["bandit"]
-      conf["task"] = args.task
-      fractal = bandit.fractal_1d.Fractal(conf, setups)
-      for metric, epoch_loss_history, label in bandit.loop.run(fractal, experiment):
-        print(label, metric)
-    elif args.stats == "gp":
-      setups = util.config.parse_config(args.config)
-      conf = args.config["bandit"]
-      conf["task"] = args.task
-      gp = bandit.gp.GP(conf, setups)
-      for metric, epoch_loss_history, label in bandit.loop.run(gp, experiment):
         print(label, metric)
     else:
       compare(args, experiment)

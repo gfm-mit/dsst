@@ -12,8 +12,10 @@ def run(bandit: bandit.base.Bandit, experiment):
       i += 1
       label = bandit.get_label()
       tqdm_prefix=f"Tuning[{i}/{bandit.conf['budget']}]={label}"
-      if 'batch' in arm:
-        experiment.redefine_loaders(arm['batch'])
+      #if 'batch' in arm:
+      #  experiment.redefine_loaders(arm['batch'])
+      if 'columns' in arm:
+        experiment.redefine_loaders(batch_size=1000, columns=arm['columns'])
       delay = time.time()
       metric, epoch_loss_history = experiment.train(tqdm_prefix=tqdm_prefix, **arm)
       metric = experiment.get_tuning_results(epoch_loss_history)

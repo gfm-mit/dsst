@@ -5,6 +5,7 @@ import pandas as pd
 import sklearn.gaussian_process
 import sklearn.metrics.pairwise
 import matplotlib.pyplot as plt
+from sklearn.model_selection import GridSearchCV
 
 import core.metrics
 
@@ -53,6 +54,16 @@ class GPR:
     self.gpr.fit(self.to_gp_space(stats.X.values)[:, None], stats.Y)
     print(f"{self.gpr.kernel_=}")
     warnings.formatwarning = old_format
+  
+  def cv_fit(self, stats):
+    kernel = sklearn.gaussian_process.kernels.RBF(length_scale=1, length_scale_bounds='fixed')
+    gpr = sklearn.gaussian_process.GaussianProcessRegressor(kernel=kernel, normalize_y=True, n_restarts_optimizer=10)
+    cv = GridSearchCV(estimator=gpr, param_grid=dict(kernel__length_scale=np.geomspace(1e-3,1e1,10)), cv=2)
+    cv.fit(self.to_gp_space(stats.X.values)[:, None], stats.Y)
+    print(f"{cv.scorer_=}")
+    results = pd.DataFrame(cv.cv_results_["params"], index=cv.cv_results_["mean_test_score"])
+    print(f"{results=}")
+    return cv.best_params_
   
   def get_default_targets(self, min, max, **kwargs):
     print(f"{kwargs=}")
