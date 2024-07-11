@@ -7,13 +7,9 @@ import pandas as pd
 import torch
 
 
-def get_trunc_minmax(trunc, columns):
-  if len(columns) == 1 and columns[0] == "0":
-    def get_minmax(data):
-      return np.ones([data.values[:trunc].shape[0], 1])
-    return get_minmax
+def get_trunc_minmax(trunc):
   def get_minmax(data):
-    return data[columns].values[:trunc]
+    return data.values[:trunc, 3:]
   return get_minmax
 
 class SeqDataset(torch.utils.data.Dataset):
@@ -28,10 +24,9 @@ class SeqDataset(torch.utils.data.Dataset):
         labels = []
         groups = []
         for _, (pkey, coarse) in self.md.iterrows():
-          csv = Path('/Users/abe/Desktop/NP/') / f"{pkey}.npy"
-          data = np.load(csv)
-          data = pd.DataFrame(data, columns="symbol task box t v_mag2 a_mag2 dv_mag2 cw j_mag2".split())
-          data = data.groupby("symbol task box".split()).apply(get_trunc_minmax(128, self.columns))
+          csv = Path('/Users/abe/Desktop/DYNAMICS/') / f"{pkey}.csv"
+          data = pd.read_csv(csv)["symbol task box t x y".split()]
+          data = data.groupby("symbol task box".split()).apply(get_trunc_minmax(128))
           features += [data.values]
 
           idx = data.index.to_frame()
