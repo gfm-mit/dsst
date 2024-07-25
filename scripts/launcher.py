@@ -113,20 +113,6 @@ def main():
       for metric, epoch_loss_history, label in bandit.loop.run(hyper, experiment):
         np.save(f"results/bandit/epoch/{label}.npy", epoch_loss_history)
         print(label, metric)
-    elif args.stats == "fractal":
-      setups = util.config.parse_config(args.config)
-      conf = args.config["bandit"]
-      conf["task"] = args.task
-      fractal = bandit.fractal_1d.Fractal(conf, setups)
-      for metric, epoch_loss_history, label in bandit.loop.run(fractal, experiment):
-        print(label, metric)
-    elif args.stats == "gp":
-      setups = util.config.parse_config(args.config)
-      conf = args.config["bandit"]
-      conf["task"] = args.task
-      gp = bandit.gp.GP(conf, setups)
-      for metric, epoch_loss_history, label in bandit.loop.run(gp, experiment):
-        print(label, metric)
     else:
       compare(args, experiment)
 
